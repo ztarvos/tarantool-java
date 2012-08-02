@@ -5,7 +5,6 @@ First add repository
 	<repository>
 		<id>tarantool-snapshots</id>
 		<url>https://github.com/dgreenru/tarantool-java/raw/master/mvn-repo/snapshots</url>
-
 	</repository>
 and dependency
 
