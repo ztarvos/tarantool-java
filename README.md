@@ -4,7 +4,7 @@ First add repository
 
 	<repository>
 		<id>tarantool-snapshots</id>
-		<url>https://github.com/dgreenru/dgreenru.github.com/raw/master/tarantool-repo/snapshots</url>
+		<url>http://dgreenru.github.com/tarantool-repo/snapshots</url>
 	</repository>
 and dependency
 
