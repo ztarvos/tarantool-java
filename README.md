@@ -11,7 +11,7 @@ and dependency
 	<dependency>
 		<groupId>org.tarantool</groupId>
 		<artifactId>connector</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 	</dependency>
 
 
