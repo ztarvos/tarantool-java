@@ -1,4 +1,4 @@
-package org.tarantool.core;
+package org.tarantool.snapshot;
 
 
 public class IntelCrc32c {
@@ -191,15 +191,16 @@ public class IntelCrc32c {
 			0x7E007AFEL, 0x1C22F3C7L, 0xC167597FL, 0xC747336EL, 0x1A0299D6L, 0x782010EFL, 0xA565BA57L, 0xBC65029DL, 0x6120A825L, 0x0302211CL, 0xDE478BA4L, 0x31035088L,
 			0xEC46FA30L, 0x8E647309L, 0x5321D9B1L, 0x4A21617BL, 0x9764CBC3L, 0xF54642FAL, 0x2803E842L };
 
-	public static int crc32cSb864bitLE(long crc, byte[] bytes) {
-		int pos = 0;
+	public static int crc32cSb864bitLE(long crc, byte[] bytes,int from,int len) {
+		int pos = from;
 
-		long init_bytes = 0;
-		long li;
+		int init_bytes = 0;
+		int li;
+		int length = len;
+		int running_length;
+		int end_bytes;
+		
 		long term1, term2;
-		long length = bytes.length;
-		long running_length;
-		long end_bytes;
 
 		running_length = ((length - init_bytes) / 8) * 8;
 		end_bytes = length - init_bytes - running_length;

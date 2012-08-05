@@ -178,6 +178,10 @@ public class Tuple {
 
 	public static Tuple create(ByteBuffer buffer, ByteOrder order) {
 		int cardinality = buffer.getInt();
+		return createFromPackedFields(buffer, order, cardinality);
+	}
+
+	public static Tuple createFromPackedFields(ByteBuffer buffer, ByteOrder order, int cardinality) {
 		byte[][] result = new byte[cardinality][];
 		for (int i = 0; i < cardinality; i++) {
 			int fieldSize = Leb128.readUnsigned(buffer);

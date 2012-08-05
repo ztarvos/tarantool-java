@@ -85,7 +85,7 @@ public class Output {
 	}
 
 	private void write()  {
-		buffer.rewind();
+		buffer.flip();
 		while (buffer.hasRemaining()) {
 			try {
 				channel.write(buffer);

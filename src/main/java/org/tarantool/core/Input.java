@@ -35,7 +35,7 @@ public class Input {
 		if (res == -1) {
 			throw new CommunicationException("Connection lost");
 		}
-		buffer.rewind();
+		buffer.flip();
 	}
 
 	private Object readResult() {
