@@ -42,7 +42,7 @@ public class SnapshotWriter {
 		buffer.position(ROW_HEADER_SIZE - 4);// move to data crc32 pos
 		// put data crc
 		buffer.putInt(IntelCrc32c.crc32cSb864bitLE(0L, buffer.array(), ROW_HEADER_SIZE, DATA_HEADER_SIZE + sz));
-		buffer.position(0);// move to star
+		buffer.position(0);// move to start
 		buffer.putInt(ROW_START_MARKER);
 		buffer.putInt(0);// skip header crc32
 		buffer.putLong(0L);// lsn

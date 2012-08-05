@@ -42,7 +42,7 @@ public class SnapShotReader {
 		public int space;
 		public int cardinality;
 		public int size;
-		public Tuple data;// here should only packed fields
+		public Tuple data;// create this tuple only from packed fields
 	}
 
 	public Row readNext() throws IOException {
