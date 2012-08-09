@@ -11,7 +11,6 @@ import java.nio.ByteOrder;
 import java.util.Date;
 
 import org.junit.Test;
-import org.tarantool.core.Tuple;
 
 public class TestTuple {
 	int intValue = 2123;

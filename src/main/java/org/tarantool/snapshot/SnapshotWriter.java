@@ -1,12 +1,17 @@
 package org.tarantool.snapshot;
 
+import static org.tarantool.snapshot.Const.DATA_HEADER_SIZE;
+import static org.tarantool.snapshot.Const.EOF_MARKER;
+import static org.tarantool.snapshot.Const.HEADER;
+import static org.tarantool.snapshot.Const.ROW_HEADER_SIZE;
+import static org.tarantool.snapshot.Const.ROW_START_MARKER;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 
 import org.tarantool.core.Tuple;
-import static org.tarantool.snapshot.Const.*;
 
 public class SnapshotWriter {
 	WritableByteChannel channel;

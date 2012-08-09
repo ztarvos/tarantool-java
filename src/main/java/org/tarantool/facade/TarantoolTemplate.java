@@ -4,21 +4,21 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tarantool.core.ConnectionFactory;
 import org.tarantool.core.Const.UP;
 import org.tarantool.core.Operation;
+import org.tarantool.core.SingleQueryConnectionFactory;
 import org.tarantool.core.Tuple;
 
 public class TarantoolTemplate<T,P> {
 	int space = 0;
 	Mapping<T> mapping;
-	ConnectionFactory connectionFactory;
+	SingleQueryConnectionFactory connectionFactory;
 
 	public TarantoolTemplate() {
 		super();
 	}
 
-	public TarantoolTemplate(int space, ConnectionFactory connectionFactory, Mapping<T> mapping) {
+	public TarantoolTemplate(int space, SingleQueryConnectionFactory connectionFactory, Mapping<T> mapping) {
 		super();
 		this.space = space;
 		this.mapping = mapping;
@@ -281,11 +281,11 @@ public class TarantoolTemplate<T,P> {
 		this.mapping = mapping;
 	}
 
-	public ConnectionFactory getConnectionFactory() {
+	public SingleQueryConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 
-	public void setConnectionFactory(ConnectionFactory connectionFactory) {
+	public void setConnectionFactory(SingleQueryConnectionFactory connectionFactory) {
 		this.connectionFactory = connectionFactory;
 	}
 

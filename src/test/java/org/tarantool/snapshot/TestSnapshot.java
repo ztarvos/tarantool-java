@@ -3,7 +3,6 @@ package org.tarantool.snapshot;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -14,6 +13,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.tarantool.core.Connection;
+import org.tarantool.core.SocketChannelConnectionFactory;
 import org.tarantool.core.Tuple;
 import org.tarantool.facade.TupleSupport;
 import org.tarantool.snapshot.SnapShotReader.Row;
@@ -21,7 +21,8 @@ import org.tarantool.snapshot.SnapShotReader.Row;
 public class TestSnapshot {
 	// @Test
 	public void insertTestTuples() {
-		Connection connection = new Connection();
+		SocketChannelConnectionFactory factory = new SocketChannelConnectionFactory();
+		Connection connection = factory.getConnection();
 		TupleSupport ts = new TupleSupport();
 		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");

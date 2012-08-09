@@ -8,8 +8,16 @@ public interface Const {
 		private OP(int type) {
 			this.type = type;
 		}
+		public static OP valueOf(int type) {
+			for(OP op:OP.values()) {
+				if(op.type==type) {
+					return op;
+				}
+			}
+			return null;
+		}
 
-		int type;
+		public int type;
 	}
 
 	static final int RETURN_TUPLE = 0x01;
@@ -22,9 +30,16 @@ public interface Const {
 			this.type = type;
 			this.args = args;
 		}
-
-		int type;
-		int args;
+		public static UP valueOf(int type) {
+			for(UP op:UP.values()) {
+				if(op.type==type) {
+					return op;
+				}
+			}
+			return null;
+		}
+		public int type;
+		public int args;
 
 	}
 

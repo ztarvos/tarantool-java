@@ -1,6 +1,8 @@
 package org.tarantool.it;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -9,23 +11,17 @@ import org.junit.Test;
 import org.tarantool.core.Connection;
 import org.tarantool.core.Const.UP;
 import org.tarantool.core.Operation;
+import org.tarantool.core.SocketChannelConnectionFactory;
 import org.tarantool.core.Tuple;
 import org.tarantool.core.exception.TarantoolException;
 
 public class TestConnection {
-	@Test
-	public void testSimpleConnection() {
-		Connection connection = new Connection();
-		Tuple tuple = new Tuple(1, ByteOrder.LITTLE_ENDIAN);
-		tuple.setInt(0, 123);
-		Tuple found = connection.findOne(0, 0, 0, 1, tuple);
-		assertNull(found);
-		connection.close();
-	}
+	
 
 	@Test
 	public void testCycle() {
-		Connection connection = new Connection();
+		SocketChannelConnectionFactory factory = new SocketChannelConnectionFactory();
+		Connection connection = factory.getConnection();
 		Tuple tuple = new Tuple(2, ByteOrder.LITTLE_ENDIAN);
 		tuple.setInt(0, 211);
 		tuple.setInt(1, 123);
