@@ -1,10 +1,13 @@
-package org.tarantool.core;
+package org.tarantool.core.impl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
 
+import org.tarantool.core.Request;
+import org.tarantool.core.Response;
+import org.tarantool.core.Transport;
 import org.tarantool.core.exception.CommunicationException;
 import org.tarantool.core.exception.TarantoolException;
 
@@ -17,21 +20,17 @@ public class ByteChannelTransport implements Transport {
 		write(request);
 		return read();
 	}
-	
-	
 
 	public ByteChannelTransport(ByteChannel channel) {
 		super();
 		this.channel = channel;
 	}
 
-
-
 	protected Response read() {
 		ByteBuffer headers = read(HEADER_SIZE);
 		Response response = new Response(headers.getInt(), headers.getInt(), headers.getInt());
 		if (response.getSize() > 0) {
-			ByteBuffer body = read(response.size);
+			ByteBuffer body = read(response.getSize());
 			response.setRet(body.getInt());
 			if (response.getRet() != 0) {
 				handleErrorMessage(response, body);

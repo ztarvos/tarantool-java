@@ -7,20 +7,21 @@ import java.net.URL;
 import java.util.Date;
 
 public class User {
-	int id=123;
-	long phone=880012345678L;
-	double point=0.333d;
-	float iq=0.81f;
-	short height=188;
-	BigInteger lifeFormId=BigInteger.valueOf(Long.MAX_VALUE);
-	BigDecimal salary=BigDecimal.valueOf(123.456);
-	Date birthday=new Date();
-	String name="John Smith";
-	byte[] sign={1,2,3,4};
-	boolean male=true;
+	int id = 123;
+	long phone = 880012345678L;
+	double point = 0.333d;
+	float iq = 0.81f;
+	short height = 188;
+	BigInteger lifeFormId = BigInteger.valueOf(Long.MAX_VALUE);
+	BigDecimal salary = BigDecimal.valueOf(123.456);
+	Date birthday = new Date();
+	String name = "John Smith";
+	byte[] sign = { 1, 2, 3, 4 };
+	boolean male = true;
 	URL site;
+
 	public User() throws MalformedURLException {
-		site=new URL("http://localhost:8080/index.html");
+		site = new URL("http://localhost:8080/index.html");
 	}
 
 	public int getId() {

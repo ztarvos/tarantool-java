@@ -16,9 +16,9 @@ public abstract class Request {
 		this.op = op;
 		this.id = id;
 	}
-	
+
 	protected abstract int getCapacity();
-	
+
 	protected int getRequestHeaderSize() {
 		return REQUEST_HEADER_SIZE;
 	}
@@ -27,7 +27,8 @@ public abstract class Request {
 
 	public ByteBuffer pack() {
 		int capacity = getCapacity();
-		ByteBuffer buffer = body(ByteBuffer.allocate(capacity + getRequestHeaderSize()).order(ByteOrder.LITTLE_ENDIAN).putInt(op.type).putInt(capacity).putInt(id));
+		ByteBuffer buffer = body(ByteBuffer.allocate(capacity + getRequestHeaderSize()).order(ByteOrder.LITTLE_ENDIAN).putInt(op.type).putInt(capacity)
+				.putInt(id));
 		buffer.flip();
 		return buffer;
 	}
@@ -47,5 +48,5 @@ public abstract class Request {
 	public void setId(int id) {
 		this.id = id;
 	}
-	
+
 }

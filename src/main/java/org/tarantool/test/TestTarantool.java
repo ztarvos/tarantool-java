@@ -3,7 +3,6 @@ package org.tarantool.test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -13,21 +12,20 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.tarantool.core.Connection;
-import org.tarantool.core.ConnectionImpl;
 import org.tarantool.core.Const;
+import org.tarantool.core.Const.OP;
 import org.tarantool.core.Const.UP;
 import org.tarantool.core.Request;
 import org.tarantool.core.Response;
-import org.tarantool.core.SingleQueryConnectionFactory;
+import org.tarantool.core.SingleQueryClientFactory;
+import org.tarantool.core.TarantoolClient;
 import org.tarantool.core.Transport;
 import org.tarantool.core.Tuple;
-import org.tarantool.core.Const.OP;
 import org.tarantool.core.cmd.DMLRequest;
-import org.tarantool.core.cmd.Insert;
 import org.tarantool.core.exception.TarantoolException;
+import org.tarantool.core.impl.TarantoolClientImpl;
 
-public class TestTarantool implements SingleQueryConnectionFactory, Transport {
+public class TestTarantool implements SingleQueryClientFactory, Transport {
 
 	class SecondaryKey {
 		int[] fields;
@@ -150,8 +148,8 @@ public class TestTarantool implements SingleQueryConnectionFactory, Transport {
 	}
 
 	@Override
-	public Connection getSingleQueryConnection() {
-		return new ConnectionImpl(this);
+	public TarantoolClient getSingleQueryConnection() {
+		return new TarantoolClientImpl(this);
 	}
 
 	@Override
@@ -180,10 +178,10 @@ public class TestTarantool implements SingleQueryConnectionFactory, Transport {
 				for (int i = 0; i < ops; i++) {
 					int fieldNo = buffer.getInt();
 					UP up = UP.valueOf((int) buffer.get());
-					if(up.args>1) {
-						
+					if (up.args > 1) {
+
 					} else {
-						
+
 					}
 				}
 

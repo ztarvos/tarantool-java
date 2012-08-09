@@ -6,19 +6,19 @@ import java.util.List;
 
 import org.tarantool.core.Const.UP;
 import org.tarantool.core.Operation;
-import org.tarantool.core.SingleQueryConnectionFactory;
+import org.tarantool.core.SingleQueryClientFactory;
 import org.tarantool.core.Tuple;
 
-public class TarantoolTemplate<T,P> {
+public class TarantoolTemplate<T, P> {
 	int space = 0;
 	Mapping<T> mapping;
-	SingleQueryConnectionFactory connectionFactory;
+	SingleQueryClientFactory connectionFactory;
 
 	public TarantoolTemplate() {
 		super();
 	}
 
-	public TarantoolTemplate(int space, SingleQueryConnectionFactory connectionFactory, Mapping<T> mapping) {
+	public TarantoolTemplate(int space, SingleQueryClientFactory connectionFactory, Mapping<T> mapping) {
 		super();
 		this.space = space;
 		this.mapping = mapping;
@@ -34,7 +34,7 @@ public class TarantoolTemplate<T,P> {
 	}
 
 	public abstract class ContidionFirst {
-		public  abstract Search condition(Object... values);
+		public abstract Search condition(Object... values);
 	}
 
 	public class Search extends ContidionFirst {
@@ -146,12 +146,11 @@ public class TarantoolTemplate<T,P> {
 			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().deleteAndGet(space, id(id)));
 		}
 	}
-	
+
 	public abstract class OperationFirst {
 		public abstract Update add(String name, Long value);
 
-		public abstract  Update add(String name, Integer value);
-		
+		public abstract Update add(String name, Integer value);
 
 		public abstract Update and(String name, Integer value);
 
@@ -169,16 +168,16 @@ public class TarantoolTemplate<T,P> {
 
 		public abstract Update insert(String name, Object value);
 
-		public abstract Update splice(String name, Integer offset, Integer delete, byte[] insert); 
+		public abstract Update splice(String name, Integer offset, Integer delete, byte[] insert);
 
-		public abstract  Update splice(String name, String value, Integer offset, Integer delete, String insert); 
+		public abstract Update splice(String name, String value, Integer offset, Integer delete, String insert);
 	}
 
 	public OperationFirst update(P id) {
 		return new Update(id);
 	}
 
-	public class Update extends OperationFirst{
+	public class Update extends OperationFirst {
 		P id;
 
 		List<Operation> ops = new ArrayList<Operation>();
@@ -201,41 +200,49 @@ public class TarantoolTemplate<T,P> {
 			ops.add(new Operation(UP.ADD, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update add(String name, Integer value) {
 			ops.add(new Operation(UP.ADD, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update and(String name, Integer value) {
 			ops.add(new Operation(UP.AND, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update and(String name, Long value) {
 			ops.add(new Operation(UP.AND, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update or(String name, Integer value) {
 			ops.add(new Operation(UP.OR, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update or(String name, Long value) {
 			ops.add(new Operation(UP.OR, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update xor(String name, Integer value) {
 			ops.add(new Operation(UP.XOR, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update xor(String name, Long value) {
 			ops.add(new Operation(UP.XOR, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update delete(String name, Object value) {
 			ops.add(new Operation(UP.DELETE, mapping.getFieldNo(name), mapping.support.create(value)));
@@ -246,11 +253,13 @@ public class TarantoolTemplate<T,P> {
 			ops.add(new Operation(UP.INSERT, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
+
 		@Override
 		public Update splice(String name, Integer offset, Integer delete, byte[] insert) {
 			ops.add(new Operation(UP.SPLICE, mapping.getFieldNo(name), mapping.support.create(offset, delete, insert)));
 			return this;
 		}
+
 		@Override
 		public Update splice(String name, String value, Integer offset, Integer delete, String insert) {
 			Integer bOffset;
@@ -281,11 +290,11 @@ public class TarantoolTemplate<T,P> {
 		this.mapping = mapping;
 	}
 
-	public SingleQueryConnectionFactory getConnectionFactory() {
+	public SingleQueryClientFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 
-	public void setConnectionFactory(SingleQueryConnectionFactory connectionFactory) {
+	public void setConnectionFactory(SingleQueryClientFactory connectionFactory) {
 		this.connectionFactory = connectionFactory;
 	}
 

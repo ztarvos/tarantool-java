@@ -18,7 +18,6 @@ public class Update extends DMLRequest<Update> {
 		super(OP.UPDATE, id, null);
 		body = packTupleAndOps(tuple, ops);
 	}
-	
 
 	protected byte[] packTupleAndOps(Tuple tuple, List<Operation> ops) {
 		byte[] packedTuple = tuple.pack();

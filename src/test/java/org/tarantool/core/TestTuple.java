@@ -31,14 +31,14 @@ public class TestTuple {
 		checkTuple(tuple);
 
 	}
-	
+
 	@Test
 	public void testPackUnpack() {
 		Tuple tuple = createTuple();
 		byte[] packed = tuple.pack();
 		ByteBuffer buf = ByteBuffer.wrap(packed).order(ByteOrder.LITTLE_ENDIAN);
 
-		checkTuple(Tuple.create(buf,ByteOrder.LITTLE_ENDIAN));
+		checkTuple(Tuple.create(buf, ByteOrder.LITTLE_ENDIAN));
 
 	}
 

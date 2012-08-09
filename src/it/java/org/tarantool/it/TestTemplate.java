@@ -8,8 +8,8 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 
 import org.junit.Test;
-import org.tarantool.core.SocketChannelConnectionFactory;
 import org.tarantool.core.exception.TarantoolException;
+import org.tarantool.core.impl.SocketChannelConnectionFactory;
 import org.tarantool.facade.Mapping;
 import org.tarantool.facade.TarantoolTemplate;
 import org.tarantool.facade.User;
@@ -29,11 +29,10 @@ public class TestTemplate {
 		} catch (TarantoolException ignored) {
 
 		}
-		assertEquals(1,template.save(user).replace());
-		assertNotNull(template.find(0,"id").condition(user.getId()).list());
-		assertEquals(user.getPhone()+1L,template.update(user.getId()).add("phone", 1).updateAndGet().getPhone());
+		assertEquals(1, template.save(user).replace());
+		assertNotNull(template.find(0, "id").condition(user.getId()).list());
+		assertEquals(user.getPhone() + 1L, template.update(user.getId()).add("phone", 1).updateAndGet().getPhone());
 
-		
 		connectionFactory.free();
 		return;
 	}

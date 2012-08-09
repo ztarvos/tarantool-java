@@ -30,7 +30,7 @@ public class TestMapping {
 
 	@Test
 	public void testCustomSer() throws MalformedURLException {
-		Mapping<User> mapping=new Mapping<User>(User.class, new TupleSupport() {
+		Mapping<User> mapping = new Mapping<User>(User.class, new TupleSupport() {
 			{
 				supported.add(URL.class);
 			}
@@ -60,7 +60,7 @@ public class TestMapping {
 		User user = new User();
 		Tuple tuple = mapping.toTuple(user);
 		User userCopy = mapping.fromTuple(tuple);
-		assertArrayEquals(tuple.pack(),mapping.toTuple(userCopy).pack());
-		assertEquals(user.getSite(),userCopy.getSite());
+		assertArrayEquals(tuple.pack(), mapping.toTuple(userCopy).pack());
+		assertEquals(user.getSite(), userCopy.getSite());
 	}
 }

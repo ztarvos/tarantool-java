@@ -9,6 +9,7 @@ public class Operation {
 	UP op;
 	int fieldNo;
 	Tuple args;
+
 	public Operation(UP op, int fieldNo, Tuple args) {
 		super();
 		this.op = op;
@@ -18,14 +19,15 @@ public class Operation {
 			throw new IllegalArgumentException(op.name() + " required " + op.args + " arguments but has " + args.size());
 		}
 	}
+
 	public UP getOp() {
 		return op;
 	}
+
 	public int getFieldNo() {
 		return fieldNo;
 	}
-	
-	
+
 	public byte[] pack() {
 		int fieldsSize = args.calcFieldsSize();
 		int multiFieldOffset = args.size() > 1 ? Leb128.unsignedSize(fieldsSize) : 0;
@@ -37,5 +39,5 @@ public class Operation {
 		}
 		return args.packFields(buf);
 	}
-	
+
 }

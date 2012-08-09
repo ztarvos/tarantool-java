@@ -1,22 +1,30 @@
-package org.tarantool.core;
+package org.tarantool.core.impl;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.tarantool.core.ConnectionReturnPoint;
+import org.tarantool.core.Const;
+import org.tarantool.core.Operation;
+import org.tarantool.core.Response;
+import org.tarantool.core.Returnable;
+import org.tarantool.core.TarantoolClient;
+import org.tarantool.core.Transport;
+import org.tarantool.core.Tuple;
 import org.tarantool.core.cmd.Delete;
 import org.tarantool.core.cmd.Insert;
 import org.tarantool.core.cmd.Ping;
 import org.tarantool.core.cmd.Select;
 import org.tarantool.core.cmd.Update;
 
-public class ConnectionImpl implements Connection,Returnable {
+public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	Transport transport;
 	ConnectionReturnPoint returnPoint;
 	AtomicInteger id = new AtomicInteger();
 
-	public ConnectionImpl(Transport transport) {
+	public TarantoolClientImpl(Transport transport) {
 		this.transport = transport;
 	}
 
@@ -110,7 +118,7 @@ public class ConnectionImpl implements Connection,Returnable {
 	@Override
 	public Tuple replaceAndGet(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.REPLACE_TUPLE|Const.RETURN_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.REPLACE_TUPLE | Const.RETURN_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -160,7 +168,7 @@ public class ConnectionImpl implements Connection,Returnable {
 		try {
 			Response response = transport.execute(new Select(id.incrementAndGet(), keys).space(space).index(index).offset(offset).limit(limit));
 			List<Tuple> tuples = response.readTuples();
-			return tuples==null||tuples.isEmpty()?null:tuples.get(0);
+			return tuples == null || tuples.isEmpty() ? null : tuples.get(0);
 		} finally {
 			returnConnection();
 		}

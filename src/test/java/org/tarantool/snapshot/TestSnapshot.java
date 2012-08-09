@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.tarantool.core.Connection;
-import org.tarantool.core.SocketChannelConnectionFactory;
+import org.tarantool.core.TarantoolClient;
 import org.tarantool.core.Tuple;
+import org.tarantool.core.impl.SocketChannelConnectionFactory;
 import org.tarantool.facade.TupleSupport;
 import org.tarantool.snapshot.SnapShotReader.Row;
 
@@ -22,7 +22,7 @@ public class TestSnapshot {
 	// @Test
 	public void insertTestTuples() {
 		SocketChannelConnectionFactory factory = new SocketChannelConnectionFactory();
-		Connection connection = factory.getConnection();
+		TarantoolClient connection = factory.getConnection();
 		TupleSupport ts = new TupleSupport();
 		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");
@@ -76,42 +76,43 @@ public class TestSnapshot {
 		is.readFully(b);
 		Assert.assertTrue(is.available() == 0);
 		is.close();
-		Assert.assertTrue(Arrays.equals(b,os.toByteArray()));
+		Assert.assertTrue(Arrays.equals(b, os.toByteArray()));
 	}
+
 	@Test
 	public void testSnapReader() throws IOException {
 		final AtomicBoolean closed = new AtomicBoolean(false);
 		DataInputStream is = new DataInputStream(ClassLoader.getSystemResourceAsStream("test.snap"));
-		ByteArrayOutputStream os=new ByteArrayOutputStream();
-		while(is.available()>0) {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		while (is.available() > 0) {
 			os.write(is.readByte());
 		}
 		is.close();
 		final ByteBuffer source = ByteBuffer.wrap(os.toByteArray());
 		ReadableByteChannel readableByteChannel = new ReadableByteChannel() {
-			
+
 			@Override
 			public boolean isOpen() {
 				return true;
 			}
-			
+
 			@Override
 			public void close() throws IOException {
 				closed.set(true);
-				
+
 			}
-			
+
 			@Override
 			public int read(ByteBuffer dst) throws IOException {
 				int rem = Math.min(source.remaining(), dst.remaining());
-				dst.put(source.array(),source.position(),rem);
-				source.position(source.position()+rem);
+				dst.put(source.array(), source.position(), rem);
+				source.position(source.position() + rem);
 				return rem;
 			}
 		};
 		TupleSupport ts = new TupleSupport();
 		SnapShotReader snapShotReader = new SnapShotReader(readableByteChannel);
-		for(int i=0;i<10;i++) {
+		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");
 			Row row = snapShotReader.readNext();
 			Assert.assertTrue(Arrays.equals(tuple.pack(), row.data.pack()));

@@ -7,5 +7,5 @@ public class Const {
 	public static final int DATA_HEADER_SIZE = 22;
 	public static final int ROW_START_MARKER = 0xba0babed;
 	public static final int EOF_MARKER = 0x10adab1e;
-	
+
 }

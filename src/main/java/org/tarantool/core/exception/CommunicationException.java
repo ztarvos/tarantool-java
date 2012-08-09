@@ -1,6 +1,6 @@
 package org.tarantool.core.exception;
 
-public class CommunicationException extends RuntimeException{
+public class CommunicationException extends RuntimeException {
 
 	public CommunicationException(String message, Throwable cause) {
 		super(message, cause);

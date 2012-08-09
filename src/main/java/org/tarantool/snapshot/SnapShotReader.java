@@ -80,14 +80,14 @@ public class SnapShotReader {
 		ByteBuffer dataBuff = ByteBuffer.allocate(row.size + Const.ROW_HEADER_SIZE + Const.DATA_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 		headers.flip();
 		dataBuff.put(headers);
-		
+
 		readFullyAndFlip(dataBuff);
 		if (row.dataCrc32 != IntelCrc32c.crc32cSb864bitLE(0L, dataBuff.array(), Const.ROW_HEADER_SIZE, row.size + Const.DATA_HEADER_SIZE)) {
 			throw new IllegalStateException("Data crc32 mismatch");
 		}
 		dataBuff.position(Const.ROW_HEADER_SIZE + Const.DATA_HEADER_SIZE);
 		dataBuff.limit(dataBuff.capacity());
-		row.data = Tuple.createFromPackedFields(dataBuff, ByteOrder.LITTLE_ENDIAN,row.cardinality);
+		row.data = Tuple.createFromPackedFields(dataBuff, ByteOrder.LITTLE_ENDIAN, row.cardinality);
 
 		if (row.data.size() != row.cardinality) {
 			throw new IllegalStateException("Row size is " + row.cardinality + " but tuple has " + row.data.size());

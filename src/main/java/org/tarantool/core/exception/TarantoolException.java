@@ -9,7 +9,6 @@ public class TarantoolException extends RuntimeException {
 		return code;
 	}
 
-
 	public TarantoolException(int code, String message, Throwable cause) {
 		super(message, cause);
 		this.code = code;
@@ -21,7 +20,5 @@ public class TarantoolException extends RuntimeException {
 		this.code = code;
 
 	}
-
-
 
 }

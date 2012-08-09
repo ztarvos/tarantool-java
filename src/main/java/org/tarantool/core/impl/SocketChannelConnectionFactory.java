@@ -1,20 +1,20 @@
-package org.tarantool.core;
+package org.tarantool.core.impl;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
-import org.tarantool.core.exception.CommunicationException;
+import org.tarantool.core.ConnectionReturnPoint;
+import org.tarantool.core.Returnable;
+import org.tarantool.core.SingleQueryClientFactory;
+import org.tarantool.core.TarantoolClient;
 
-public class SocketChannelConnectionFactory implements SingleQueryConnectionFactory, ConnectionReturnPoint {
+public class SocketChannelConnectionFactory implements SingleQueryClientFactory, ConnectionReturnPoint {
 	String host = "localhost";
 	int port = 33013;
-	int minPoolSize = 0;
+	int minPoolSize = 10;
 	int maxPoolSize = 100;
-	BlockingQueue<Connection> pool;
+	BlockingQueue<TarantoolClient> pool;
 	Semaphore connections;
 
 	public SocketChannelConnectionFactory(String host, int port, int minPoolSize, int maxPoolSize) {
@@ -23,7 +23,7 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 		this.port = port;
 		this.minPoolSize = minPoolSize;
 		this.maxPoolSize = maxPoolSize;
-		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<Connection>(minPoolSize);
+		pool = new ArrayBlockingQueue<TarantoolClient>(minPoolSize);
 		connections = new Semaphore(maxPoolSize);
 	}
 
@@ -33,12 +33,12 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 	}
 
 	public SocketChannelConnectionFactory() {
-		this("localhost", 33013, 0, 100);
+		this("localhost", 33013, 10, 100);
 
 	}
 
 	public void afterPropertiesSet() {
-		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<Connection>(minPoolSize);
+		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<TarantoolClient>(minPoolSize);
 		connections = new Semaphore(maxPoolSize);
 	}
 
@@ -50,25 +50,18 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 		this.maxPoolSize = maxPoolSize;
 	}
 
-	public Connection newUnpooledConnection() {
-		try {
-			return new ConnectionImpl(new ByteChannelTransport(openChannel()));
-		} catch (IOException e) {
-			throw new CommunicationException("Can't create connection", e);
-		}
+	public TarantoolClient newUnpooledConnection() {
+		return new SocketChannelTarantoolClient(host, port);
+
 	}
 
-	protected SocketChannel openChannel() throws IOException {
-		return SocketChannel.open(new InetSocketAddress(host, port));
-	}
-
-	public Connection getConnection() {
+	public TarantoolClient getConnection() {
 		try {
 			connections.acquire();
 		} catch (InterruptedException e) {
 			throw new IllegalStateException(e);
 		}
-		Connection connection = pool == null ? null : pool.poll();
+		TarantoolClient connection = pool == null ? null : pool.poll();
 		if (connection == null) {
 			connection = newUnpooledConnection();
 		} else {
@@ -83,8 +76,8 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 	}
 
 	@Override
-	public Connection getSingleQueryConnection() {
-		Connection connection = getConnection();
+	public TarantoolClient getSingleQueryConnection() {
+		TarantoolClient connection = getConnection();
 		if (connection instanceof Returnable) {
 			((Returnable) connection).returnTo(this);
 			return connection;
@@ -95,8 +88,8 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 	}
 
 	public void free() {
-		Connection con = null;
-		while (pool != null && (con = pool.poll()) != null) {
+		TarantoolClient con = null;
+		while ((con = pool.poll()) != null) {
 			con.close();
 		}
 	}
@@ -110,9 +103,9 @@ public class SocketChannelConnectionFactory implements SingleQueryConnectionFact
 	}
 
 	@Override
-	public void returnConnection(Connection connection) {
+	public void returnConnection(TarantoolClient connection) {
 		try {
-			if (pool == null || !pool.offer(connection)) {
+			if (!pool.offer(connection)) {
 				connection.close();
 			}
 		} finally {

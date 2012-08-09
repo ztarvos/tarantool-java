@@ -58,7 +58,7 @@ public class SnapshotWriter {
 																				// header
 																				// crc32
 		buffer.position(ROW_HEADER_SIZE + DATA_HEADER_SIZE + sz);// set limit to
-																// end
+																	// end
 		flipAndWriteFully(buffer);
 	}
 

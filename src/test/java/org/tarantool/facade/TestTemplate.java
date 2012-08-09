@@ -25,7 +25,6 @@ public class TestTemplate {
 		}
 
 		tpl.find(1, "name", "phone").condition("string", 123L);
-	
 
 	}
 }

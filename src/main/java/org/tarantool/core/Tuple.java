@@ -8,9 +8,8 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Date;
 
-
 public class Tuple {
-	
+
 	byte[][] src;
 	ByteOrder order;
 
@@ -114,19 +113,19 @@ public class Tuple {
 		return this;
 	}
 
-	public String getString(int i, String encoding)  {
+	public String getString(int i, String encoding) {
 		try {
 			return new String(src[i], encoding);
 		} catch (UnsupportedEncodingException e) {
-			throw new IllegalArgumentException(encoding+" is not supported",e);
+			throw new IllegalArgumentException(encoding + " is not supported", e);
 		}
 	}
 
-	public Tuple setString(int i, String value, String encoding)  {
+	public Tuple setString(int i, String value, String encoding) {
 		try {
 			src[i] = value.getBytes(encoding);
 		} catch (UnsupportedEncodingException e) {
-			throw new IllegalArgumentException(encoding+" is not supported",e);
+			throw new IllegalArgumentException(encoding + " is not supported", e);
 		}
 		return this;
 	}
@@ -139,19 +138,19 @@ public class Tuple {
 		src[i] = bytes;
 		return this;
 	}
-	
+
 	public boolean getBoolean(int i) {
-		return src[i][0]==1;
+		return src[i][0] == 1;
 	}
 
 	public Tuple setBoolean(int i, boolean value) {
-		src[i] = new byte[]{(value?(byte)1:0)};
+		src[i] = new byte[] { (value ? (byte) 1 : 0) };
 		return this;
 	}
 
 	public byte[] pack() {
 		int size = calcFieldsSize();
-		ByteBuffer buf = ByteBuffer.allocate(size+4).order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer buf = ByteBuffer.allocate(size + 4).order(ByteOrder.LITTLE_ENDIAN);
 		buf.putInt(size());
 		return packFields(buf);
 	}
@@ -192,7 +191,7 @@ public class Tuple {
 		}
 		return new Tuple(result, order);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -220,6 +219,5 @@ public class Tuple {
 			return false;
 		return true;
 	}
-
 
 }
