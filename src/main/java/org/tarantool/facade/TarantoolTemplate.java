@@ -164,7 +164,7 @@ public class TarantoolTemplate<T, P> {
 
 		public abstract Update xor(String name, Long value);
 
-		public abstract Update delete(String name, Object value);
+		public abstract Update delete(String name);
 
 		public abstract Update insert(String name, Object value);
 
@@ -244,13 +244,13 @@ public class TarantoolTemplate<T, P> {
 		}
 
 		@Override
-		public Update delete(String name, Object value) {
-			ops.add(new Operation(UP.DELETE, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update delete(String name) {
+			ops.add(new Operation(UP.DELETE, mapping.getFieldNo(name), mapping.support.create(0)));
 			return this;
 		}
 
 		public Update insert(String name, Object value) {
-			ops.add(new Operation(UP.INSERT, mapping.getFieldNo(name), mapping.support.create(value)));
+			ops.add(new Operation(UP.INSERT, mapping.getFieldNo(name), mapping.support.create(0)));
 			return this;
 		}
 

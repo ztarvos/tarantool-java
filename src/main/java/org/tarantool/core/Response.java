@@ -13,7 +13,7 @@ public class Response {
 	protected int id;
 	protected int ret;
 	protected byte[] body;
-	protected int count;
+	protected int count = -1;
 
 	public Response(int op, int size, int id) {
 		super();
@@ -79,6 +79,9 @@ public class Response {
 	}
 
 	public List<Tuple> readTuples() {
+		if (body == null && count == 0) {
+			return new ArrayList<Tuple>();
+		}
 		ByteBuffer buffer = ByteBuffer.wrap(body).order(ByteOrder.LITTLE_ENDIAN);
 		int count = buffer.getInt();
 		List<Tuple> tuples = new ArrayList<Tuple>(count);
