@@ -28,77 +28,111 @@ import org.tarantool.core.impl.TarantoolClientImpl;
 
 public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transport {
 
-	class SecondaryKey {
+	class Index {
 		int[] fields;
-		ConcurrentMap<BigInteger, List<Tuple>> idx = new ConcurrentHashMap<BigInteger, List<Tuple>>();
+		boolean unique;
+		private ConcurrentMap<BigInteger, List<Tuple>> idx = new ConcurrentHashMap<BigInteger, List<Tuple>>();
 
-		private SecondaryKey(int... fields) {
+		private Index(boolean unique, int... fields) {
 			super();
+			this.unique = unique;
 			this.fields = fields;
+		}
+
+		public void put(Tuple t) {
+			BigInteger key = toKey(copy(t, fields));
+			List<Tuple> collection = idx.get(key);
+			if (collection == null) {
+				idx.put(key, collection = new ArrayList<Tuple>());
+			}
+			if (unique && collection.size() > 0) {
+				throw new TarantoolException(56, "Duplicate key exists in a unique index");
+			}
+			collection.add(t);
+		}
+
+		public List<Tuple> get(Tuple tuple) {
+			return idx.get(toKey(tuple));
+		}
+
+		public Tuple getOne(Tuple tuple) {
+			List<Tuple> collection = idx.get(toKey(tuple));
+			return collection == null || collection.isEmpty() ? null : collection.get(0);
+		}
+
+		public void remove(Tuple stored) {
+			BigInteger key = toKey(copy(stored, fields));
+			Collection<Tuple> collection = idx.get(key);
+			if (collection != null) {
+				collection.remove(stored);
+				if (collection.isEmpty()) {
+					idx.remove(key);
+				}
+			}
+
 		}
 
 	}
 
 	class Space {
-		ConcurrentMap<BigInteger, Tuple> primaryKey = new ConcurrentHashMap<BigInteger, Tuple>();
-		ConcurrentMap<Integer, SecondaryKey> secondaryKeys = new ConcurrentHashMap<Integer, InMemoryTarantoolImpl.SecondaryKey>();
+		ConcurrentMap<Integer, Index> indexes = new ConcurrentHashMap<Integer, InMemoryTarantoolImpl.Index>();
+
+		Tuple get(Tuple pk) {
+			return indexes.get(0).getOne(pk);
+		}
+
+		Tuple getByValue(Tuple tuple) {
+			return get(toPK(tuple));
+		}
+
+		Tuple toPK(Tuple tuple) {
+			Index index = indexes.get(0);
+			return copy(tuple, index.fields);
+		}
 	}
 
 	ConcurrentMap<Integer, Space> spaces = new ConcurrentHashMap<Integer, Space>();
 
-	public void initSpace(int num) {
-		spaces.put(num, new Space());
+	public void initSpace(int num, int... pkFields) {
+		Space space = new Space();
+		if (pkFields == null || pkFields.length == 0) {
+			pkFields = new int[] { 0 };
+		}
+		space.indexes.putIfAbsent(0, new Index(true, pkFields));
+		spaces.put(num, space);
 	}
 
-	public void initSecondaryKey(int spaceNum, int keyNum, int... fields) {
+	public void initSecondaryKey(int spaceNum, int keyNum, boolean unique, int... fields) {
 		Space space = spaces.get(spaceNum);
-		space.secondaryKeys.putIfAbsent(keyNum, new SecondaryKey(fields));
+		space.indexes.putIfAbsent(keyNum, new Index(unique, fields));
 	}
 
 	protected Tuple put(int spaceNum, Tuple tuple, boolean insert, boolean replace) {
 		Space space = spaces.get(spaceNum);
-		BigInteger pKey = toBigInteger(tuple, 0);
 
-		if (space.primaryKey.containsKey(pKey)) {
+		if (space.getByValue(tuple) != null) {
 			if (insert) {
 				throw new TarantoolException(55, "Tuple already exists");
 			}
-			delete(spaceNum, tuple);
+			delete(spaceNum, space.toPK(tuple));
 		} else if (replace) {
 			throw new TarantoolException(49, "Tuple doesn't exist");
 		}
-		space.primaryKey.put(pKey, tuple);
-		if (!space.secondaryKeys.isEmpty()) {
-			for (SecondaryKey key : space.secondaryKeys.values()) {
-				BigInteger secondaryKey = toBigInteger(tuple, key.fields);
-				List<Tuple> collection = key.idx.get(secondaryKey);
-				if (collection == null) {
-					key.idx.put(secondaryKey, collection = new ArrayList<Tuple>());
-				}
-				collection.add(tuple);
+		for (Index key : space.indexes.values()) {
+			BigInteger secondaryKey = toKey(copy(tuple, key.fields));
+			List<Tuple> collection = key.idx.get(secondaryKey);
+			if (collection == null) {
+				key.idx.put(secondaryKey, collection = new ArrayList<Tuple>());
 			}
+
+			collection.add(tuple);
 		}
+
 		return tuple;
 
 	}
 
-	protected BigInteger toBigInteger(Tuple tuple, int... fields) {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		try {
-			os.write(1);
-			for (int f : fields) {
-				os.write(tuple.getBytes(f));
-			}
-			os.write(1);
-			os.close();
-		} catch (IOException ignored) {
-
-		}
-		BigInteger theKey = new BigInteger(os.toByteArray());
-		return theKey;
-	}
-
-	protected BigInteger toBigInteger(Tuple tuple) {
+	protected BigInteger toKey(Tuple tuple) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		try {
 			os.write(1);
@@ -118,40 +152,28 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 
 	protected List<Tuple> get(int spaceNum, int idx, Tuple t) {
 		Space space = spaces.get(spaceNum);
-		if (idx == 0) {
-			if (t.size() != 1) {
-				throw new TarantoolException(47, String.format("Key part count %d is greater than index part count %d", t.size(), 1));
-			}
-			Tuple tuple = space.primaryKey.get(toBigInteger(t, 0));
-			return tuple == null ? new ArrayList<Tuple>() : new ArrayList<Tuple>(Arrays.asList(tuple));
-		} else {
-			SecondaryKey secKey = space.secondaryKeys.get(idx);
-			if (secKey == null) {
-				throw new TarantoolException(53, String.format("No index #%u is defined in space %u", idx, spaceNum));
-			}
-			if (t.size() != secKey.fields.length) {
-				throw new TarantoolException(47, String.format("Key part count %d is greater than index part count %d", t.size(), 1));
-			}
-			List<Tuple> result = secKey.idx.get(toBigInteger(t));
-			return result == null ? new ArrayList<Tuple>() : result;
+
+		Index index = space.indexes.get(idx);
+		if (index == null) {
+			throw new TarantoolException(53, String.format("No index #%u is defined in space %u", idx, spaceNum));
 		}
+		if (t.size() != index.fields.length) {
+			throw new TarantoolException(47, String.format("Key part count %d is greater than index part count %d", t.size(), 1));
+		}
+		List<Tuple> result = index.idx.get(toKey(t));
+		return result == null ? new ArrayList<Tuple>() : result;
+
 	}
 
 	protected Tuple delete(int spaceNum, Tuple t) {
 		Space space = spaces.get(spaceNum);
-		BigInteger pk = toBigInteger(t, 0);
-		Tuple stored = space.primaryKey.get(pk);
-		if (stored != null && !space.secondaryKeys.isEmpty()) {
-			for (SecondaryKey key : space.secondaryKeys.values()) {
-				BigInteger theKey = toBigInteger(stored, key.fields);
-				Collection<Tuple> collection = key.idx.get(theKey);
-				if (collection != null) {
-					collection.remove(stored);
-				}
 
+		Tuple stored = space.get(t);
+		if (stored != null) {
+			for (Index key : space.indexes.values()) {
+				key.remove(stored);
 			}
 		}
-		space.primaryKey.remove(pk);
 		return stored;
 	}
 
@@ -175,6 +197,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 
 	@Override
 	public synchronized Response execute(Request request) {
+		// TODO no such space
 		OP op = request.getOp();
 		if (op == OP.PING) {
 			return new Response(OP.PING.type, 0, request.getId());
@@ -216,27 +239,28 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 		int flags = dmlRequest.flags();
 		byte[] body = dmlRequest.getBody();
 		ByteBuffer buffer = ByteBuffer.wrap(body).order(ByteOrder.LITTLE_ENDIAN);
-		Tuple pk = Tuple.create(buffer, ByteOrder.LITTLE_ENDIAN);
-		List<Tuple> values = get(spaceNum, 0, new Tuple(1, ByteOrder.LITTLE_ENDIAN).setBytes(0, pk.getBytes(0)));
-		Tuple stored = values == null || values.isEmpty() ? null : values.get(0);
-		if (stored == null && op != OP.INSERT) {
+		Tuple tuple = Tuple.create(buffer, ByteOrder.LITTLE_ENDIAN);
+		Tuple stored = null;
+		Space space = spaces.get(spaceNum);
+		if (op != OP.INSERT && (stored = space.get(tuple)) == null) {
 			Response response = new Response(op.type, 4, request.getId());
 			response.setBody(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(0).array());
 			return response;
 		}
+
 		if (op == OP.INSERT) {
-			stored = put(spaceNum, pk, (flags & Const.ADD_TUPLE) > 0, (flags & Const.REPLACE_TUPLE) > 0);
+			stored = put(spaceNum, tuple, (flags & Const.ADD_TUPLE) > 0, (flags & Const.REPLACE_TUPLE) > 0);
 		} else if (op == OP.DELETE) {
-			stored = delete(spaceNum, pk);
+			stored = delete(spaceNum, tuple);
 		} else if (op == OP.UPDATE) {
 			int ops = buffer.getInt();
 			for (int i = 0; i < ops; i++) {
-				update(spaceNum, buffer, pk);
+				update(spaceNum, buffer, tuple);
 			}
-			stored = get(spaceNum, 0, new Tuple(1, ByteOrder.LITTLE_ENDIAN).setBytes(0, pk.getBytes(0))).get(0);
+			stored = get(spaceNum, 0, new Tuple(1, ByteOrder.LITTLE_ENDIAN).setBytes(0, tuple.getBytes(0))).get(0);
 		}
 
-		if ((dmlRequest.getFlags() | Const.RETURN_TUPLE) > 0) {
+		if ((dmlRequest.getFlags() & Const.RETURN_TUPLE) > 0) {
 			byte[] responseBody = stored.pack();
 			Response response = new Response(op.type, responseBody.length + 8, request.getId());
 			response.setBody(ByteBuffer.allocate(responseBody.length + 8).order(ByteOrder.LITTLE_ENDIAN).putInt(1).putInt(responseBody.length)
@@ -244,7 +268,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			return response;
 		} else {
 			Response response = new Response(op.type, 4, request.getId());
-			response.setBody(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(1).array());
+			response.setCount(1);
 			return response;
 		}
 	}
@@ -261,8 +285,8 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			args = Tuple.createFromPackedFields(ByteBuffer.wrap(args.getBytes(0)), ByteOrder.LITTLE_ENDIAN, up.args);
 		}
 		Space space = spaces.get(spaceNum);
-		BigInteger pk = toBigInteger(tuple, 0);
-		Tuple stored = space.primaryKey.get(pk);
+		Index primary = space.indexes.get(0);
+		Tuple stored = primary.getOne(tuple);
 		if (stored != null) {
 			if (stored.size() < fieldNo || fieldNo < 0) {
 				throw new TarantoolException(54, String.format("Field %d was not found in the tuple", fieldNo));
@@ -336,6 +360,14 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 		else if (up == UP.OR)
 			value |= arg;
 		return value;
+	}
+
+	protected Tuple copy(Tuple tuple, int... fields) {
+		Tuple t = new Tuple(fields.length, ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; i < fields.length; i++) {
+			t.setBytes(i, tuple.getBytes(fields[i]));
+		}
+		return t;
 	}
 
 }

@@ -9,7 +9,7 @@ import org.tarantool.core.Operation;
 import org.tarantool.core.SingleQueryClientFactory;
 import org.tarantool.core.Tuple;
 
-public class TarantoolTemplate<T, P> {
+public class TarantoolTemplate<T> {
 	int space = 0;
 	Mapping<T> mapping;
 	SingleQueryClientFactory connectionFactory;
@@ -26,7 +26,7 @@ public class TarantoolTemplate<T, P> {
 	}
 
 	public ContidionFirst find() {
-		return new Search(0, new String[] { mapping.getPrimaryKeyName() });
+		return new Search(0, mapping.getPrimaryKeyName());
 	}
 
 	public ContidionFirst find(int index, String... fields) {
@@ -126,14 +126,14 @@ public class TarantoolTemplate<T, P> {
 		}
 	}
 
-	public Delete delete(P id) {
+	public Delete delete(Object... id) {
 		return new Delete(id);
 	}
 
 	public class Delete {
-		P id;
+		Object[] id;
 
-		private Delete(P id) {
+		private Delete(Object... id) {
 			super();
 			this.id = id;
 		}
@@ -173,12 +173,12 @@ public class TarantoolTemplate<T, P> {
 		public abstract Update splice(String name, String value, Integer offset, Integer delete, String insert);
 	}
 
-	public OperationFirst update(P id) {
+	public OperationFirst update(Object... id) {
 		return new Update(id);
 	}
 
 	public class Update extends OperationFirst {
-		P id;
+		Object[] id;
 
 		List<Operation> ops = new ArrayList<Operation>();
 
@@ -190,7 +190,7 @@ public class TarantoolTemplate<T, P> {
 			return connectionFactory.getSingleQueryConnection().update(space, id(id), ops);
 		}
 
-		private Update(P id) {
+		private Update(Object... id) {
 			super();
 			this.id = id;
 		}
@@ -298,7 +298,7 @@ public class TarantoolTemplate<T, P> {
 		this.connectionFactory = connectionFactory;
 	}
 
-	private Tuple id(P id) {
+	private Tuple id(Object... id) {
 		return mapping.support.create(id);
 	}
 

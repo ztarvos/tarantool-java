@@ -9,7 +9,7 @@ public class TestTemplate {
 	public void testTypeCheck() {
 		Mapping<User> mapping = new Mapping<User>(User.class, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign",
 				"male");
-		TarantoolTemplate<User, Integer> tpl = new TarantoolTemplate<User, Integer>(0, null, mapping);
+		TarantoolTemplate<User> tpl = new TarantoolTemplate<User>(0, null, mapping);
 		try {
 			tpl.find().condition("string");
 			fail();

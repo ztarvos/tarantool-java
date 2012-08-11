@@ -20,8 +20,8 @@ public class TestTemplate {
 	public void testCycle() throws ParseException, MalformedURLException {
 		User user = new User();
 		SocketChannelConnectionFactory connectionFactory = new SocketChannelConnectionFactory();
-		TarantoolTemplate<User, Integer> template = new TarantoolTemplate<User, Integer>(0, connectionFactory, new Mapping<User>(User.class, "id", "phone",
-				"point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male"));
+		TarantoolTemplate<User> template = new TarantoolTemplate<User>(0, connectionFactory, new Mapping<User>(User.class, "id", "phone", "point", "iq",
+				"height", "lifeFormId", "salary", "birthday", "name", "sign", "male"));
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
 		try {
 			template.save(user).insert();

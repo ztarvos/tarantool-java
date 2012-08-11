@@ -36,7 +36,14 @@ public class Mapping<T> {
 
 	public Mapping(Class<T> cls, String... fields) {
 		this(cls, new TupleSupport(), fields);
+		pk = new String[] { fields[0] };
+	}
 
+	String[] pk;
+
+	public Mapping<T> primaryKey(String... fields) {
+		pk = fields;
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -165,8 +172,8 @@ public class Mapping<T> {
 		return support;
 	}
 
-	public String getPrimaryKeyName() {
-		return accessors.get(0).name;
+	public String[] getPrimaryKeyName() {
+		return pk;
 	}
 
 	public int getFieldNo(String name) {
