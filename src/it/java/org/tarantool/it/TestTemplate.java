@@ -15,6 +15,7 @@ import org.tarantool.facade.TarantoolTemplate;
 import org.tarantool.facade.User;
 
 public class TestTemplate {
+	public static final int TEMPLATE_SPACE = 125;
 
 	@Test
 	public void testCycle() throws ParseException, MalformedURLException {

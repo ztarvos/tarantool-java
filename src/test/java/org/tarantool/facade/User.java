@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 
 public class User {
@@ -118,6 +119,78 @@ public class User {
 
 	public void setSite(URL site) {
 		this.site = site;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((birthday == null) ? 0 : birthday.hashCode());
+		result = prime * result + height;
+		result = prime * result + id;
+		result = prime * result + Float.floatToIntBits(iq);
+		result = prime * result + ((lifeFormId == null) ? 0 : lifeFormId.hashCode());
+		result = prime * result + (male ? 1231 : 1237);
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (int) (phone ^ (phone >>> 32));
+		long temp;
+		temp = Double.doubleToLongBits(point);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((salary == null) ? 0 : salary.hashCode());
+		result = prime * result + Arrays.hashCode(sign);
+		result = prime * result + ((site == null) ? 0 : site.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (birthday == null) {
+			if (other.birthday != null)
+				return false;
+		} else if (!birthday.equals(other.birthday))
+			return false;
+		if (height != other.height)
+			return false;
+		if (id != other.id)
+			return false;
+		if (Float.floatToIntBits(iq) != Float.floatToIntBits(other.iq))
+			return false;
+		if (lifeFormId == null) {
+			if (other.lifeFormId != null)
+				return false;
+		} else if (!lifeFormId.equals(other.lifeFormId))
+			return false;
+		if (male != other.male)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (phone != other.phone)
+			return false;
+		if (Double.doubleToLongBits(point) != Double.doubleToLongBits(other.point))
+			return false;
+		if (salary == null) {
+			if (other.salary != null)
+				return false;
+		} else if (!salary.equals(other.salary))
+			return false;
+		if (!Arrays.equals(sign, other.sign))
+			return false;
+		if (site == null) {
+			if (other.site != null)
+				return false;
+		} else if (!site.equals(other.site))
+			return false;
+		return true;
 	}
 
 }

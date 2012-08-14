@@ -75,7 +75,7 @@ public class TarantoolTemplate<T> {
 			for (int i = 0; i < keys.size(); i++) {
 				tuples[i] = mapping.getSupport().create(keys.get(i));
 			}
-			List<Tuple> response = connectionFactory.getSingleQueryConnection().find(index, index, offset, limit, tuples);
+			List<Tuple> response = connectionFactory.getSingleQueryConnection().find(space, index, offset, limit, tuples);
 			List<T> result = new ArrayList<T>();
 			for (Tuple tuple : response) {
 				result.add(mapping.fromTuple(tuple));
