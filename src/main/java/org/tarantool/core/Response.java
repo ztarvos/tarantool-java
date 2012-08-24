@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.tarantool.core.Const.OP;
 
+/**
+ * Tarantool server response
+ */
 public class Response {
 	protected OP op;
 	protected int size;

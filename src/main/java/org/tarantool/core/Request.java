@@ -5,6 +5,9 @@ import java.nio.ByteOrder;
 
 import org.tarantool.core.Const.OP;
 
+/**
+ * Request command base class
+ */
 public abstract class Request {
 
 	protected OP op;

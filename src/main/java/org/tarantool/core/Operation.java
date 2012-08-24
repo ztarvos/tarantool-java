@@ -5,6 +5,9 @@ import java.nio.ByteOrder;
 
 import org.tarantool.core.Const.UP;
 
+/**
+ * Update operation
+ */
 public class Operation {
 	UP op;
 	int fieldNo;
