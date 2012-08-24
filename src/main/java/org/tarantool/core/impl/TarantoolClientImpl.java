@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.tarantool.core.ConnectionReturnPoint;
+import org.tarantool.core.ClientReturnPoint;
 import org.tarantool.core.Const;
 import org.tarantool.core.Operation;
 import org.tarantool.core.Response;
@@ -21,7 +21,7 @@ import org.tarantool.core.cmd.Update;
 
 public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	Transport transport;
-	ConnectionReturnPoint returnPoint;
+	ClientReturnPoint returnPoint;
 	AtomicInteger id = new AtomicInteger();
 
 	public TarantoolClientImpl(Transport transport) {
@@ -29,7 +29,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	}
 
 	@Override
-	public void returnTo(ConnectionReturnPoint returnPoint) {
+	public void returnTo(ClientReturnPoint returnPoint) {
 		this.returnPoint = returnPoint;
 	}
 

@@ -2,6 +2,9 @@ package org.tarantool.core;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Leb128 encoder/decoder
+ */
 public class Leb128 {
 
 	public static int readUnsigned(ByteBuffer buffer) {

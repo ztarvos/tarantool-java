@@ -159,6 +159,10 @@ public class TarantoolTemplate<T> {
 	public abstract class OperationFirst {
 		public abstract Update add(String name, Long value);
 
+		public abstract Update max(String name, Long value);
+
+		public abstract Update sub(String name, Long value);
+
 		public abstract Update add(String name, Integer value);
 
 		public abstract Update and(String name, Integer value);
@@ -176,6 +180,8 @@ public class TarantoolTemplate<T> {
 		public abstract Update delete(String name);
 
 		public abstract Update insert(String name, Object value);
+
+		public abstract Update set(String name, Object value);
 
 		public abstract Update splice(String name, Integer offset, Integer delete, byte[] insert);
 
@@ -278,6 +284,24 @@ public class TarantoolTemplate<T> {
 				ops.add(new Operation(UP.SPLICE, mapping.getFieldNo(name), mapping.support.create(bOffset, bLength, insert.getBytes(mapping.support.encoding))));
 			} catch (UnsupportedEncodingException ignored) {
 			}
+			return this;
+		}
+
+		@Override
+		public Update max(String name, Long value) {
+			ops.add(new Operation(UP.MAX, mapping.getFieldNo(name), mapping.support.create(value)));
+			return this;
+		}
+
+		@Override
+		public Update sub(String name, Long value) {
+			ops.add(new Operation(UP.SUB, mapping.getFieldNo(name), mapping.support.create(value)));
+			return this;
+		}
+
+		@Override
+		public Update set(String name, Object value) {
+			ops.add(new Operation(UP.SET, mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
 

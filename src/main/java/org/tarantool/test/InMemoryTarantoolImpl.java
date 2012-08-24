@@ -291,7 +291,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			if (stored.size() < fieldNo || fieldNo < 0) {
 				throw new TarantoolException(54, String.format("Field %d was not found in the tuple", fieldNo));
 			}
-			if (up == UP.ADD || up == UP.AND || up == UP.XOR || up == UP.OR || up == UP.MAX || up == UP.SUBTRACT) {
+			if (up == UP.ADD || up == UP.AND || up == UP.XOR || up == UP.OR || up == UP.MAX || up == UP.SUB) {
 				int storedFieldLength = stored.getBytes(fieldNo).length;
 				if (storedFieldLength == 4) {
 					stored.setInt(fieldNo, (int) arithmeticUpdate(up, stored.getInt(fieldNo), args.getInt(0)));
@@ -361,7 +361,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			value ^= arg;
 		else if (up == UP.OR)
 			value |= arg;
-		else if (up == UP.SUBTRACT)
+		else if (up == UP.SUB)
 			value -= arg;
 		else if (up == UP.MAX)
 			value = Math.max(value, arg);

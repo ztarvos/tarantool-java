@@ -4,12 +4,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
-import org.tarantool.core.ConnectionReturnPoint;
+import org.tarantool.core.ClientReturnPoint;
 import org.tarantool.core.Returnable;
 import org.tarantool.core.SingleQueryClientFactory;
 import org.tarantool.core.TarantoolClient;
 
-public class SocketChannelConnectionFactory implements SingleQueryClientFactory, ConnectionReturnPoint {
+public class SocketChannelConnectionFactory implements SingleQueryClientFactory, ClientReturnPoint {
 	String host = "localhost";
 	int port = 33013;
 	int minPoolSize = 10;
