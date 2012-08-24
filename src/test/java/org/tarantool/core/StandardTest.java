@@ -33,6 +33,8 @@ public class StandardTest {
 
 	Tuple updateNameA;
 
+	Tuple returnNameA;
+
 	Tuple incrementAccessA;
 
 	Tuple empty = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 0);
@@ -78,6 +80,8 @@ public class StandardTest {
 		secKeyB = new Tuple(2, ByteOrder.LITTLE_ENDIAN).setString(0, "Microsoft", "UTF-8").setInt(1, 2);
 
 		updateNameA = new Tuple(3, ByteOrder.LITTLE_ENDIAN).setInt(0, 0).setInt(1, 4).setString(2, "Johny", "UTF-8");
+
+		returnNameA = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setString(0, "John Smith", "UTF-8");
 
 		incrementAccessA = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 1);
 
@@ -139,6 +143,8 @@ public class StandardTest {
 		assertEquals("[FIRED]", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.INSERT, 3, addMarkA))).getString(3, "UTF-8"));
 
 		assertEquals("Johny Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.DELETE, 3, empty))).getString(3, "UTF-8"));
+
+		assertEquals("John Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.SET, 3, returnNameA))).getString(3, "UTF-8"));
 
 	}
 }
