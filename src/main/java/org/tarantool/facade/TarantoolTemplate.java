@@ -26,7 +26,7 @@ public class TarantoolTemplate<T> {
 	}
 
 	public ContidionFirst find() {
-		return new Search(0, mapping.getPrimaryKeyName());
+		return new Search(0, mapping.indexFields(0));
 	}
 
 	public ContidionFirst find(int index, String... fields) {
@@ -41,6 +41,15 @@ public class TarantoolTemplate<T> {
 
 		public Search(int index, String[] fields) {
 			this.indexFields = fields;
+			this.index = index;
+			keys = new ArrayList<Object[]>();
+		}
+
+		public Search(int index) {
+			this.indexFields = mapping.indexFields(index);
+			if (this.indexFields == null) {
+				throw new IllegalArgumentException("No index defined with id " + index);
+			}
 			this.index = index;
 			keys = new ArrayList<Object[]>();
 		}

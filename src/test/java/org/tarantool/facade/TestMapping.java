@@ -2,6 +2,7 @@ package org.tarantool.facade;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -63,4 +64,36 @@ public class TestMapping {
 		assertArrayEquals(tuple.pack(), mapping.toTuple(userCopy).pack());
 		assertEquals(user.getSite(), userCopy.getSite());
 	}
+
+	public static class Tester {
+		int id;
+		String name;
+
+		@Field(value = 0, index = { @Index(fieldNo = 0, indexNo = 0) })
+		public int getId() {
+			return id;
+		}
+
+		public void setId(int id) {
+			this.id = id;
+		}
+
+		@Field(value = 1, index = { @Index(fieldNo = 0, indexNo = 1) })
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+	}
+
+	@Test
+	public void testAnnotationMapping() {
+		Mapping<Tester> mapping = new Mapping<Tester>(Tester.class);
+		assertTrue(mapping.getFieldType("name").equals(String.class));
+		mapping.checkFields(mapping.indexFields(0), new Object[] { 1, "name" });
+	}
+
 }

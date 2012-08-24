@@ -1,11 +1,19 @@
 package org.tarantool.facade;
 
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.tarantool.core.Tuple;
 
@@ -20,6 +28,7 @@ public class Mapping<T> {
 		String name;
 		Method read;
 		Method write;
+		Field field;
 		Class<?> type;
 		int idx;
 
@@ -30,19 +39,60 @@ public class Mapping<T> {
 			this.write = write;
 			this.type = type;
 			this.idx = idx;
+			field = read.getAnnotation(Field.class);
+			if (field == null) {
+				field = write.getAnnotation(Field.class);
+			}
 		}
 
 	}
 
-	public Mapping(Class<T> cls, String... fields) {
-		this(cls, new TupleSupport(), fields);
-		pk = new String[] { fields[0] };
+	public Mapping(Class<T> cls) {
+		this(cls, fields(cls));
+
 	}
 
-	String[] pk;
+	public static String[] fields(Class<?> cls) {
+		BeanInfo beanInfo;
+		try {
+			beanInfo = Introspector.getBeanInfo(cls);
+			PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+			Map<Integer, String> order = new HashMap<Integer, String>();
+			int max = 0;
+			for (PropertyDescriptor prop : descriptors) {
+				Field read = prop.getReadMethod().getAnnotation(Field.class);
+				Field write = prop.getReadMethod().getAnnotation(Field.class);
+				if (read != null || write != null) {
+					int fieldNo = read == null ? write.value() : read.value();
+					if (order.put(fieldNo, prop.getName()) != null) {
+						throw new IllegalArgumentException(fieldNo + " used more than once in " + cls);
+					}
+					if (fieldNo < 0) {
+						throw new IllegalArgumentException(fieldNo + " should be non negative in " + cls);
+					}
+					max = Math.max(max, fieldNo);
+				}
+			}
+			String[] fields = new String[max + 1];
+			for (int i = 0; i <= max; i++) {
+				if ((fields[i] = order.get(i)) == null) {
+					throw new IllegalArgumentException("fieldNo " + i + " not found in " + cls);
+				}
+			}
+			return fields;
+		} catch (IntrospectionException e) {
+			throw new IllegalArgumentException("Can't get properties", e);
+		}
+	}
 
-	public Mapping<T> primaryKey(String... fields) {
-		pk = fields;
+	public Mapping(Class<T> cls, String... fields) {
+		this(cls, new TupleSupport(), fields);
+	}
+
+	Map<Integer, String[]> indexes;
+
+	public Mapping<T> index(int no, String... fields) {
+		indexes.put(no, fields);
 		return this;
 	}
 
@@ -56,10 +106,36 @@ public class Mapping<T> {
 		this.cls = cls;
 		this.support = support;
 		this.accessors = new ArrayList<Accessor>(fields.length);
+		indexes = new ConcurrentHashMap<Integer, String[]>();
+		Map<Integer, SortedMap<Integer, String>> prepareIndex = new HashMap<Integer, SortedMap<Integer, String>>();
 		for (int i = 0; i < fields.length; i++) {
-			this.accessors.add(getAccessor(cls, fields[i], i));
+			Accessor accessor = getAccessor(cls, fields[i], i);
+			this.accessors.add(accessor);
+			if (accessor.field != null && accessor.field.index() != null && accessor.field.index().length > 0) {
+				for (Index index : accessor.field.index()) {
+					SortedMap<Integer, String> indexFields = prepareIndex.get(index.indexNo());
+					if (indexFields == null)
+						prepareIndex.put(index.indexNo(), indexFields = new TreeMap<Integer, String>());
+					indexFields.put(index.fieldNo(), fields[i]);
+				}
+			}
 		}
-
+		for (Map.Entry<Integer, SortedMap<Integer, String>> entry : prepareIndex.entrySet()) {
+			int max = Collections.max(entry.getValue().keySet());
+			int min = Collections.min(entry.getValue().keySet());
+			if (min == 0 && max - min == (entry.getValue().size() - 1)) {
+				String[] indexFields = new String[entry.getValue().size()];
+				for (int i = 0; i <= max; i++) {
+					indexFields[i] = entry.getValue().get(i);
+				}
+				index(entry.getKey(), indexFields);
+			} else {
+				throw new IllegalArgumentException("Index No " + entry.getKey() + " fields has incorrect order");
+			}
+		}
+		if (!indexes.containsKey(0)) {
+			index(0, fields[0]);
+		}
 		newInstance(cls);
 
 	}
@@ -172,8 +248,8 @@ public class Mapping<T> {
 		return support;
 	}
 
-	public String[] getPrimaryKeyName() {
-		return pk;
+	public String[] indexFields(int idx) {
+		return indexes.get(idx);
 	}
 
 	public int getFieldNo(String name) {

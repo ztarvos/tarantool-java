@@ -25,6 +25,7 @@ public class User {
 		site = new URL("http://localhost:8080/index.html");
 	}
 
+	@Field(0)
 	public int getId() {
 		return id;
 	}
@@ -33,6 +34,7 @@ public class User {
 		this.id = id;
 	}
 
+	@Field(1)
 	public long getPhone() {
 		return phone;
 	}
@@ -41,6 +43,7 @@ public class User {
 		this.phone = phone;
 	}
 
+	@Field(2)
 	public double getPoint() {
 		return point;
 	}
@@ -49,6 +52,7 @@ public class User {
 		this.point = point;
 	}
 
+	@Field(3)
 	public float getIq() {
 		return iq;
 	}
@@ -57,6 +61,7 @@ public class User {
 		this.iq = iq;
 	}
 
+	@Field(4)
 	public short getHeight() {
 		return height;
 	}
@@ -65,6 +70,7 @@ public class User {
 		this.height = height;
 	}
 
+	@Field(5)
 	public BigInteger getLifeFormId() {
 		return lifeFormId;
 	}
@@ -73,6 +79,7 @@ public class User {
 		this.lifeFormId = lifeFormId;
 	}
 
+	@Field(6)
 	public BigDecimal getSalary() {
 		return salary;
 	}
@@ -81,6 +88,7 @@ public class User {
 		this.salary = salary;
 	}
 
+	@Field(7)
 	public Date getBirthday() {
 		return birthday;
 	}
@@ -89,6 +97,7 @@ public class User {
 		this.birthday = birthday;
 	}
 
+	@Field(value = 8, index = { @Index(indexNo = 1, fieldNo = 0) })
 	public String getName() {
 		return name;
 	}
@@ -97,6 +106,7 @@ public class User {
 		this.name = name;
 	}
 
+	@Field(9)
 	public byte[] getSign() {
 		return sign;
 	}
@@ -105,6 +115,7 @@ public class User {
 		this.sign = sign;
 	}
 
+	@Field(10)
 	public boolean isMale() {
 		return male;
 	}
