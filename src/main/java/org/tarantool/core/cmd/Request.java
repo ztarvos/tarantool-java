@@ -1,20 +1,18 @@
-package org.tarantool.core;
+package org.tarantool.core.cmd;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import org.tarantool.core.Const.OP;
 
 /**
  * Request command base class
  */
 public abstract class Request {
 
-	protected OP op;
+	protected int op;
 	protected int id;
 	protected static final int REQUEST_HEADER_SIZE = 12;
 
-	public Request(OP op, int id) {
+	public Request(int op, int id) {
 		super();
 		this.op = op;
 		this.id = id;
@@ -30,18 +28,9 @@ public abstract class Request {
 
 	public ByteBuffer pack() {
 		int capacity = getCapacity();
-		ByteBuffer buffer = body(ByteBuffer.allocate(capacity + getRequestHeaderSize()).order(ByteOrder.LITTLE_ENDIAN).putInt(op.type).putInt(capacity)
-				.putInt(id));
+		ByteBuffer buffer = body(ByteBuffer.allocate(capacity + getRequestHeaderSize()).order(ByteOrder.LITTLE_ENDIAN).putInt(op).putInt(capacity).putInt(id));
 		buffer.flip();
 		return buffer;
-	}
-
-	public OP getOp() {
-		return op;
-	}
-
-	public void setOp(OP op) {
-		this.op = op;
 	}
 
 	public int getId() {
@@ -50,6 +39,10 @@ public abstract class Request {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getOp() {
+		return op;
 	}
 
 }

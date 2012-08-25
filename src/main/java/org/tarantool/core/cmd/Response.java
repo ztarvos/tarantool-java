@@ -1,17 +1,17 @@
-package org.tarantool.core;
+package org.tarantool.core.cmd;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tarantool.core.Const.OP;
+import org.tarantool.core.Tuple;
 
 /**
  * Tarantool server response
  */
 public class Response {
-	protected OP op;
+	protected int op;
 	protected int size;
 	protected int id;
 	protected int ret;
@@ -20,16 +20,16 @@ public class Response {
 
 	public Response(int op, int size, int id) {
 		super();
-		this.op = OP.valueOf(op);
+		this.op = op;
 		this.size = size;
 		this.id = id;
 	}
 
-	public OP getOp() {
+	public int getOp() {
 		return op;
 	}
 
-	public void setOp(OP op) {
+	public void setOp(int op) {
 		this.op = op;
 	}
 

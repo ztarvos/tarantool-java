@@ -5,9 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
 
-import org.tarantool.core.Request;
-import org.tarantool.core.Response;
-import org.tarantool.core.Transport;
+import org.tarantool.core.cmd.Request;
+import org.tarantool.core.cmd.Response;
+import org.tarantool.core.cmd.Transport;
 import org.tarantool.core.exception.CommunicationException;
 import org.tarantool.core.exception.TarantoolException;
 
@@ -16,7 +16,7 @@ public class ByteChannelTransport implements Transport {
 	static final int HEADER_SIZE = 12;
 
 	@Override
-	public Response execute(Request request) {
+	public synchronized Response execute(Request request) {
 		write(request);
 		return read();
 	}

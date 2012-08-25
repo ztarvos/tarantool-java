@@ -4,18 +4,18 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
-import org.tarantool.core.Const.OP;
 import org.tarantool.core.Operation;
 import org.tarantool.core.Tuple;
 
 public class Update extends DMLRequest<Update> {
+	public static final int OP_CODE = 19;
 
 	public Update(int id, byte[] body) {
-		super(OP.UPDATE, id, body);
+		super(OP_CODE, id, body);
 	}
 
 	public Update(int id, Tuple tuple, List<Operation> ops) {
-		super(OP.UPDATE, id, null);
+		super(OP_CODE, id, null);
 		body = packTupleAndOps(tuple, ops);
 	}
 

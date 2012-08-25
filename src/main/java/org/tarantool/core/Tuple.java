@@ -8,31 +8,45 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.tarantool.core.proto.Leb128;
+
+/**
+ * Implementing Tarantool tuple
+ */
 public class Tuple {
 
 	byte[][] src;
-	ByteOrder order;
 
 	public byte[][] getSrc() {
 		return src;
 	}
 
-	public Tuple(int size, ByteOrder order) {
+	/**
+	 * Creates new tuple with specified size
+	 * 
+	 * @param size
+	 *            the size of tuple
+	 */
+	public Tuple(int size) {
 		src = new byte[size][];
-		this.order = order;
 	}
 
-	public Tuple(byte[][] src, ByteOrder order) {
+	/**
+	 * Creates new tuple from binary elements data
+	 * 
+	 * @param src
+	 *            binary representation of tuple elements
+	 */
+	public Tuple(byte[][] src) {
 		this.src = src;
-		this.order = order;
 	}
 
 	private ByteBuffer v(int i) {
-		return ByteBuffer.wrap(src[i]).order(order);
+		return ByteBuffer.wrap(src[i]).order(ByteOrder.LITTLE_ENDIAN);
 	}
 
 	private ByteBuffer b(int size) {
-		return ByteBuffer.allocate(size).order(order);
+		return ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
 	}
 
 	public int size() {
@@ -189,14 +203,13 @@ public class Tuple {
 			buffer.get(field);
 			result[i] = field;
 		}
-		return new Tuple(result, order);
+		return new Tuple(result);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((order == null) ? 0 : order.hashCode());
 		result = prime * result + Arrays.hashCode(src);
 		return result;
 	}
@@ -210,11 +223,6 @@ public class Tuple {
 		if (getClass() != obj.getClass())
 			return false;
 		Tuple other = (Tuple) obj;
-		if (order == null) {
-			if (other.order != null)
-				return false;
-		} else if (!order.equals(other.order))
-			return false;
 		if (!Arrays.deepEquals(src, other.src))
 			return false;
 		return true;

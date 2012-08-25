@@ -2,11 +2,10 @@ package org.tarantool.core.cmd;
 
 import java.nio.ByteBuffer;
 
-import org.tarantool.core.Const.OP;
-import org.tarantool.core.Request;
 import org.tarantool.core.Tuple;
 
 public class Select extends Request {
+	public static final int OP_CODE = 17;
 	int space;
 	int index;
 	int offset;
@@ -14,12 +13,12 @@ public class Select extends Request {
 	byte[][] body;
 
 	public Select(int id, byte[]... body) {
-		super(OP.SELECT, id);
+		super(OP_CODE, id);
 		this.body = body;
 	}
 
 	public Select(int id, Tuple... tuples) {
-		super(OP.SELECT, id);
+		super(OP_CODE, id);
 		body = new byte[tuples.length][];
 		for (int i = 0, e = tuples.length; i < e; i++) {
 			body[i] = tuples[i].pack();

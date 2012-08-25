@@ -6,7 +6,10 @@ import java.nio.channels.SocketChannel;
 
 import org.tarantool.core.exception.CommunicationException;
 
-public class SocketChannelTarantoolClient extends TarantoolClientImpl {
+/**
+ * Connection to tarantool using {@link SocketChannel}
+ */
+public class SocketChannelTarantoolConnection extends TarantoolConnectionImpl {
 	static SocketChannel channel(String host, int port) {
 		try {
 			return SocketChannel.open(new InetSocketAddress(host, port));
@@ -15,11 +18,20 @@ public class SocketChannelTarantoolClient extends TarantoolClientImpl {
 		}
 	}
 
-	public SocketChannelTarantoolClient(String host, int port) {
+	/**
+	 * Creates connection using specified host and port
+	 * 
+	 * @param host
+	 * @param port
+	 */
+	public SocketChannelTarantoolConnection(String host, int port) {
 		super(new ByteChannelTransport(channel(host, port)));
 	}
 
-	public SocketChannelTarantoolClient() {
+	/**
+	 * Creates connection using default host and port
+	 */
+	public SocketChannelTarantoolConnection() {
 		this("localhost", 33013);
 	}
 

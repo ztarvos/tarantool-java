@@ -9,10 +9,10 @@ import java.text.ParseException;
 
 import org.junit.Test;
 import org.tarantool.core.exception.TarantoolException;
-import org.tarantool.core.impl.SocketChannelConnectionFactory;
 import org.tarantool.facade.Mapping;
 import org.tarantool.facade.TarantoolTemplate;
 import org.tarantool.facade.User;
+import org.tarantool.pool.SocketChannelPooledConnectionFactory;
 
 public class TestTemplate {
 	public static final int TEMPLATE_SPACE = 125;
@@ -20,7 +20,7 @@ public class TestTemplate {
 	@Test
 	public void testCycle() throws ParseException, MalformedURLException {
 		User user = new User();
-		SocketChannelConnectionFactory connectionFactory = new SocketChannelConnectionFactory("localhost", 33313, 1, 10);
+		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
 		TarantoolTemplate<User> template = new TarantoolTemplate<User>(TEMPLATE_SPACE, connectionFactory, new Mapping<User>(User.class, "id", "phone", "point",
 				"iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male"));
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
@@ -41,7 +41,7 @@ public class TestTemplate {
 	@Test
 	public void testCycle2() throws ParseException, MalformedURLException {
 		User user = new User();
-		SocketChannelConnectionFactory connectionFactory = new SocketChannelConnectionFactory("localhost", 33313, 1, 10);
+		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
 		TarantoolTemplate<User> template = new TarantoolTemplate<User>(TEMPLATE_SPACE, connectionFactory, new Mapping<User>(User.class));
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
 		try {

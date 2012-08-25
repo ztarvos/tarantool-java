@@ -12,21 +12,24 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.tarantool.core.Const;
-import org.tarantool.core.Const.OP;
-import org.tarantool.core.Const.UP;
-import org.tarantool.core.Request;
-import org.tarantool.core.Response;
-import org.tarantool.core.SingleQueryClientFactory;
-import org.tarantool.core.TarantoolClient;
-import org.tarantool.core.Transport;
+import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
 import org.tarantool.core.cmd.DMLRequest;
+import org.tarantool.core.cmd.Delete;
+import org.tarantool.core.cmd.Insert;
+import org.tarantool.core.cmd.Ping;
+import org.tarantool.core.cmd.Request;
+import org.tarantool.core.cmd.Response;
 import org.tarantool.core.cmd.Select;
+import org.tarantool.core.cmd.Transport;
+import org.tarantool.core.cmd.Update;
 import org.tarantool.core.exception.TarantoolException;
-import org.tarantool.core.impl.TarantoolClientImpl;
+import org.tarantool.core.impl.TarantoolConnectionImpl;
+import org.tarantool.core.proto.Flags;
+import org.tarantool.core.proto.Updates;
+import org.tarantool.pool.SingleQueryConnectionFactory;
 
-public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transport {
+public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Transport {
 
 	class Index {
 		int[] fields;
@@ -186,8 +189,8 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 	}
 
 	@Override
-	public TarantoolClient getSingleQueryConnection() {
-		return new TarantoolClientImpl(this);
+	public TarantoolConnection getSingleQueryConnection() {
+		return new TarantoolConnectionImpl(this);
 	}
 
 	@Override
@@ -198,13 +201,13 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 	@Override
 	public synchronized Response execute(Request request) {
 		// TODO no such space
-		OP op = request.getOp();
-		if (op == OP.PING) {
-			return new Response(OP.PING.type, 0, request.getId());
-		} else if (op == OP.UPDATE || op == OP.INSERT || op == OP.DELETE) {
+		int op = request.getOp();
+		if (op == Ping.OP_CODE) {
+			return new Response(Ping.OP_CODE, 0, request.getId());
+		} else if (op == Update.OP_CODE || op == Insert.OP_CODE || op == Delete.OP_CODE) {
 			return executeDML(request, op);
 
-		} else if (op == OP.SELECT) {
+		} else if (op == Select.OP_CODE) {
 			return executeSelect(request);
 		}
 		throw new TarantoolException(2, String.format("Illegal parameters, %s", "Unknown operation " + op));
@@ -224,7 +227,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			responseBody[i] = result.get(i).pack();
 			len += responseBody[i].length + 4;
 		}
-		Response response = new Response(OP.SELECT.type, len, request.getId());
+		Response response = new Response(Select.OP_CODE, len, request.getId());
 		ByteBuffer bodyBuffer = ByteBuffer.allocate(len).order(ByteOrder.LITTLE_ENDIAN).putInt(result.size());
 		for (byte[] tuple : responseBody) {
 			bodyBuffer.putInt(tuple.length).put(tuple);
@@ -233,7 +236,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 		return response;
 	}
 
-	private Response executeDML(Request request, OP op) {
+	private Response executeDML(Request request, int op) {
 		DMLRequest<?> dmlRequest = (DMLRequest<?>) request;
 		int spaceNum = dmlRequest.space();
 		int flags = dmlRequest.flags();
@@ -242,32 +245,32 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 		Tuple tuple = Tuple.create(buffer, ByteOrder.LITTLE_ENDIAN);
 		Tuple stored = null;
 		Space space = spaces.get(spaceNum);
-		if (op != OP.INSERT && (stored = space.get(tuple)) == null) {
-			Response response = new Response(op.type, 4, request.getId());
+		if (op != Insert.OP_CODE && (stored = space.get(tuple)) == null) {
+			Response response = new Response(op, 4, request.getId());
 			response.setBody(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(0).array());
 			return response;
 		}
 
-		if (op == OP.INSERT) {
-			stored = put(spaceNum, tuple, (flags & Const.ADD_TUPLE) > 0, (flags & Const.REPLACE_TUPLE) > 0);
-		} else if (op == OP.DELETE) {
+		if (op == Insert.OP_CODE) {
+			stored = put(spaceNum, tuple, (flags & Flags.ADD_TUPLE) > 0, (flags & Flags.REPLACE_TUPLE) > 0);
+		} else if (op == Delete.OP_CODE) {
 			stored = delete(spaceNum, tuple);
-		} else if (op == OP.UPDATE) {
+		} else if (op == Update.OP_CODE) {
 			int ops = buffer.getInt();
 			for (int i = 0; i < ops; i++) {
 				update(spaceNum, buffer, tuple);
 			}
-			stored = get(spaceNum, 0, new Tuple(1, ByteOrder.LITTLE_ENDIAN).setBytes(0, tuple.getBytes(0))).get(0);
+			stored = get(spaceNum, 0, new Tuple(1).setBytes(0, tuple.getBytes(0))).get(0);
 		}
 
-		if ((dmlRequest.getFlags() & Const.RETURN_TUPLE) > 0) {
+		if ((dmlRequest.getFlags() & Flags.RETURN_TUPLE) > 0) {
 			byte[] responseBody = stored.pack();
-			Response response = new Response(op.type, responseBody.length + 8, request.getId());
+			Response response = new Response(op, responseBody.length + 8, request.getId());
 			response.setBody(ByteBuffer.allocate(responseBody.length + 8).order(ByteOrder.LITTLE_ENDIAN).putInt(1).putInt(responseBody.length)
 					.put(responseBody).array());
 			return response;
 		} else {
-			Response response = new Response(op.type, 4, request.getId());
+			Response response = new Response(op, 4, request.getId());
 			response.setCount(1);
 			return response;
 		}
@@ -275,7 +278,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 
 	private void update(int spaceNum, ByteBuffer buffer, Tuple tuple) {
 		int fieldNo = buffer.getInt();
-		UP up = UP.valueOf((int) buffer.get());
+		Updates up = Updates.valueOf((int) buffer.get());
 
 		Tuple args = null;
 		if (up.args > 0) {
@@ -291,7 +294,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 			if (stored.size() < fieldNo || fieldNo < 0) {
 				throw new TarantoolException(54, String.format("Field %d was not found in the tuple", fieldNo));
 			}
-			if (up == UP.ADD || up == UP.AND || up == UP.XOR || up == UP.OR || up == UP.MAX || up == UP.SUB) {
+			if (up == Updates.ADD || up == Updates.AND || up == Updates.XOR || up == Updates.OR || up == Updates.MAX || up == Updates.SUB) {
 				int storedFieldLength = stored.getBytes(fieldNo).length;
 				if (storedFieldLength == 4) {
 					stored.setInt(fieldNo, (int) arithmeticUpdate(up, stored.getInt(fieldNo), args.getInt(0)));
@@ -301,16 +304,16 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 					throw new TarantoolException(40, String.format("Field type does not match one required by operation: expected a %s", "NUM or NUM 64"));
 				}
 
-			} else if (up == UP.DELETE) {
+			} else if (up == Updates.DELETE) {
 				stored = deleteField(fieldNo, stored);
 				if (stored.size() < 2) {
 					throw new TarantoolException(25, "UPDATE error: the new tuple has no fields");
 				}
-			} else if (up == UP.INSERT) {
+			} else if (up == Updates.INSERT) {
 				stored = insertField(fieldNo, args, stored);
-			} else if (up == UP.SPLICE) {
+			} else if (up == Updates.SPLICE) {
 				splice(fieldNo, args, stored);
-			} else if (up == UP.SET) {
+			} else if (up == Updates.SET) {
 				stored.setBytes(fieldNo, args.getBytes(0));
 			}
 			delete(spaceNum, tuple);
@@ -329,7 +332,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 	}
 
 	protected Tuple insertField(int fieldNo, Tuple args, Tuple stored) {
-		Tuple copy = new Tuple(stored.size() + 1, ByteOrder.LITTLE_ENDIAN);
+		Tuple copy = new Tuple(stored.size() + 1);
 		for (int i = 0, offset = 0; i < stored.size() + 1; i++) {
 			if (i != fieldNo) {
 				copy.setBytes(i, stored.getBytes(i - offset));
@@ -342,7 +345,7 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 	}
 
 	protected Tuple deleteField(int fieldNo, Tuple stored) {
-		Tuple copy = new Tuple(stored.size() - 1, ByteOrder.LITTLE_ENDIAN);
+		Tuple copy = new Tuple(stored.size() - 1);
 		for (int i = 0, offset = 0; i < copy.size(); i++) {
 			if (i == fieldNo) {
 				offset = 1;
@@ -352,24 +355,24 @@ public class InMemoryTarantoolImpl implements SingleQueryClientFactory, Transpor
 		return copy;
 	}
 
-	protected long arithmeticUpdate(UP up, long value, long arg) {
-		if (up == UP.ADD)
+	protected long arithmeticUpdate(Updates up, long value, long arg) {
+		if (up == Updates.ADD)
 			value += arg;
-		else if (up == UP.AND)
+		else if (up == Updates.AND)
 			value &= arg;
-		else if (up == UP.XOR)
+		else if (up == Updates.XOR)
 			value ^= arg;
-		else if (up == UP.OR)
+		else if (up == Updates.OR)
 			value |= arg;
-		else if (up == UP.SUB)
+		else if (up == Updates.SUB)
 			value -= arg;
-		else if (up == UP.MAX)
+		else if (up == Updates.MAX)
 			value = Math.max(value, arg);
 		return value;
 	}
 
 	protected Tuple copy(Tuple tuple, int... fields) {
-		Tuple t = new Tuple(fields.length, ByteOrder.LITTLE_ENDIAN);
+		Tuple t = new Tuple(fields.length);
 		for (int i = 0; i < fields.length; i++) {
 			t.setBytes(i, tuple.getBytes(fields[i]));
 		}

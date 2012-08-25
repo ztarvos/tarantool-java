@@ -6,10 +6,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
-import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import org.tarantool.core.Const.UP;
 import org.tarantool.core.exception.TarantoolException;
 
 public class StandardTest {
@@ -35,9 +33,8 @@ public class StandardTest {
 
 	Tuple returnNameA;
 
-	Tuple incrementAccessA;
 
-	Tuple empty = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 0);
+	Tuple empty = new Tuple(1).setInt(0, 0);
 
 	Tuple addMarkA;
 
@@ -46,9 +43,9 @@ public class StandardTest {
 
 	Tuple a2Id;
 
-	TarantoolClient connection;
+	TarantoolConnection connection;
 
-	public StandardTest(TarantoolClient connection) {
+	public StandardTest(TarantoolConnection connection) {
 		super();
 		this.connection = connection;
 		init();
@@ -60,38 +57,38 @@ public class StandardTest {
 	}
 
 	public void init() {
-		a = new Tuple(5, ByteOrder.LITTLE_ENDIAN).setInt(0, 1).setString(1, "Microsoft", "UTF-8").setInt(2, 1).setString(3, "John Smith", "UTF-8")
+		a = new Tuple(5).setInt(0, 1).setString(1, "Microsoft", "UTF-8").setInt(2, 1).setString(3, "John Smith", "UTF-8")
 				.setBigDecimal(4, new BigDecimal(987654.0));
-		b = new Tuple(5, ByteOrder.LITTLE_ENDIAN).setInt(0, 2).setString(1, "Microsoft", "UTF-8").setInt(2, 1).setString(3, "Dave Jones", "UTF-8")
+		b = new Tuple(5).setInt(0, 2).setString(1, "Microsoft", "UTF-8").setInt(2, 1).setString(3, "Dave Jones", "UTF-8")
 				.setBigDecimal(4, new BigDecimal(87654.21));
-		c = new Tuple(5, ByteOrder.LITTLE_ENDIAN).setInt(0, 3).setString(1, "Adobe", "UTF-8").setInt(2, 3).setString(3, "Ben James", "UTF-8")
+		c = new Tuple(5).setInt(0, 3).setString(1, "Adobe", "UTF-8").setInt(2, 3).setString(3, "Ben James", "UTF-8")
 				.setBigDecimal(4, new BigDecimal(97654.312));
-		d = new Tuple(5, ByteOrder.LITTLE_ENDIAN).setInt(0, 4).setString(1, "Microsoft", "UTF-8").setInt(2, 2).setString(3, "Bill Smith", "UTF-8")
+		d = new Tuple(5).setInt(0, 4).setString(1, "Microsoft", "UTF-8").setInt(2, 2).setString(3, "Bill Smith", "UTF-8")
 				.setBigDecimal(4, new BigDecimal(98764.213));
-		aId = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 1);
-		bId = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 2);
-		cId = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 3);
-		dId = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 4);
+		aId = new Tuple(1).setInt(0, 1);
+		bId = new Tuple(1).setInt(0, 2);
+		cId = new Tuple(1).setInt(0, 3);
+		dId = new Tuple(1).setInt(0, 4);
 
-		eId = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 5);
+		eId = new Tuple(1).setInt(0, 5);
 
-		secKeyA = new Tuple(2, ByteOrder.LITTLE_ENDIAN).setString(0, "Microsoft", "UTF-8").setInt(1, 1);
+		secKeyA = new Tuple(2).setString(0, "Microsoft", "UTF-8").setInt(1, 1);
 
-		secKeyB = new Tuple(2, ByteOrder.LITTLE_ENDIAN).setString(0, "Microsoft", "UTF-8").setInt(1, 2);
+		secKeyB = new Tuple(2).setString(0, "Microsoft", "UTF-8").setInt(1, 2);
 
-		updateNameA = new Tuple(3, ByteOrder.LITTLE_ENDIAN).setInt(0, 0).setInt(1, 4).setString(2, "Johny", "UTF-8");
+		updateNameA = new Tuple(3).setInt(0, 0).setInt(1, 4).setString(2, "Johny", "UTF-8");
 
-		returnNameA = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setString(0, "John Smith", "UTF-8");
+		returnNameA = new Tuple(1).setString(0, "John Smith", "UTF-8");
 
-		incrementAccessA = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setInt(0, 1);
 
-		addMarkA = new Tuple(1, ByteOrder.LITTLE_ENDIAN).setString(0, "[FIRED]", "UTF-8");
 
-		a2 = new Tuple(4, ByteOrder.LITTLE_ENDIAN).setInt(0, 1).setInt(1, 1).setInt(2, 22).setString(3, "John Smith", "UTF-8");
+		addMarkA = new Tuple(1).setString(0, "[FIRED]", "UTF-8");
 
-		b2 = new Tuple(4, ByteOrder.LITTLE_ENDIAN).setInt(0, 2).setInt(1, 1).setInt(2, 25).setString(3, "Dave Jones", "UTF-8");
+		a2 = new Tuple(4).setInt(0, 1).setInt(1, 1).setInt(2, 22).setString(3, "John Smith", "UTF-8");
 
-		a2Id = new Tuple(2, ByteOrder.LITTLE_ENDIAN).setInt(0, 1).setInt(1, 1);
+		b2 = new Tuple(4).setInt(0, 2).setInt(1, 1).setInt(2, 25).setString(3, "Dave Jones", "UTF-8");
+
+		a2Id = new Tuple(2).setInt(0, 1).setInt(1, 1);
 	}
 
 	public void testCompositePK() {
@@ -118,7 +115,7 @@ public class StandardTest {
 
 		}
 
-		connection.findOne(PRIM_AND_SEC_SPACE, 0, 0, 1, Arrays.asList(aId));
+		connection.findOne(PRIM_AND_SEC_SPACE, 0, 0, Arrays.asList(aId));
 		assertTrue(Arrays.equals(tmp.pack(), a.pack()));
 
 		tmp = connection.find(PRIM_AND_SEC_SPACE, 0, 0, 1, Arrays.asList(aId)).get(0);
@@ -127,7 +124,7 @@ public class StandardTest {
 
 		assertEquals(1, connection.find(PRIM_AND_SEC_SPACE, 0, 0, 1, Arrays.asList(aId)).size());
 
-		assertNull(connection.findOne(PRIM_AND_SEC_SPACE, 0, 0, 1, Arrays.asList(eId)));
+		assertNull(connection.findOne(PRIM_AND_SEC_SPACE, 0, 0, Arrays.asList(eId)));
 
 		assertEquals(2, connection.find(PRIM_AND_SEC_SPACE, 1, 0, 2, Arrays.asList(secKeyA)).size());
 
@@ -135,16 +132,15 @@ public class StandardTest {
 
 		assertTrue(Arrays.equals(connection.deleteAndGet(PRIM_AND_SEC_SPACE, dId).pack(), d.pack()));
 
-		assertEquals(2, connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.ADD, 2, incrementAccessA))).getInt(2));
+		assertEquals(2, connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.add(2, 1))).getInt(2));
 
-		assertEquals("Johny Smith",
-				connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.SPLICE, 3, updateNameA))).getString(3, "UTF-8"));
+		assertEquals("Johny Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.splice(3, updateNameA))).getString(3, "UTF-8"));
 
-		assertEquals("[FIRED]", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.INSERT, 3, addMarkA))).getString(3, "UTF-8"));
+		assertEquals("[FIRED]", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.insert(3, addMarkA))).getString(3, "UTF-8"));
 
-		assertEquals("Johny Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.DELETE, 3, empty))).getString(3, "UTF-8"));
+		assertEquals("Johny Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.delete(3))).getString(3, "UTF-8"));
 
-		assertEquals("John Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(new Operation(UP.SET, 3, returnNameA))).getString(3, "UTF-8"));
+		assertEquals("John Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.set(3, returnNameA))).getString(3, "UTF-8"));
 
 	}
 }

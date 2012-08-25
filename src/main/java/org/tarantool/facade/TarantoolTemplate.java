@@ -4,21 +4,20 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tarantool.core.Const.UP;
 import org.tarantool.core.Operation;
-import org.tarantool.core.SingleQueryClientFactory;
 import org.tarantool.core.Tuple;
+import org.tarantool.pool.SingleQueryConnectionFactory;
 
 public class TarantoolTemplate<T> {
 	int space = 0;
 	Mapping<T> mapping;
-	SingleQueryClientFactory connectionFactory;
+	SingleQueryConnectionFactory connectionFactory;
 
 	public TarantoolTemplate() {
 		super();
 	}
 
-	public TarantoolTemplate(int space, SingleQueryClientFactory connectionFactory, Mapping<T> mapping) {
+	public TarantoolTemplate(int space, SingleQueryConnectionFactory connectionFactory, Mapping<T> mapping) {
 		super();
 		this.space = space;
 		this.mapping = mapping;
@@ -157,25 +156,25 @@ public class TarantoolTemplate<T> {
 	}
 
 	public abstract class OperationFirst {
-		public abstract Update add(String name, Long value);
+		public abstract Update add(String name, long value);
 
-		public abstract Update max(String name, Long value);
+		public abstract Update max(String name, long value);
 
-		public abstract Update sub(String name, Long value);
+		public abstract Update sub(String name, long value);
 
-		public abstract Update add(String name, Integer value);
+		public abstract Update add(String name, int value);
 
-		public abstract Update and(String name, Integer value);
+		public abstract Update and(String name, int value);
 
-		public abstract Update and(String name, Long value);
+		public abstract Update and(String name, long value);
 
-		public abstract Update or(String name, Integer value);
+		public abstract Update or(String name, int value);
 
-		public abstract Update or(String name, Long value);
+		public abstract Update or(String name, long value);
 
-		public abstract Update xor(String name, Integer value);
+		public abstract Update xor(String name, int value);
 
-		public abstract Update xor(String name, Long value);
+		public abstract Update xor(String name, long value);
 
 		public abstract Update delete(String name);
 
@@ -183,9 +182,9 @@ public class TarantoolTemplate<T> {
 
 		public abstract Update set(String name, Object value);
 
-		public abstract Update splice(String name, Integer offset, Integer delete, byte[] insert);
+		public abstract Update splice(String name, int offset, int delete, byte[] insert);
 
-		public abstract Update splice(String name, String value, Integer offset, Integer delete, String insert);
+		public abstract Update splice(String name, String value, int offset, int delete, String insert);
 	}
 
 	public OperationFirst update(Object... id) {
@@ -211,97 +210,97 @@ public class TarantoolTemplate<T> {
 		}
 
 		@Override
-		public Update add(String name, Long value) {
-			ops.add(new Operation(UP.ADD, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update add(String name, long value) {
+			ops.add(Operation.add(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update add(String name, Integer value) {
-			ops.add(new Operation(UP.ADD, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update add(String name, int value) {
+			ops.add(Operation.add(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update and(String name, Integer value) {
-			ops.add(new Operation(UP.AND, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update and(String name, int value) {
+			ops.add(Operation.and(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update and(String name, Long value) {
-			ops.add(new Operation(UP.AND, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update and(String name, long value) {
+			ops.add(Operation.and(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update or(String name, Integer value) {
-			ops.add(new Operation(UP.OR, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update or(String name, int value) {
+			ops.add(Operation.or(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update or(String name, Long value) {
-			ops.add(new Operation(UP.OR, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update or(String name, long value) {
+			ops.add(Operation.or(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update xor(String name, Integer value) {
-			ops.add(new Operation(UP.XOR, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update xor(String name, int value) {
+			ops.add(Operation.xor(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update xor(String name, Long value) {
-			ops.add(new Operation(UP.XOR, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update xor(String name, long value) {
+			ops.add(Operation.xor(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
 		public Update delete(String name) {
-			ops.add(new Operation(UP.DELETE, mapping.getFieldNo(name), mapping.support.create(0)));
+			ops.add(Operation.delete(mapping.getFieldNo(name)));
 			return this;
 		}
 
 		public Update insert(String name, Object value) {
-			ops.add(new Operation(UP.INSERT, mapping.getFieldNo(name), mapping.support.create(0)));
+			ops.add(Operation.insert(mapping.getFieldNo(name), mapping.getSupport().create(0)));
 			return this;
 		}
 
 		@Override
-		public Update splice(String name, Integer offset, Integer delete, byte[] insert) {
-			ops.add(new Operation(UP.SPLICE, mapping.getFieldNo(name), mapping.support.create(offset, delete, insert)));
+		public Update splice(String name, int offset, int delete, byte[] insert) {
+			ops.add(Operation.splice(mapping.getFieldNo(name), mapping.support.create(offset, delete, insert)));
 			return this;
 		}
 
 		@Override
-		public Update splice(String name, String value, Integer offset, Integer delete, String insert) {
-			Integer bOffset;
+		public Update splice(String name, String value, int offset, int delete, String insert) {
+			int bOffset;
 			try {
 				bOffset = value.substring(0, offset).getBytes(mapping.support.encoding).length;
-				Integer bLength = value.substring(offset, offset + delete).getBytes(mapping.support.encoding).length;
-				ops.add(new Operation(UP.SPLICE, mapping.getFieldNo(name), mapping.support.create(bOffset, bLength, insert.getBytes(mapping.support.encoding))));
+				int bLength = value.substring(offset, offset + delete).getBytes(mapping.support.encoding).length;
+				ops.add(Operation.splice(mapping.getFieldNo(name), mapping.support.create(bOffset, bLength, insert.getBytes(mapping.support.encoding))));
 			} catch (UnsupportedEncodingException ignored) {
 			}
 			return this;
 		}
 
 		@Override
-		public Update max(String name, Long value) {
-			ops.add(new Operation(UP.MAX, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update max(String name, long value) {
+			ops.add(Operation.max(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update sub(String name, Long value) {
-			ops.add(new Operation(UP.SUB, mapping.getFieldNo(name), mapping.support.create(value)));
+		public Update sub(String name, long value) {
+			ops.add(Operation.sub(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
 		public Update set(String name, Object value) {
-			ops.add(new Operation(UP.SET, mapping.getFieldNo(name), mapping.support.create(value)));
+			ops.add(Operation.set(mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
 
@@ -323,11 +322,11 @@ public class TarantoolTemplate<T> {
 		this.mapping = mapping;
 	}
 
-	public SingleQueryClientFactory getConnectionFactory() {
+	public SingleQueryConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 
-	public void setConnectionFactory(SingleQueryClientFactory connectionFactory) {
+	public void setConnectionFactory(SingleQueryConnectionFactory connectionFactory) {
 		this.connectionFactory = connectionFactory;
 	}
 

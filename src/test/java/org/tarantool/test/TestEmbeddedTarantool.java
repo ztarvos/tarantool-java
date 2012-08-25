@@ -2,15 +2,15 @@ package org.tarantool.test;
 
 import org.junit.Test;
 import org.tarantool.core.StandardTest;
-import org.tarantool.core.TarantoolClient;
-import org.tarantool.core.impl.TarantoolClientImpl;
+import org.tarantool.core.TarantoolConnection;
+import org.tarantool.core.impl.TarantoolConnectionImpl;
 
 public class TestEmbeddedTarantool {
 
 	@Test
 	public void standardTest() {
 		InMemoryTarantoolImpl test = new InMemoryTarantoolImpl();
-		TarantoolClient connection = new TarantoolClientImpl(test);
+		TarantoolConnection connection = new TarantoolConnectionImpl(test);
 		StandardTest st = new StandardTest(connection);
 		test.initSpace(StandardTest.PRIM_AND_SEC_SPACE, 0);
 		test.initSecondaryKey(StandardTest.PRIM_AND_SEC_SPACE, 1, false, 1, 2);

@@ -11,14 +11,14 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.tarantool.core.exception.TarantoolException;
-import org.tarantool.core.impl.SocketChannelConnectionFactory;
+import org.tarantool.pool.SocketChannelPooledConnectionFactory;
 
 public class TestTemplate {
 	@Test
 	public void testCycle() throws MalformedURLException {
 		Mapping<User> mapping = new Mapping<User>(User.class, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign",
 				"male");
-		TarantoolTemplate<User> tpl = new TarantoolTemplate<User>(125, new SocketChannelConnectionFactory("localhost", 33313, 1, 10), mapping);
+		TarantoolTemplate<User> tpl = new TarantoolTemplate<User>(125, new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10), mapping);
 		try {
 			tpl.find().condition("string");
 			fail();

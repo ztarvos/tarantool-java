@@ -1,5 +1,8 @@
 package org.tarantool.core.exception;
 
+/**
+ * A remote server error with error code and message.
+ */
 public class TarantoolException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

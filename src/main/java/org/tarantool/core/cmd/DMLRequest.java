@@ -2,11 +2,8 @@ package org.tarantool.core.cmd;
 
 import java.nio.ByteBuffer;
 
-import org.tarantool.core.Const.OP;
-import org.tarantool.core.Request;
-
 public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
-	public DMLRequest(OP op, int id, byte[] body) {
+	public DMLRequest(int op, int id, byte[] body) {
 		super(op, id);
 		this.body = body;
 	}

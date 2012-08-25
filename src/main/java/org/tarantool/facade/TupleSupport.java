@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -52,7 +51,7 @@ public class TupleSupport {
 
 	public Tuple create(Object... args) {
 
-		Tuple tuple = new Tuple(args.length, ByteOrder.LITTLE_ENDIAN);
+		Tuple tuple = new Tuple(args.length);
 		for (int i = 0; i < args.length; i++) {
 			Object object = args[i];
 			if (object == null) {

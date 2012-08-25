@@ -1,4 +1,4 @@
-package org.tarantool.core;
+package org.tarantool.core.cmd;
 
 import java.io.Closeable;
 

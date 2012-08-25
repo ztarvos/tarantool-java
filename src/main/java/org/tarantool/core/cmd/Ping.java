@@ -2,13 +2,11 @@ package org.tarantool.core.cmd;
 
 import java.nio.ByteBuffer;
 
-import org.tarantool.core.Const.OP;
-import org.tarantool.core.Request;
-
 public class Ping extends Request {
+	public static final int OP_CODE = 65280;
 
 	public Ping(int id) {
-		super(OP.PING, id);
+		super(OP_CODE, id);
 	}
 
 	@Override

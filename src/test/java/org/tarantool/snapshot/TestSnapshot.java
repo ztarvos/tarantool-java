@@ -12,17 +12,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.tarantool.core.TarantoolClient;
+import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
-import org.tarantool.core.impl.SocketChannelConnectionFactory;
 import org.tarantool.facade.TupleSupport;
+import org.tarantool.pool.SocketChannelPooledConnectionFactory;
 import org.tarantool.snapshot.SnapShotReader.Row;
 
 public class TestSnapshot {
 	// @Test
 	public void insertTestTuples() {
-		SocketChannelConnectionFactory factory = new SocketChannelConnectionFactory();
-		TarantoolClient connection = factory.getConnection();
+		SocketChannelPooledConnectionFactory factory = new SocketChannelPooledConnectionFactory();
+		TarantoolConnection connection = factory.getConnection();
 		TupleSupport ts = new TupleSupport();
 		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");

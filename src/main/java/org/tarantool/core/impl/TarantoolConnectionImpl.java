@@ -5,31 +5,31 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.tarantool.core.ClientReturnPoint;
-import org.tarantool.core.Const;
 import org.tarantool.core.Operation;
-import org.tarantool.core.Response;
-import org.tarantool.core.Returnable;
-import org.tarantool.core.TarantoolClient;
-import org.tarantool.core.Transport;
+import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
 import org.tarantool.core.cmd.Delete;
 import org.tarantool.core.cmd.Insert;
 import org.tarantool.core.cmd.Ping;
+import org.tarantool.core.cmd.Response;
 import org.tarantool.core.cmd.Select;
+import org.tarantool.core.cmd.Transport;
 import org.tarantool.core.cmd.Update;
+import org.tarantool.core.proto.Flags;
+import org.tarantool.pool.ConnectionReturnPoint;
+import org.tarantool.pool.Returnable;
 
-public class TarantoolClientImpl implements TarantoolClient, Returnable {
+public class TarantoolConnectionImpl implements TarantoolConnection, Returnable {
 	Transport transport;
-	ClientReturnPoint returnPoint;
+	ConnectionReturnPoint returnPoint;
 	AtomicInteger id = new AtomicInteger();
 
-	public TarantoolClientImpl(Transport transport) {
+	public TarantoolConnectionImpl(Transport transport) {
 		this.transport = transport;
 	}
 
 	@Override
-	public void returnTo(ClientReturnPoint returnPoint) {
+	public void returnTo(ConnectionReturnPoint returnPoint) {
 		this.returnPoint = returnPoint;
 	}
 
@@ -53,7 +53,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Tuple deleteAndGet(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Delete(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.RETURN_TUPLE));
+			Response response = transport.execute(new Delete(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.RETURN_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -63,7 +63,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Tuple updateAndGet(int space, Tuple tuple, List<Operation> ops) {
 		try {
-			Response response = transport.execute(new Update(id.incrementAndGet(), tuple, ops).space(space).flags(Const.RETURN_TUPLE));
+			Response response = transport.execute(new Update(id.incrementAndGet(), tuple, ops).space(space).flags(Flags.RETURN_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -85,7 +85,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Tuple insertAndGet(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.RETURN_TUPLE | Const.ADD_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.RETURN_TUPLE | Flags.ADD_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -96,7 +96,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Integer insert(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.ADD_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.ADD_TUPLE));
 			return response.getCount();
 		} finally {
 			returnConnection();
@@ -107,7 +107,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Integer replace(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.REPLACE_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.REPLACE_TUPLE));
 			return response.getCount();
 		} finally {
 			returnConnection();
@@ -118,7 +118,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Tuple replaceAndGet(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.REPLACE_TUPLE | Const.RETURN_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.REPLACE_TUPLE | Flags.RETURN_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -129,7 +129,7 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	@Override
 	public Tuple insertOrReplaceAndGet(int space, Tuple tuple) {
 		try {
-			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Const.RETURN_TUPLE));
+			Response response = transport.execute(new Insert(id.incrementAndGet(), tuple.pack()).space(space).flags(Flags.RETURN_TUPLE));
 			return response.readSingleTuple();
 		} finally {
 			returnConnection();
@@ -164,9 +164,9 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	}
 
 	@Override
-	public Tuple findOne(int space, int index, int offset, int limit, Tuple... keys) {
+	public Tuple findOne(int space, int index, int offset, Tuple... keys) {
 		try {
-			Response response = transport.execute(new Select(id.incrementAndGet(), keys).space(space).index(index).offset(offset).limit(limit));
+			Response response = transport.execute(new Select(id.incrementAndGet(), keys).space(space).index(index).offset(offset).limit(1));
 			List<Tuple> tuples = response.readTuples();
 			return tuples == null || tuples.isEmpty() ? null : tuples.get(0);
 		} finally {
@@ -176,8 +176,8 @@ public class TarantoolClientImpl implements TarantoolClient, Returnable {
 	}
 
 	@Override
-	public Tuple findOne(int space, int index, int offset, int limit, Collection<Tuple> keys) {
-		return findOne(space, index, offset, limit, keys.toArray(new Tuple[keys.size()]));
+	public Tuple findOne(int space, int index, int offset, Collection<Tuple> keys) {
+		return findOne(space, index, offset, keys.toArray(new Tuple[keys.size()]));
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package org.tarantool.core;
+package org.tarantool.core.proto;
 
 import java.nio.ByteBuffer;
 

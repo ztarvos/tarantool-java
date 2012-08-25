@@ -57,7 +57,7 @@ public class TestTuple {
 	}
 
 	private Tuple createTuple() {
-		Tuple tuple = new Tuple(11, ByteOrder.LITTLE_ENDIAN);
+		Tuple tuple = new Tuple(11);
 		tuple.setInt(0, intValue);
 		tuple.setLong(1, longValue);
 		tuple.setDouble(2, doubleValue);

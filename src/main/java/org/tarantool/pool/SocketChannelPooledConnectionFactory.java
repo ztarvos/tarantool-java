@@ -1,44 +1,45 @@
-package org.tarantool.core.impl;
+package org.tarantool.pool;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
-import org.tarantool.core.ClientReturnPoint;
-import org.tarantool.core.Returnable;
-import org.tarantool.core.SingleQueryClientFactory;
-import org.tarantool.core.TarantoolClient;
+import org.tarantool.core.TarantoolConnection;
+import org.tarantool.core.impl.SocketChannelTarantoolConnection;
 
-public class SocketChannelConnectionFactory implements SingleQueryClientFactory, ClientReturnPoint {
+/**
+ * Simple pooled connection factory to tarantool server
+ */
+public class SocketChannelPooledConnectionFactory implements SingleQueryConnectionFactory, ConnectionReturnPoint {
 	String host = "localhost";
 	int port = 33013;
 	int minPoolSize = 10;
 	int maxPoolSize = 100;
-	BlockingQueue<TarantoolClient> pool;
+	BlockingQueue<TarantoolConnection> pool;
 	Semaphore connections;
 
-	public SocketChannelConnectionFactory(String host, int port, int minPoolSize, int maxPoolSize) {
+	public SocketChannelPooledConnectionFactory(String host, int port, int minPoolSize, int maxPoolSize) {
 		super();
 		this.host = host;
 		this.port = port;
 		this.minPoolSize = minPoolSize;
 		this.maxPoolSize = maxPoolSize;
-		pool = new ArrayBlockingQueue<TarantoolClient>(minPoolSize);
+		pool = new ArrayBlockingQueue<TarantoolConnection>(minPoolSize);
 		connections = new Semaphore(maxPoolSize);
 	}
 
-	public SocketChannelConnectionFactory(int minPoolSize, int maxPoolSize) {
+	public SocketChannelPooledConnectionFactory(int minPoolSize, int maxPoolSize) {
 		this("localhost", 33013, minPoolSize, maxPoolSize);
 
 	}
 
-	public SocketChannelConnectionFactory() {
+	public SocketChannelPooledConnectionFactory() {
 		this("localhost", 33013, 10, 100);
 
 	}
 
 	public void afterPropertiesSet() {
-		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<TarantoolClient>(minPoolSize);
+		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<TarantoolConnection>(minPoolSize);
 		connections = new Semaphore(maxPoolSize);
 	}
 
@@ -50,18 +51,25 @@ public class SocketChannelConnectionFactory implements SingleQueryClientFactory,
 		this.maxPoolSize = maxPoolSize;
 	}
 
-	public TarantoolClient newUnpooledConnection() {
-		return new SocketChannelTarantoolClient(host, port);
+	/**
+	 * @return unpooled connection that should be closed by close method call
+	 */
+	public TarantoolConnection newUnpooledConnection() {
+		return new SocketChannelTarantoolConnection(host, port);
 
 	}
 
-	public TarantoolClient getConnection() {
+	/**
+	 * @return pooled connection that should be returned using returnConnection
+	 *         method
+	 */
+	public TarantoolConnection getConnection() {
 		try {
 			connections.acquire();
 		} catch (InterruptedException e) {
 			throw new IllegalStateException(e);
 		}
-		TarantoolClient connection = pool == null ? null : pool.poll();
+		TarantoolConnection connection = pool == null ? null : pool.poll();
 		if (connection == null) {
 			connection = newUnpooledConnection();
 		} else {
@@ -75,9 +83,13 @@ public class SocketChannelConnectionFactory implements SingleQueryClientFactory,
 		return connection;
 	}
 
+	/**
+	 * @return pooled connection that will be returned to pool after first call,
+	 *         should be used only once
+	 */
 	@Override
-	public TarantoolClient getSingleQueryConnection() {
-		TarantoolClient connection = getConnection();
+	public TarantoolConnection getSingleQueryConnection() {
+		TarantoolConnection connection = getConnection();
 		if (connection instanceof Returnable) {
 			((Returnable) connection).returnTo(this);
 			return connection;
@@ -87,8 +99,11 @@ public class SocketChannelConnectionFactory implements SingleQueryClientFactory,
 		}
 	}
 
+	/**
+	 * Closes all opened connections
+	 */
 	public void free() {
-		TarantoolClient con = null;
+		TarantoolConnection con = null;
 		while ((con = pool.poll()) != null) {
 			con.close();
 		}
@@ -103,7 +118,7 @@ public class SocketChannelConnectionFactory implements SingleQueryClientFactory,
 	}
 
 	@Override
-	public void returnConnection(TarantoolClient connection) {
+	public void returnConnection(TarantoolConnection connection) {
 		try {
 			if (!pool.offer(connection)) {
 				connection.close();
