@@ -16,14 +16,35 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.tarantool.core.Tuple;
+import org.tarantool.facade.annotation.Field;
+import org.tarantool.facade.annotation.Index;
 
+/**
+ * Maps class to tarantool tuple in specified space
+ * 
+ * @author dgreen
+ * @version $Id: $
+ */
 public class Mapping<T> {
-	final List<Accessor> accessors;
 
-	Class<T> cls;
+	protected final List<Accessor> accessors;
 
-	TupleSupport support;
+	protected Class<T> cls;
 
+	/**
+	 * serialization and deserialization helper
+	 */
+	protected TupleSupport support;
+
+	/**
+	 * Tarantool space
+	 */
+	protected int space;
+
+	/**
+	 * Stores data about field
+	 * 
+	 */
 	protected class Accessor {
 		String name;
 		Method read;
@@ -32,7 +53,7 @@ public class Mapping<T> {
 		Class<?> type;
 		int idx;
 
-		private Accessor(String name, Method read, Method write, Class<?> type, int idx) {
+		protected Accessor(String name, Method read, Method write, Class<?> type, int idx) {
 			super();
 			this.name = name;
 			this.read = read;
@@ -47,11 +68,55 @@ public class Mapping<T> {
 
 	}
 
+	/**
+	 * <p>
+	 * Creates new Mapping
+	 * </p>
+	 * 
+	 * @param cls
+	 *            a {@link java.lang.Class} object.
+	 */
 	public Mapping(Class<T> cls) {
-		this(cls, fields(cls));
+		this(cls, space(cls), fields(cls));
 
 	}
 
+	/**
+	 * Creates new Mapping
+	 * 
+	 * @param cls
+	 * @param support
+	 *            instance of {@link TupleSupport}
+	 */
+	public Mapping(Class<T> cls, TupleSupport support) {
+		this(cls, space(cls), support, fields(cls));
+
+	}
+
+	/**
+	 * Returns tarantool space num for this class
+	 * 
+	 * @param cls
+	 * @return space from {@link org.tarantool.facade.annotation.Tuple}
+	 *         annotation
+	 */
+	public static <T> int space(Class<T> cls) {
+		org.tarantool.facade.annotation.Tuple annotation = cls.getAnnotation(org.tarantool.facade.annotation.Tuple.class);
+		if (annotation == null) {
+			throw new IllegalArgumentException("Class should be annotated with @Tuple annotation");
+		}
+		return annotation.space();
+	}
+
+	/**
+	 * <p>
+	 * Gets fields from annotations
+	 * </p>
+	 * 
+	 * @param cls
+	 *            a {@link java.lang.Class} object.
+	 * @return an array of {@link java.lang.String} objects.
+	 */
 	public static String[] fields(Class<?> cls) {
 		BeanInfo beanInfo;
 		try {
@@ -85,31 +150,59 @@ public class Mapping<T> {
 		}
 	}
 
-	public Mapping(Class<T> cls, String... fields) {
-		this(cls, new TupleSupport(), fields);
+	/**
+	 * <p>
+	 * Creates new Mapping.
+	 * </p>
+	 * 
+	 * @param cls
+	 *            a {@link java.lang.Class} object.
+	 * @param fields
+	 *            a {@link java.lang.String} object.
+	 */
+	public Mapping(Class<T> cls, int space, String... fields) {
+		this(cls, space, new TupleSupport(), fields);
 	}
 
-	Map<Integer, String[]> indexes;
+	/**
+	 * Stores field names which make up the index
+	 */
+	protected Map<Integer, String[]> indexes;
 
-	public Mapping<T> index(int no, String... fields) {
-		indexes.put(no, fields);
+	/**
+	 * Sets fields for index
+	 * 
+	 * @return a {@link org.tarantool.facade.Mapping} object.
+	 */
+	public Mapping<T> index(int indexNo, String... fields) {
+		indexes.put(indexNo, fields);
 		return this;
 	}
 
+	/**
+	 * <p>
+	 * Creates Mapping.
+	 * </p>
+	 * 
+	 */
 	@SuppressWarnings("unchecked")
-	public Mapping(String className, String... fields) throws ClassNotFoundException {
-		this((Class<T>) Class.forName(className), new TupleSupport(), fields);
+	public Mapping(String className, int space, String... fields) throws ClassNotFoundException {
+		this((Class<T>) Class.forName(className), space, new TupleSupport(), fields);
 
 	}
 
-	public Mapping(Class<T> cls, TupleSupport support, String... fields) {
+	/**
+	 * Creates Mapping.
+	 */
+	public Mapping(Class<T> cls, int space, TupleSupport support, String... fields) {
+		this.space = space;
 		this.cls = cls;
 		this.support = support;
 		this.accessors = new ArrayList<Accessor>(fields.length);
 		indexes = new ConcurrentHashMap<Integer, String[]>();
 		Map<Integer, SortedMap<Integer, String>> prepareIndex = new HashMap<Integer, SortedMap<Integer, String>>();
 		for (int i = 0; i < fields.length; i++) {
-			Accessor accessor = getAccessor(cls, fields[i], i);
+			Accessor accessor = createAccessor(cls, fields[i], i);
 			this.accessors.add(accessor);
 			if (accessor.field != null && accessor.field.index() != null && accessor.field.index().length > 0) {
 				for (Index index : accessor.field.index()) {
@@ -140,6 +233,14 @@ public class Mapping<T> {
 
 	}
 
+	/**
+	 * Creates new Instance of given class. Should be overriden if custom
+	 * construction logick required
+	 * 
+	 * @param cls
+	 *            a {@link java.lang.Class} object.
+	 * @return a T object.
+	 */
 	protected T newInstance(Class<T> cls) {
 		try {
 			return cls.newInstance();
@@ -148,7 +249,15 @@ public class Mapping<T> {
 		}
 	}
 
-	protected Accessor getAccessor(Class<T> cls, String field, int idx) {
+	/**
+	 * Creates {@link Accessor} for specified field
+	 * 
+	 * @param cls
+	 * @param field
+	 * @param idx
+	 * @return
+	 */
+	protected Accessor createAccessor(Class<T> cls, String field, int idx) {
 		PropertyDescriptor pd;
 		try {
 			pd = new PropertyDescriptor(field, cls);
@@ -160,6 +269,13 @@ public class Mapping<T> {
 		return accessor;
 	}
 
+	/**
+	 * Converts mapped object to {@link Tuple}. Can be overriden if custom
+	 * logick is required
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public Tuple toTuple(T object) {
 		if (object == null) {
 			throw new NullPointerException();
@@ -169,16 +285,26 @@ public class Mapping<T> {
 			try {
 				objs[i] = getValue(object, i);
 			} catch (Exception e) {
-				throw new IllegalStateException("Can't read property " + accessors.get(i) + " of " + object.getClass(), e);
+				throw new IllegalStateException("Can't read property " + accessors.get(i).name + " of " + object.getClass(), e);
 			}
 		}
 		return support.create(objs);
 	}
 
+	/**
+	 * Reads value from object mapped on element i. Reflection performance
+	 * penalty can be avoided here
+	 */
 	protected Object getValue(T object, int i) throws IllegalAccessException, InvocationTargetException {
 		return accessors.get(i).read.invoke(object);
 	}
 
+	/**
+	 * Creates mapped object from {@link Tuple}
+	 * 
+	 * @param tuple
+	 * @return
+	 */
 	public T fromTuple(Tuple tuple) {
 		if (tuple == null) {
 			return null;
@@ -205,16 +331,27 @@ public class Mapping<T> {
 
 	}
 
+	/**
+	 * Sets value to field mapped on element i. Reflection performance penalty
+	 * can be avoided here
+	 */
 	protected void setValue(T newInstance, Object object, int i) throws IllegalAccessException, InvocationTargetException {
 		accessors.get(i).write.invoke(newInstance, object);
 	}
 
+	/**
+	 * Checks that current instance of {@link TupleSupport} can works with given
+	 * class
+	 */
 	protected void checkSupport(String name, Class<?> cls, TupleSupport support) {
 		if (!support.isClassSupported(cls)) {
 			throw new IllegalArgumentException(cls + " is not supported by property " + name + " of this type, you should override ser method in TupleSupport");
 		}
 	}
 
+	/**
+	 * Checks that specified values has same type with given fields
+	 */
 	public void checkFields(String[] indexFields, Object[] values) {
 		for (int i = 0; i < indexFields.length; i++) {
 			Object value = values[i];
@@ -248,18 +385,48 @@ public class Mapping<T> {
 		return support;
 	}
 
+	/**
+	 * Gets array of index fields
+	 * 
+	 * @param idx
+	 * @return
+	 */
 	public String[] indexFields(int idx) {
 		return indexes.get(idx);
 	}
 
+	/**
+	 * Gets field number by name
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public int getFieldNo(String name) {
 		Accessor accessor = getAccessorByName(name);
 		return accessor == null ? -1 : accessor.idx;
 	}
 
+	/**
+	 * Gets field type by field name
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public Class<?> getFieldType(String name) {
 		Accessor accessor = getAccessorByName(name);
 		return accessor == null ? null : accessor.type;
+	}
+
+	public int getSpace() {
+		return space;
+	}
+
+	public void setSpace(int space) {
+		this.space = space;
+	}
+
+	public Class<T> getMappedClass() {
+		return cls;
 	}
 
 }

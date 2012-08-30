@@ -3,48 +3,147 @@ package org.tarantool.facade;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.tarantool.core.Operation;
 import org.tarantool.core.Tuple;
 import org.tarantool.pool.SingleQueryConnectionFactory;
 
-public class TarantoolTemplate<T> {
-	int space = 0;
-	Mapping<T> mapping;
-	SingleQueryConnectionFactory connectionFactory;
+/**
+ * Simplifies the use of Tarantool.
+ * 
+ */
+public class TarantoolTemplate {
+	protected Map<Class<?>, Mapping<?>> mapping = new ConcurrentHashMap<Class<?>, Mapping<?>>();
+	protected SingleQueryConnectionFactory connectionFactory;
+	protected TupleSupport support = new TupleSupport();
 
+	/**
+	 * Creates new TarantoolTemplate. You should specify connectionFactory
+	 * before starts.
+	 */
 	public TarantoolTemplate() {
 		super();
 	}
 
-	public TarantoolTemplate(int space, SingleQueryConnectionFactory connectionFactory, Mapping<T> mapping) {
+	/**
+	 * Creates new TarantoolTemplate.
+	 * 
+	 * @param connectionFactory
+	 */
+	public TarantoolTemplate(SingleQueryConnectionFactory connectionFactory) {
 		super();
-		this.space = space;
-		this.mapping = mapping;
 		this.connectionFactory = connectionFactory;
 	}
 
-	public ContidionFirst find() {
-		return new Search(0, mapping.indexFields(0));
+	public void addMapping(Mapping<?> mapping) {
+		this.mapping.put(mapping.getMappedClass(), mapping);
 	}
 
-	public ContidionFirst find(int index, String... fields) {
-		return new Search(index, fields);
+	/**
+	 * Start point of delete configuration chain
+	 * 
+	 * @param cls
+	 * @param id
+	 * @return
+	 */
+	public <T> Delete<T> delete(Class<T> cls, Object... id) {
+		return new Delete<T>(getOrCreateMapping(cls), id);
 	}
 
-	public abstract class ContidionFirst {
-		public abstract Search condition(Object... values);
+	/**
+	 * Start point of find configuration chain. This method uses primary key to
+	 * search.
+	 * 
+	 * @param cls
+	 * @return
+	 */
+	public <T> ContidionFirst<T> find(Class<T> cls) {
+		Mapping<T> m = getOrCreateMapping(cls);
+		return new Search<T>(m, 0, m.indexFields(0));
 	}
 
-	public class Search extends ContidionFirst {
+	/**
+	 * Start point of find configuration chain. This method will search using
+	 * given index. search. Specified fields will be used for type check.
+	 * 
+	 * @param cls
+	 * @return
+	 */
+	public <T> ContidionFirst<T> find(Class<T> cls, int index, String... fields) {
+		Mapping<T> m = getOrCreateMapping(cls);
+		return new Search<T>(m, index, fields);
+	}
 
-		public Search(int index, String[] fields) {
+	/**
+	 * Start point of find configuration chain. This method will search using
+	 * given index. Index fields will be given from index definition inside
+	 * mapping.
+	 * 
+	 * @param cls
+	 * @return
+	 */
+	public <T> ContidionFirst<T> find(Class<T> cls, int index) {
+		Mapping<T> m = getOrCreateMapping(cls);
+		return new Search<T>(m, index);
+	}
+
+	/**
+	 * Start point of save configuration chain
+	 * 
+	 * @param value
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> Insert<T> save(T value) {
+		return new Insert<T>(getOrCreateMapping((Class<T>) value.getClass()), value);
+	}
+
+	/**
+	 * Start point of update configuration chain
+	 * 
+	 * @param cls
+	 * @param id
+	 *            primary key of target object
+	 * @return
+	 */
+	public <T> OperationFirst<T> update(Class<T> cls, Object... id) {
+		return new Update<T>(getOrCreateMapping(cls), id);
+	}
+
+	/**
+	 * Gets or creates and cache mapping for class from annotations
+	 * 
+	 * @param cls
+	 * @return
+	 */
+	public <T> Mapping<T> getOrCreateMapping(Class<T> cls) {
+		@SuppressWarnings("unchecked")
+		Mapping<T> m = (Mapping<T>) mapping.get(cls);
+		// get mapping is not so expensive, so we can ignore thread safety here
+		if (m == null) {
+			mapping.put(cls, m = new Mapping<T>(cls, support));
+		}
+		return m;
+	}
+
+	public abstract class ContidionFirst<T> {
+		public abstract Search<T> condition(Object... values);
+	}
+
+	public class Search<T> extends ContidionFirst<T> {
+		Mapping<T> mapping;
+
+		public Search(Mapping<T> mapping, int index, String[] fields) {
+			this.mapping = mapping;
 			this.indexFields = fields;
 			this.index = index;
 			keys = new ArrayList<Object[]>();
 		}
 
-		public Search(int index) {
+		public Search(Mapping<T> mapping, int index) {
+			this.mapping = mapping;
 			this.indexFields = mapping.indexFields(index);
 			if (this.indexFields == null) {
 				throw new IllegalArgumentException("No index defined with id " + index);
@@ -59,18 +158,18 @@ public class TarantoolTemplate<T> {
 		int offset = 0;
 		int limit = Integer.MAX_VALUE;
 
-		public Search offset(int offset) {
+		public Search<T> offset(int offset) {
 			this.offset = offset;
 			return this;
 		}
 
-		public Search limit(int limit) {
+		public Search<T> limit(int limit) {
 			this.limit = limit;
 			return this;
 		}
 
 		@Override
-		public Search condition(Object... values) {
+		public Search<T> condition(Object... values) {
 			if (indexFields != null) {
 				mapping.checkFields(indexFields, values);
 			}
@@ -83,7 +182,7 @@ public class TarantoolTemplate<T> {
 			for (int i = 0; i < keys.size(); i++) {
 				tuples[i] = mapping.getSupport().create(keys.get(i));
 			}
-			List<Tuple> response = connectionFactory.getSingleQueryConnection().find(space, index, offset, limit, tuples);
+			List<Tuple> response = connectionFactory.getSingleQueryConnection().find(mapping.getSpace(), index, offset, limit, tuples);
 			List<T> result = new ArrayList<T>();
 			for (Tuple tuple : response) {
 				result.add(mapping.fromTuple(tuple));
@@ -98,184 +197,178 @@ public class TarantoolTemplate<T> {
 		}
 	}
 
-	public Insert save(T value) {
-		return new Insert(value);
-	}
-
-	public class Insert {
+	public class Insert<T> {
 		T value;
+		Mapping<T> mapping;
 
-		public Insert(T value) {
+		public Insert(Mapping<T> mapping, T value) {
+			this.mapping = mapping;
 			this.value = value;
 		}
 
 		public int insert() {
-			return connectionFactory.getSingleQueryConnection().insert(space, mapping.toTuple(value));
+			return connectionFactory.getSingleQueryConnection().insert(mapping.getSpace(), mapping.toTuple(value));
 		}
 
 		public int replace() {
-			return connectionFactory.getSingleQueryConnection().replace(space, mapping.toTuple(value));
+			return connectionFactory.getSingleQueryConnection().replace(mapping.getSpace(), mapping.toTuple(value));
 		}
 
 		public int insertOrReplace() {
-			return connectionFactory.getSingleQueryConnection().insertOrReplace(space, mapping.toTuple(value));
+			return connectionFactory.getSingleQueryConnection().insertOrReplace(mapping.getSpace(), mapping.toTuple(value));
 		}
 
 		public T insertOrReplaceAndGet() {
-			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().insertOrReplaceAndGet(space, mapping.toTuple(value)));
+			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().insertOrReplaceAndGet(mapping.getSpace(), mapping.toTuple(value)));
 		}
 
 		public T insertAndGet() {
-			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().insertAndGet(space, mapping.toTuple(value)));
+			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().insertAndGet(mapping.getSpace(), mapping.toTuple(value)));
 		}
 
 		public T replaceAndGet() {
-			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().replaceAndGet(space, mapping.toTuple(value)));
+			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().replaceAndGet(mapping.getSpace(), mapping.toTuple(value)));
 		}
 	}
 
-	public Delete delete(Object... id) {
-		return new Delete(id);
-	}
-
-	public class Delete {
+	public class Delete<T> {
 		Object[] id;
+		Mapping<T> mapping;
 
-		private Delete(Object... id) {
+		private Delete(Mapping<T> mapping, Object... id) {
 			super();
 			this.id = id;
+			this.mapping = mapping;
 		}
 
 		public int delete() {
-			return connectionFactory.getSingleQueryConnection().delete(space, id(id));
+			return connectionFactory.getSingleQueryConnection().delete(mapping.getSpace(), id(mapping.getSupport(), id));
 		}
 
 		public T deleteAndGet() {
-			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().deleteAndGet(space, id(id)));
+			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().deleteAndGet(mapping.getSpace(), id(mapping.getSupport(), id)));
 		}
 	}
 
-	public abstract class OperationFirst {
-		public abstract Update add(String name, long value);
+	public abstract class OperationFirst<T> {
+		public abstract Update<T> add(String name, long value);
 
-		public abstract Update max(String name, long value);
+		public abstract Update<T> max(String name, long value);
 
-		public abstract Update sub(String name, long value);
+		public abstract Update<T> sub(String name, long value);
 
-		public abstract Update add(String name, int value);
+		public abstract Update<T> add(String name, int value);
 
-		public abstract Update and(String name, int value);
+		public abstract Update<T> and(String name, int value);
 
-		public abstract Update and(String name, long value);
+		public abstract Update<T> and(String name, long value);
 
-		public abstract Update or(String name, int value);
+		public abstract Update<T> or(String name, int value);
 
-		public abstract Update or(String name, long value);
+		public abstract Update<T> or(String name, long value);
 
-		public abstract Update xor(String name, int value);
+		public abstract Update<T> xor(String name, int value);
 
-		public abstract Update xor(String name, long value);
+		public abstract Update<T> xor(String name, long value);
 
-		public abstract Update delete(String name);
+		public abstract Update<T> delete(String name);
 
-		public abstract Update insert(String name, Object value);
+		public abstract Update<T> insert(String name, Object value);
 
-		public abstract Update set(String name, Object value);
+		public abstract Update<T> set(String name, Object value);
 
-		public abstract Update splice(String name, int offset, int delete, byte[] insert);
+		public abstract Update<T> splice(String name, int offset, int delete, byte[] insert);
 
-		public abstract Update splice(String name, String value, int offset, int delete, String insert);
+		public abstract Update<T> splice(String name, String value, int offset, int delete, String insert);
 	}
 
-	public OperationFirst update(Object... id) {
-		return new Update(id);
-	}
-
-	public class Update extends OperationFirst {
+	public class Update<T> extends OperationFirst<T> {
 		Object[] id;
+		Mapping<T> mapping;
 
 		List<Operation> ops = new ArrayList<Operation>();
 
 		public T updateAndGet() {
-			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().updateAndGet(space, id(id), ops));
+			return mapping.fromTuple(connectionFactory.getSingleQueryConnection().updateAndGet(mapping.getSpace(), id(mapping.getSupport(), id), ops));
 		}
 
 		public int update() {
-			return connectionFactory.getSingleQueryConnection().update(space, id(id), ops);
+			return connectionFactory.getSingleQueryConnection().update(mapping.getSpace(), id(mapping.getSupport(), id), ops);
 		}
 
-		private Update(Object... id) {
+		private Update(Mapping<T> mapping, Object... id) {
 			super();
 			this.id = id;
+			this.mapping = mapping;
 		}
 
 		@Override
-		public Update add(String name, long value) {
+		public Update<T> add(String name, long value) {
 			ops.add(Operation.add(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update add(String name, int value) {
+		public Update<T> add(String name, int value) {
 			ops.add(Operation.add(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update and(String name, int value) {
+		public Update<T> and(String name, int value) {
 			ops.add(Operation.and(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update and(String name, long value) {
+		public Update<T> and(String name, long value) {
 			ops.add(Operation.and(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update or(String name, int value) {
+		public Update<T> or(String name, int value) {
 			ops.add(Operation.or(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update or(String name, long value) {
+		public Update<T> or(String name, long value) {
 			ops.add(Operation.or(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update xor(String name, int value) {
+		public Update<T> xor(String name, int value) {
 			ops.add(Operation.xor(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update xor(String name, long value) {
+		public Update<T> xor(String name, long value) {
 			ops.add(Operation.xor(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update delete(String name) {
+		public Update<T> delete(String name) {
 			ops.add(Operation.delete(mapping.getFieldNo(name)));
 			return this;
 		}
 
-		public Update insert(String name, Object value) {
+		public Update<T> insert(String name, Object value) {
 			ops.add(Operation.insert(mapping.getFieldNo(name), mapping.getSupport().create(0)));
 			return this;
 		}
 
 		@Override
-		public Update splice(String name, int offset, int delete, byte[] insert) {
+		public Update<T> splice(String name, int offset, int delete, byte[] insert) {
 			ops.add(Operation.splice(mapping.getFieldNo(name), mapping.support.create(offset, delete, insert)));
 			return this;
 		}
 
 		@Override
-		public Update splice(String name, String value, int offset, int delete, String insert) {
+		public Update<T> splice(String name, String value, int offset, int delete, String insert) {
 			int bOffset;
 			try {
 				bOffset = value.substring(0, offset).getBytes(mapping.support.encoding).length;
@@ -287,39 +380,23 @@ public class TarantoolTemplate<T> {
 		}
 
 		@Override
-		public Update max(String name, long value) {
+		public Update<T> max(String name, long value) {
 			ops.add(Operation.max(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update sub(String name, long value) {
+		public Update<T> sub(String name, long value) {
 			ops.add(Operation.sub(mapping.getFieldNo(name), value));
 			return this;
 		}
 
 		@Override
-		public Update set(String name, Object value) {
+		public Update<T> set(String name, Object value) {
 			ops.add(Operation.set(mapping.getFieldNo(name), mapping.support.create(value)));
 			return this;
 		}
 
-	}
-
-	public int getSpace() {
-		return space;
-	}
-
-	public void setSpace(int space) {
-		this.space = space;
-	}
-
-	public Mapping<T> getMapping() {
-		return mapping;
-	}
-
-	public void setMapping(Mapping<T> mapping) {
-		this.mapping = mapping;
 	}
 
 	public SingleQueryConnectionFactory getConnectionFactory() {
@@ -330,8 +407,16 @@ public class TarantoolTemplate<T> {
 		this.connectionFactory = connectionFactory;
 	}
 
-	private Tuple id(Object... id) {
-		return mapping.support.create(id);
+	private Tuple id(TupleSupport support, Object... id) {
+		return support.create(id);
+	}
+
+	public TupleSupport getSupport() {
+		return support;
+	}
+
+	public void setSupport(TupleSupport support) {
+		this.support = support;
 	}
 
 }

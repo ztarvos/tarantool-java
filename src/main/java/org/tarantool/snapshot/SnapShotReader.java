@@ -8,9 +8,21 @@ import java.util.Arrays;
 
 import org.tarantool.core.Tuple;
 
+/**
+ * <p>SnapShotReader class.</p>
+ *
+ * @author dgreen
+ * @version $Id: $
+ */
 public class SnapShotReader {
 	ReadableByteChannel channel;
 
+	/**
+	 * <p>Constructor for SnapShotReader.</p>
+	 *
+	 * @param channel a {@link java.nio.channels.ReadableByteChannel} object.
+	 * @throws java.io.IOException if any.
+	 */
 	public SnapShotReader(ReadableByteChannel channel) throws IOException {
 		this.channel = channel;
 		ByteBuffer snapHeader = ByteBuffer.allocate(Const.HEADER.length).order(ByteOrder.LITTLE_ENDIAN);
@@ -45,6 +57,12 @@ public class SnapShotReader {
 		public Tuple data;// create this tuple only from packed fields
 	}
 
+	/**
+	 * <p>readNext.</p>
+	 *
+	 * @return a {@link org.tarantool.snapshot.SnapShotReader.Row} object.
+	 * @throws java.io.IOException if any.
+	 */
 	public Row readNext() throws IOException {
 		headers.clear();
 		readFullyAndFlip(headers);
@@ -96,6 +114,11 @@ public class SnapShotReader {
 		return row;
 	}
 
+	/**
+	 * <p>close.</p>
+	 *
+	 * @throws java.io.IOException if any.
+	 */
 	public void close() throws IOException {
 		channel.close();
 	}

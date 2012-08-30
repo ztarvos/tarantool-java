@@ -11,21 +11,38 @@ import org.tarantool.core.cmd.Transport;
 import org.tarantool.core.exception.CommunicationException;
 import org.tarantool.core.exception.TarantoolException;
 
+/**
+ * <p>ByteChannelTransport class.</p>
+ *
+ * @author dgreen
+ * @version $Id: $
+ */
 public class ByteChannelTransport implements Transport {
 	ByteChannel channel;
 	static final int HEADER_SIZE = 12;
 
+	/** {@inheritDoc} */
 	@Override
 	public synchronized Response execute(Request request) {
 		write(request);
 		return read();
 	}
 
+	/**
+	 * <p>Constructor for ByteChannelTransport.</p>
+	 *
+	 * @param channel a {@link java.nio.channels.ByteChannel} object.
+	 */
 	public ByteChannelTransport(ByteChannel channel) {
 		super();
 		this.channel = channel;
 	}
 
+	/**
+	 * <p>read.</p>
+	 *
+	 * @return a {@link org.tarantool.core.cmd.Response} object.
+	 */
 	protected Response read() {
 		ByteBuffer headers = read(HEADER_SIZE);
 		Response response = new Response(headers.getInt(), headers.getInt(), headers.getInt());
@@ -46,12 +63,24 @@ public class ByteChannelTransport implements Transport {
 		return response;
 	}
 
+	/**
+	 * <p>handleErrorMessage.</p>
+	 *
+	 * @param response a {@link org.tarantool.core.cmd.Response} object.
+	 * @param body a {@link java.nio.ByteBuffer} object.
+	 */
 	protected void handleErrorMessage(Response response, ByteBuffer body) {
 		byte[] message = new byte[body.capacity() - 4];
 		body.get(message);
 		throw new TarantoolException(response.getRet(), new String(message));
 	}
 
+	/**
+	 * <p>read.</p>
+	 *
+	 * @param size a int.
+	 * @return a {@link java.nio.ByteBuffer} object.
+	 */
 	protected ByteBuffer read(int size) {
 		ByteBuffer buffer = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
 		int res = 0;
@@ -68,6 +97,11 @@ public class ByteChannelTransport implements Transport {
 		return buffer;
 	}
 
+	/**
+	 * <p>write.</p>
+	 *
+	 * @param request a {@link org.tarantool.core.cmd.Request} object.
+	 */
 	protected void write(Request request) {
 		ByteBuffer recvBuffer = request.pack();
 		while (recvBuffer.hasRemaining()) {
@@ -79,6 +113,7 @@ public class ByteChannelTransport implements Transport {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException {
 		if (channel.isOpen()) {

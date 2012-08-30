@@ -11,18 +11,20 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.tarantool.core.Tuple;
+import org.tarantool.facade.annotation.Field;
+import org.tarantool.facade.annotation.Index;
 
 public class TestMapping {
 
 	@Test
 	public void testSuccessfullMapping() {
-		new Mapping<User>(User.class, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male");
+		new Mapping<User>(User.class, 0, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male");
 	}
 
 	@Test
 	public void testUnsupportedType() {
 		try {
-			new Mapping<User>(User.class, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male", "site");
+			new Mapping<User>(User.class, 0, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male", "site");
 			Assert.fail();
 		} catch (IllegalArgumentException ignored) {
 
@@ -31,7 +33,7 @@ public class TestMapping {
 
 	@Test
 	public void testCustomSer() throws MalformedURLException {
-		Mapping<User> mapping = new Mapping<User>(User.class, new TupleSupport() {
+		Mapping<User> mapping = new Mapping<User>(User.class, 0, new TupleSupport() {
 			{
 				supported.add(URL.class);
 			}
@@ -65,6 +67,7 @@ public class TestMapping {
 		assertEquals(user.getSite(), userCopy.getSite());
 	}
 
+	@org.tarantool.facade.annotation.Tuple(space = 0)
 	public static class Tester {
 		int id;
 		String name;

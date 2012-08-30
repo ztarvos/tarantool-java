@@ -16,6 +16,9 @@ import java.util.Map;
 
 import org.tarantool.core.Tuple;
 
+/**
+ * Simplifies all serialization and deserialization operations
+ */
 public class TupleSupport {
 	public static String DEFAULT_ENCODING = "UTF-8";
 	private static final Map<Class<?>, Class<?>> PRIMITIVE_MAP_CONVERSION = new HashMap<Class<?>, Class<?>>();
@@ -28,12 +31,23 @@ public class TupleSupport {
 		}
 
 	}
-
-	String encoding = "UTF-8";
+	/**
+	 * Default encoding for string conversion operations
+	 */
+	protected String encoding = "UTF-8";
+	/**
+	 * List of supported classes
+	 */
 	protected List<Class<?>> supported = new ArrayList<Class<?>>(Arrays.<Class<?>> asList(Long.class, long.class, Integer.class, int.class, Short.class,
 			short.class, Double.class, double.class, Float.class, float.class, BigDecimal.class, BigInteger.class, Date.class, String.class, byte[].class,
 			Boolean.class, boolean.class));
 
+	/**
+	 * Checks is class convertable
+	 * 
+	 * @param cls
+	 * @return
+	 */
 	public boolean isClassSupported(Class<?> cls) {
 		if (supported.contains(cls))
 			return true;
@@ -49,6 +63,12 @@ public class TupleSupport {
 		this.encoding = encoding;
 	}
 
+	/**
+	 * Creates new Tuple from array of given objects
+	 * 
+	 * @param args
+	 * @return
+	 */
 	public Tuple create(Object... args) {
 
 		Tuple tuple = new Tuple(args.length);
@@ -63,6 +83,13 @@ public class TupleSupport {
 
 	}
 
+	/**
+	 * Sets tuple element no i from given object
+	 * 
+	 * @param tuple
+	 * @param i
+	 * @param object
+	 */
 	protected void ser(Tuple tuple, int i, Object object) {
 		Class<? extends Object> cls = getNonPrimClassOf(object);
 		if (Boolean.class.isAssignableFrom(cls)) {
@@ -80,11 +107,23 @@ public class TupleSupport {
 		}
 	}
 
+	/**
+	 * Gets non primitive class of given object
+	 * 
+	 * @param object
+	 * @return
+	 */
 	protected Class<? extends Object> getNonPrimClassOf(Object object) {
 		Class<? extends Object> cls = object.getClass();
 		return getNonPrimClass(cls);
 	}
 
+	/**
+	 * Converts given class to non primitive
+	 * 
+	 * @param cls
+	 * @return
+	 */
 	protected Class<? extends Object> getNonPrimClass(Class<? extends Object> cls) {
 		if (cls.isPrimitive()) {
 			cls = PRIMITIVE_MAP_CONVERSION.get(cls);
@@ -96,6 +135,13 @@ public class TupleSupport {
 		tuple.setBoolean(i, (Boolean) object);
 	}
 
+	/**
+	 * Deserializes tuple to array of objects with given type of each element.
+	 * 
+	 * @param tuple
+	 * @param cls
+	 * @return
+	 */
 	public Object[] parse(Tuple tuple, Class<?>... cls) {
 		Object[] result = new Object[cls.length];
 		for (int i = 0; i < result.length; i++) {
@@ -104,6 +150,14 @@ public class TupleSupport {
 		return result;
 	}
 
+	/**
+	 * Deserializes element with given position from tuple
+	 * 
+	 * @param tuple
+	 * @param i
+	 * @param cls
+	 * @return
+	 */
 	protected Object parse(Tuple tuple, int i, Class<?> cls) {
 		Class<? extends Object> c = getNonPrimClass(cls);
 		if (Boolean.class.isAssignableFrom(c)) {
@@ -125,6 +179,15 @@ public class TupleSupport {
 		return tuple.getBoolean(i);
 	}
 
+	/**
+	 * Deserializes unknown type with basic java deserialization mechanism. This
+	 * method should be overriden if you want to add new data types.
+	 * 
+	 * @param tuple
+	 * @param cls
+	 * @param i
+	 * @return
+	 */
 	protected Object deserUnknown(Tuple tuple, Class<?> cls, int i) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(tuple.getBytes(i));
 		ObjectInputStream ois;
@@ -174,6 +237,14 @@ public class TupleSupport {
 		tuple.setDate(i, (Date) object);
 	}
 
+	/**
+	 * Serializes unknown type using basic java serialization mechanism. This
+	 * method should be overriden if you want to add new data types.
+	 * 
+	 * @param tuple
+	 * @param i
+	 * @param object
+	 */
 	protected void serUnknown(Tuple tuple, int i, Object object) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream oos;

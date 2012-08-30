@@ -29,6 +29,14 @@ import org.tarantool.core.proto.Flags;
 import org.tarantool.core.proto.Updates;
 import org.tarantool.pool.SingleQueryConnectionFactory;
 
+/**
+ * <p>
+ * InMemoryTarantoolImpl class.
+ * </p>
+ * 
+ * @author dgreen
+ * @version $Id: $
+ */
 public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Transport {
 
 	class Index {
@@ -96,6 +104,16 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 
 	ConcurrentMap<Integer, Space> spaces = new ConcurrentHashMap<Integer, Space>();
 
+	/**
+	 * <p>
+	 * initSpace.
+	 * </p>
+	 * 
+	 * @param num
+	 *            a int.
+	 * @param pkFields
+	 *            a int.
+	 */
 	public void initSpace(int num, int... pkFields) {
 		Space space = new Space();
 		if (pkFields == null || pkFields.length == 0) {
@@ -105,11 +123,40 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		spaces.put(num, space);
 	}
 
+	/**
+	 * <p>
+	 * initSecondaryKey.
+	 * </p>
+	 * 
+	 * @param spaceNum
+	 *            a int.
+	 * @param keyNum
+	 *            a int.
+	 * @param unique
+	 *            a boolean.
+	 * @param fields
+	 *            a int.
+	 */
 	public void initSecondaryKey(int spaceNum, int keyNum, boolean unique, int... fields) {
 		Space space = spaces.get(spaceNum);
 		space.indexes.putIfAbsent(keyNum, new Index(unique, fields));
 	}
 
+	/**
+	 * <p>
+	 * put.
+	 * </p>
+	 * 
+	 * @param spaceNum
+	 *            a int.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param insert
+	 *            a boolean.
+	 * @param replace
+	 *            a boolean.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected Tuple put(int spaceNum, Tuple tuple, boolean insert, boolean replace) {
 		Space space = spaces.get(spaceNum);
 
@@ -135,6 +182,15 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 
 	}
 
+	/**
+	 * <p>
+	 * toKey.
+	 * </p>
+	 * 
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @return a {@link java.math.BigInteger} object.
+	 */
 	protected BigInteger toKey(Tuple tuple) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		try {
@@ -153,8 +209,24 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return theKey;
 	}
 
+	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 * 
+	 * @param spaceNum
+	 *            a int.
+	 * @param idx
+	 *            a int.
+	 * @param t
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @return a {@link java.util.List} object.
+	 */
 	protected List<Tuple> get(int spaceNum, int idx, Tuple t) {
 		Space space = spaces.get(spaceNum);
+		if (space == null) {
+			throw new TarantoolException(52, String.format("Space %d is disabled", spaceNum));
+		}
 
 		Index index = space.indexes.get(idx);
 		if (index == null) {
@@ -168,6 +240,17 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 
 	}
 
+	/**
+	 * <p>
+	 * delete.
+	 * </p>
+	 * 
+	 * @param spaceNum
+	 *            a int.
+	 * @param t
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected Tuple delete(int spaceNum, Tuple t) {
 		Space space = spaces.get(spaceNum);
 
@@ -180,6 +263,19 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return stored;
 	}
 
+	/**
+	 * <p>
+	 * shiftAndLimit.
+	 * </p>
+	 * 
+	 * @param offset
+	 *            a int.
+	 * @param limit
+	 *            a int.
+	 * @param result
+	 *            a {@link java.util.List} object.
+	 * @return a {@link java.util.List} object.
+	 */
 	protected List<Tuple> shiftAndLimit(int offset, int limit, List<Tuple> result) {
 		for (int i = 0; i < offset && !result.isEmpty(); i++)
 			result.remove(0);
@@ -188,19 +284,21 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public TarantoolConnection getSingleQueryConnection() {
 		return new TarantoolConnectionImpl(this);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException {
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public synchronized Response execute(Request request) {
-		// TODO no such space
 		int op = request.getOp();
 		if (op == Ping.OP_CODE) {
 			return new Response(Ping.OP_CODE, 0, request.getId());
@@ -321,6 +419,18 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		}
 	}
 
+	/**
+	 * <p>
+	 * splice.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param stored
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected void splice(int fieldNo, Tuple args, Tuple stored) {
 		byte[] fieldValue = stored.getBytes(fieldNo);
 		int from = args.getInt(0);
@@ -331,6 +441,19 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 				resultBuf.put(Arrays.copyOfRange(fieldValue, 0, from)).put(insert).put(Arrays.copyOfRange(fieldValue, from + len, fieldValue.length)).array());
 	}
 
+	/**
+	 * <p>
+	 * insertField.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param stored
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected Tuple insertField(int fieldNo, Tuple args, Tuple stored) {
 		Tuple copy = new Tuple(stored.size() + 1);
 		for (int i = 0, offset = 0; i < stored.size() + 1; i++) {
@@ -344,6 +467,17 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return copy;
 	}
 
+	/**
+	 * <p>
+	 * deleteField.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param stored
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected Tuple deleteField(int fieldNo, Tuple stored) {
 		Tuple copy = new Tuple(stored.size() - 1);
 		for (int i = 0, offset = 0; i < copy.size(); i++) {
@@ -355,6 +489,19 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return copy;
 	}
 
+	/**
+	 * <p>
+	 * arithmeticUpdate.
+	 * </p>
+	 * 
+	 * @param up
+	 *            a {@link org.tarantool.core.proto.Updates} object.
+	 * @param value
+	 *            a long.
+	 * @param arg
+	 *            a long.
+	 * @return a long.
+	 */
 	protected long arithmeticUpdate(Updates up, long value, long arg) {
 		if (up == Updates.ADD)
 			value += arg;
@@ -371,6 +518,17 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		return value;
 	}
 
+	/**
+	 * <p>
+	 * copy.
+	 * </p>
+	 * 
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param fields
+	 *            a int.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
 	protected Tuple copy(Tuple tuple, int... fields) {
 		Tuple t = new Tuple(fields.length);
 		for (int i = 0; i < fields.length; i++) {

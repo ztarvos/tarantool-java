@@ -7,6 +7,11 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.tarantool.facade.annotation.Field;
+import org.tarantool.facade.annotation.Index;
+import org.tarantool.facade.annotation.Tuple;
+
+@Tuple(space = 125)
 public class User {
 	int id = 123;
 	long phone = 880012345678L;

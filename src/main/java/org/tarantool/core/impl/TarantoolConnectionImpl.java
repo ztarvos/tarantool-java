@@ -19,20 +19,33 @@ import org.tarantool.core.proto.Flags;
 import org.tarantool.pool.ConnectionReturnPoint;
 import org.tarantool.pool.Returnable;
 
+/**
+ * <p>TarantoolConnectionImpl class.</p>
+ *
+ * @author dgreen
+ * @version $Id: $
+ */
 public class TarantoolConnectionImpl implements TarantoolConnection, Returnable {
 	Transport transport;
 	ConnectionReturnPoint returnPoint;
 	AtomicInteger id = new AtomicInteger();
 
+	/**
+	 * <p>Constructor for TarantoolConnectionImpl.</p>
+	 *
+	 * @param transport a {@link org.tarantool.core.cmd.Transport} object.
+	 */
 	public TarantoolConnectionImpl(Transport transport) {
 		this.transport = transport;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void returnTo(ConnectionReturnPoint returnPoint) {
 		this.returnPoint = returnPoint;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Integer delete(int space, Tuple tuple) {
 		try {
@@ -50,6 +63,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple deleteAndGet(int space, Tuple tuple) {
 		try {
@@ -60,6 +74,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple updateAndGet(int space, Tuple tuple, List<Operation> ops) {
 		try {
@@ -71,6 +86,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Integer update(int space, Tuple tuple, List<Operation> ops) {
 		try {
@@ -82,6 +98,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple insertAndGet(int space, Tuple tuple) {
 		try {
@@ -93,6 +110,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Integer insert(int space, Tuple tuple) {
 		try {
@@ -104,6 +122,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Integer replace(int space, Tuple tuple) {
 		try {
@@ -115,6 +134,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple replaceAndGet(int space, Tuple tuple) {
 		try {
@@ -126,6 +146,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple insertOrReplaceAndGet(int space, Tuple tuple) {
 		try {
@@ -137,6 +158,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Integer insertOrReplace(int space, Tuple tuple) {
 		try {
@@ -147,6 +169,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<Tuple> find(int space, int index, int offset, int limit, Tuple... keys) {
 		try {
@@ -158,11 +181,13 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<Tuple> find(int space, int index, int offset, int limit, Collection<Tuple> keys) {
 		return find(space, index, offset, limit, keys.toArray(new Tuple[keys.size()]));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple findOne(int space, int index, int offset, Tuple... keys) {
 		try {
@@ -175,11 +200,13 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Tuple findOne(int space, int index, int offset, Collection<Tuple> keys) {
 		return findOne(space, index, offset, keys.toArray(new Tuple[keys.size()]));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Boolean ping() {
 		try {
@@ -191,6 +218,7 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() {
 		try {

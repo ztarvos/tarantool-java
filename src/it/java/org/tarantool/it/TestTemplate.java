@@ -2,15 +2,20 @@ package org.tarantool.it;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.MalformedURLException;
 import java.text.ParseException;
+import java.util.Date;
 
 import org.junit.Test;
 import org.tarantool.core.exception.TarantoolException;
 import org.tarantool.facade.Mapping;
+import org.tarantool.facade.Mapping7;
 import org.tarantool.facade.TarantoolTemplate;
+import org.tarantool.facade.TarantoolTemplate7;
 import org.tarantool.facade.User;
 import org.tarantool.pool.SocketChannelPooledConnectionFactory;
 
@@ -21,8 +26,10 @@ public class TestTemplate {
 	public void testCycle() throws ParseException, MalformedURLException {
 		User user = new User();
 		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
-		TarantoolTemplate<User> template = new TarantoolTemplate<User>(TEMPLATE_SPACE, connectionFactory, new Mapping<User>(User.class, "id", "phone", "point",
-				"iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male"));
+		Mapping<User> mapping = new Mapping<User>(User.class, TEMPLATE_SPACE,"id", "phone", "point",
+				"iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male");
+		TarantoolTemplate template = new TarantoolTemplate(connectionFactory);
+		template.addMapping(mapping);
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
 		try {
 			template.save(user).insert();
@@ -31,8 +38,8 @@ public class TestTemplate {
 
 		}
 		assertEquals(1, template.save(user).replace());
-		assertNotNull(template.find(0, "id").condition(user.getId()).list());
-		assertEquals(user.getPhone() + 1L, template.update(user.getId()).add("phone", 1).updateAndGet().getPhone());
+		assertNotNull(template.find(User.class,0, "id").condition(user.getId()).list());
+		assertEquals(user.getPhone() + 1L, template.update(User.class,user.getId()).add("phone", 1).updateAndGet().getPhone());
 
 		connectionFactory.free();
 		return;
@@ -42,7 +49,7 @@ public class TestTemplate {
 	public void testCycle2() throws ParseException, MalformedURLException {
 		User user = new User();
 		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
-		TarantoolTemplate<User> template = new TarantoolTemplate<User>(TEMPLATE_SPACE, connectionFactory, new Mapping<User>(User.class));
+		TarantoolTemplate template = new TarantoolTemplate( connectionFactory);
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
 		try {
 			template.save(user).insert();
@@ -51,11 +58,46 @@ public class TestTemplate {
 
 		}
 		assertEquals(1, template.save(user).replace());
-		assertNotNull(template.find(0, "id").condition(user.getId()).list());
-		assertNotNull(template.find(1).condition(user.getName()).one());
-		assertEquals(user.getPhone() + 1L, template.update(user.getId()).add("phone", 1).updateAndGet().getPhone());
+		assertNotNull(template.find(User.class,0, "id").condition(user.getId()).list());
+		assertNotNull(template.find(User.class,1).condition(user.getName()).one());
+		assertEquals(user.getPhone() + 1L, template.update(User.class,user.getId()).add("phone", 1).updateAndGet().getPhone());
 
 		connectionFactory.free();
 		return;
+	}
+	
+	@Test
+	public void testCycle3() throws MalformedURLException {
+		Mapping<User> mapping = new Mapping7<User>(User.class, 125, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign",
+				"male");
+		TarantoolTemplate tpl = new TarantoolTemplate7(new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10));
+		tpl.addMapping(mapping);
+		try {
+			tpl.find(User.class).condition("string");
+			fail();
+		} catch (IllegalArgumentException ignored) {
+
+		}
+		try {
+			tpl.find(User.class, 1, "name", "phone").condition("string", 123);
+			fail();
+		} catch (IllegalArgumentException ignored) {
+
+		}
+		User user = new User();
+		tpl.delete(User.class, user.getId()).delete();
+		assertNull(tpl.find(User.class, 0, "id").condition(123).one());
+
+		assertEquals(1, tpl.save(user).insertOrReplace());
+		try {
+			tpl.save(user).insert();
+			fail();
+		} catch (TarantoolException e) {
+
+		}
+		user.setBirthday(new Date((user.getBirthday().getTime() / 1000L) * 1000L));
+		assertTrue(user.equals(tpl.save(user).replaceAndGet()));
+
+		assertNotNull(tpl.find(User.class, 1, "name").condition(user.getName()).one());
 	}
 }

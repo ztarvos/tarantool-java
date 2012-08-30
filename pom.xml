@@ -10,6 +10,8 @@
 	<name>tarantool-connector</name>
 	<url>http://tarantool.org</url>
 
+
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -23,13 +25,22 @@
 	</dependencies>
 	<distributionManagement>
 		<repository>
-		<id>repo</id>
-		<url>https://github.com/dgreenru/tarantool-java/raw/master/mvn-repo/releases</url>
+			<id>repo</id>
+			<url>https://github.com/dgreenru/tarantool-java/raw/master/mvn-repo/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshot-repo</id>
 			<url>https://github.com/dgreenru/tarantool-java/raw/master/mvn-repo/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-
+	<build>
+	 <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-site-plugin</artifactId>
+              <version>3.1</version>
+            </plugin>
+          </plugins>
+	</build>
+	
 </project>
