@@ -68,6 +68,7 @@ public class Mapping7<T> extends Mapping<T> {
 	protected Object getValue(T object, int i) throws IllegalAccessException, InvocationTargetException {
 		Accessor acc = accessors.get(i);
 		if (acc instanceof Mapping7.Accessor7) {
+			@SuppressWarnings("unchecked")
 			Accessor7 accessor = (Accessor7) acc;
 			try {
 				return accessor.readHandle.invoke(object);
@@ -83,6 +84,7 @@ public class Mapping7<T> extends Mapping<T> {
 	protected void setValue(T newInstance, Object object, int i) throws IllegalAccessException, InvocationTargetException {
 		Accessor acc = accessors.get(i);
 		if (acc instanceof Mapping7.Accessor7) {
+			@SuppressWarnings("unchecked")
 			Accessor7 accessor = (Accessor7) acc;
 			try {
 				accessor.writeHandle.invoke(newInstance, object);
