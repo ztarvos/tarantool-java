@@ -46,7 +46,7 @@ public class TupleSupport {
 	 * Checks is class convertable
 	 * 
 	 * @param cls
-	 * @return
+	 * @return true of class supported
 	 */
 	public boolean isClassSupported(Class<?> cls) {
 		if (supported.contains(cls))

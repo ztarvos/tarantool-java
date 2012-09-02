@@ -32,7 +32,7 @@
 	</dependencies>
 	<distributionManagement>
 		<site>
-			<id>github-project-site</id>
+			<id>tarantool-java-project-site</id>
 			<url>gitsite:git@github.com/dgreenru/tarantool-java.git</url>
 		</site>
 		<repository>
@@ -44,6 +44,11 @@
 			<url>https://github.com/dgreenru/tarantool-java/raw/master/mvn-repo/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+		<scm>
+			<connection>scm:git:git://github.com/dgreenru/tarantool-java.git</connection>
+			<developerConnection>scm:git:git+ssh://git@github.com/dgreenru/tarantool-java.git</developerConnection>
+			<url>http://github.com/dgreen/tarantool-java</url>
+		</scm>
 	<build>
 		<extensions>
 			<extension>

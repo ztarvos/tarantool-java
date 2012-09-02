@@ -138,9 +138,9 @@ Tarantool Connector for Java!
  You can use <<TarantoolTemplate7>> and <<Mapping7>> when using java7. 
   <<Mapping7>> uses <<MethodHandle>> to speed up get and set operations.  
  
-Unit Testing
+* Unit Testing
   
-  Tarantool connector provides environment for unit testing.
+  Connector provides environment for unit testing.
 
 +-----+
  InMemoryTarantoolImpl test = new InMemoryTarantoolImpl();
@@ -157,5 +157,11 @@ Unit Testing
  TarantoolTemplate template = new TarantoolTemplate(factory);
 +-----+  
     
-Snapshot Support
+* Snapshot Support
+
+ Connector gives you ability to read/write tarantool snapshots. 
+ This feature gives many abilities. 
+ With <<SnapshorReader>> and <<SnapshotWriter>> you can easily create new snapshots, aggregate just created, 
+ change structure of each tuple and anything that you want. 
+ All this operations becomes fast and simple on snapshots level.  
  
