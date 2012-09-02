@@ -9,7 +9,7 @@ import org.tarantool.core.impl.SocketChannelTarantoolConnection;
 
 /**
  * Simple pooled connection factory to tarantool server
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -22,12 +22,18 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	Semaphore connections;
 
 	/**
-	 * <p>Constructor for SocketChannelPooledConnectionFactory.</p>
-	 *
-	 * @param host a {@link java.lang.String} object.
-	 * @param port a int.
-	 * @param minPoolSize a int.
-	 * @param maxPoolSize a int.
+	 * <p>
+	 * Constructor for SocketChannelPooledConnectionFactory.
+	 * </p>
+	 * 
+	 * @param host
+	 *            a {@link java.lang.String} object.
+	 * @param port
+	 *            a int.
+	 * @param minPoolSize
+	 *            a int.
+	 * @param maxPoolSize
+	 *            a int.
 	 */
 	public SocketChannelPooledConnectionFactory(String host, int port, int minPoolSize, int maxPoolSize) {
 		super();
@@ -40,10 +46,14 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>Constructor for SocketChannelPooledConnectionFactory.</p>
-	 *
-	 * @param minPoolSize a int.
-	 * @param maxPoolSize a int.
+	 * <p>
+	 * Constructor for SocketChannelPooledConnectionFactory.
+	 * </p>
+	 * 
+	 * @param minPoolSize
+	 *            a int.
+	 * @param maxPoolSize
+	 *            a int.
 	 */
 	public SocketChannelPooledConnectionFactory(int minPoolSize, int maxPoolSize) {
 		this("localhost", 33013, minPoolSize, maxPoolSize);
@@ -51,7 +61,9 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>Constructor for SocketChannelPooledConnectionFactory.</p>
+	 * <p>
+	 * Constructor for SocketChannelPooledConnectionFactory.
+	 * </p>
 	 */
 	public SocketChannelPooledConnectionFactory() {
 		this("localhost", 33013, 10, 100);
@@ -59,7 +71,9 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>afterPropertiesSet.</p>
+	 * <p>
+	 * afterPropertiesSet.
+	 * </p>
 	 */
 	public void afterPropertiesSet() {
 		pool = minPoolSize < 1 ? null : new ArrayBlockingQueue<TarantoolConnection>(minPoolSize);
@@ -67,26 +81,34 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>Setter for the field <code>minPoolSize</code>.</p>
-	 *
-	 * @param minPoolSize a int.
+	 * <p>
+	 * Setter for the field <code>minPoolSize</code>.
+	 * </p>
+	 * 
+	 * @param minPoolSize
+	 *            a int.
 	 */
 	public void setMinPoolSize(int minPoolSize) {
 		this.minPoolSize = minPoolSize;
 	}
 
 	/**
-	 * <p>Setter for the field <code>maxPoolSize</code>.</p>
-	 *
-	 * @param maxPoolSize a int.
+	 * <p>
+	 * Setter for the field <code>maxPoolSize</code>.
+	 * </p>
+	 * 
+	 * @param maxPoolSize
+	 *            a int.
 	 */
 	public void setMaxPoolSize(int maxPoolSize) {
 		this.maxPoolSize = maxPoolSize;
 	}
 
 	/**
-	 * <p>newUnpooledConnection.</p>
-	 *
+	 * <p>
+	 * newUnpooledConnection.
+	 * </p>
+	 * 
 	 * @return unpooled connection that should be closed by close method call
 	 */
 	public TarantoolConnection newUnpooledConnection() {
@@ -95,8 +117,10 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>getConnection.</p>
-	 *
+	 * <p>
+	 * getConnection.
+	 * </p>
+	 * 
 	 * @return pooled connection that should be returned using returnConnection
 	 *         method
 	 */
@@ -144,18 +168,24 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	}
 
 	/**
-	 * <p>Setter for the field <code>host</code>.</p>
-	 *
-	 * @param host a {@link java.lang.String} object.
+	 * <p>
+	 * Setter for the field <code>host</code>.
+	 * </p>
+	 * 
+	 * @param host
+	 *            a {@link java.lang.String} object.
 	 */
 	public void setHost(String host) {
 		this.host = host;
 	}
 
 	/**
-	 * <p>Setter for the field <code>port</code>.</p>
-	 *
-	 * @param port a int.
+	 * <p>
+	 * Setter for the field <code>port</code>.
+	 * </p>
+	 * 
+	 * @param port
+	 *            a int.
 	 */
 	public void setPort(int port) {
 		this.port = port;

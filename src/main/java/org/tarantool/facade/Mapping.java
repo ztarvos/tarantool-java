@@ -255,7 +255,7 @@ public class Mapping<T> {
 	 * @param cls
 	 * @param field
 	 * @param idx
-	 * @return
+	 * @return accessor for field with give name
 	 */
 	protected Accessor createAccessor(Class<T> cls, String field, int idx) {
 		PropertyDescriptor pd;
@@ -274,7 +274,7 @@ public class Mapping<T> {
 	 * logick is required
 	 * 
 	 * @param object
-	 * @return
+	 * @return Tuple created from given object
 	 */
 	public Tuple toTuple(T object) {
 		if (object == null) {
@@ -303,7 +303,7 @@ public class Mapping<T> {
 	 * Creates mapped object from {@link Tuple}
 	 * 
 	 * @param tuple
-	 * @return
+	 * @return Object created from given tuple
 	 */
 	public T fromTuple(Tuple tuple) {
 		if (tuple == null) {
@@ -389,7 +389,7 @@ public class Mapping<T> {
 	 * Gets array of index fields
 	 * 
 	 * @param idx
-	 * @return
+	 * @return list of fields
 	 */
 	public String[] indexFields(int idx) {
 		return indexes.get(idx);
@@ -399,7 +399,7 @@ public class Mapping<T> {
 	 * Gets field number by name
 	 * 
 	 * @param name
-	 * @return
+	 * @return position of field in tuple by field name
 	 */
 	public int getFieldNo(String name) {
 		Accessor accessor = getAccessorByName(name);
@@ -410,7 +410,7 @@ public class Mapping<T> {
 	 * Gets field type by field name
 	 * 
 	 * @param name
-	 * @return
+	 * @return type of field
 	 */
 	public Class<?> getFieldType(String name) {
 		Accessor accessor = getAccessorByName(name);

@@ -3,8 +3,10 @@ package org.tarantool.core.cmd;
 import java.nio.ByteBuffer;
 
 /**
- * <p>Ping class.</p>
- *
+ * <p>
+ * Ping class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -13,9 +15,12 @@ public class Ping extends Request {
 	public static final int OP_CODE = 65280;
 
 	/**
-	 * <p>Constructor for Ping.</p>
-	 *
-	 * @param id a int.
+	 * <p>
+	 * Constructor for Ping.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
 	 */
 	public Ping(int id) {
 		super(OP_CODE, id);

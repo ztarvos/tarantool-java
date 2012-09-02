@@ -5,8 +5,10 @@ import java.nio.ByteBuffer;
 import org.tarantool.core.Tuple;
 
 /**
- * <p>Select class.</p>
- *
+ * <p>
+ * Select class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -20,10 +22,14 @@ public class Select extends Request {
 	byte[][] body;
 
 	/**
-	 * <p>Constructor for Select.</p>
-	 *
-	 * @param id a int.
-	 * @param body an array of byte.
+	 * <p>
+	 * Constructor for Select.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
+	 * @param body
+	 *            an array of byte.
 	 */
 	public Select(int id, byte[]... body) {
 		super(OP_CODE, id);
@@ -31,10 +37,14 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Constructor for Select.</p>
-	 *
-	 * @param id a int.
-	 * @param tuples a {@link org.tarantool.core.Tuple} object.
+	 * <p>
+	 * Constructor for Select.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
+	 * @param tuples
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Select(int id, Tuple... tuples) {
 		super(OP_CODE, id);
@@ -45,9 +55,12 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>space.</p>
-	 *
-	 * @param space a int.
+	 * <p>
+	 * space.
+	 * </p>
+	 * 
+	 * @param space
+	 *            a int.
 	 * @return a {@link org.tarantool.core.cmd.Select} object.
 	 */
 	public Select space(int space) {
@@ -56,9 +69,12 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>index.</p>
-	 *
-	 * @param index a int.
+	 * <p>
+	 * index.
+	 * </p>
+	 * 
+	 * @param index
+	 *            a int.
 	 * @return a {@link org.tarantool.core.cmd.Select} object.
 	 */
 	public Select index(int index) {
@@ -67,9 +83,12 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>offset.</p>
-	 *
-	 * @param offset a int.
+	 * <p>
+	 * offset.
+	 * </p>
+	 * 
+	 * @param offset
+	 *            a int.
 	 * @return a {@link org.tarantool.core.cmd.Select} object.
 	 */
 	public Select offset(int offset) {
@@ -78,9 +97,12 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>limit.</p>
-	 *
-	 * @param limit a int.
+	 * <p>
+	 * limit.
+	 * </p>
+	 * 
+	 * @param limit
+	 *            a int.
 	 * @return a {@link org.tarantool.core.cmd.Select} object.
 	 */
 	public Select limit(int limit) {
@@ -109,8 +131,10 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Getter for the field <code>space</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>space</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getSpace() {
@@ -118,17 +142,22 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>space</code>.</p>
-	 *
-	 * @param space a int.
+	 * <p>
+	 * Setter for the field <code>space</code>.
+	 * </p>
+	 * 
+	 * @param space
+	 *            a int.
 	 */
 	public void setSpace(int space) {
 		this.space = space;
 	}
 
 	/**
-	 * <p>Getter for the field <code>index</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>index</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getIndex() {
@@ -136,17 +165,22 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>index</code>.</p>
-	 *
-	 * @param index a int.
+	 * <p>
+	 * Setter for the field <code>index</code>.
+	 * </p>
+	 * 
+	 * @param index
+	 *            a int.
 	 */
 	public void setIndex(int index) {
 		this.index = index;
 	}
 
 	/**
-	 * <p>Getter for the field <code>offset</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>offset</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getOffset() {
@@ -154,17 +188,22 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>offset</code>.</p>
-	 *
-	 * @param offset a int.
+	 * <p>
+	 * Setter for the field <code>offset</code>.
+	 * </p>
+	 * 
+	 * @param offset
+	 *            a int.
 	 */
 	public void setOffset(int offset) {
 		this.offset = offset;
 	}
 
 	/**
-	 * <p>Getter for the field <code>limit</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>limit</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getLimit() {
@@ -172,17 +211,22 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>limit</code>.</p>
-	 *
-	 * @param limit a int.
+	 * <p>
+	 * Setter for the field <code>limit</code>.
+	 * </p>
+	 * 
+	 * @param limit
+	 *            a int.
 	 */
 	public void setLimit(int limit) {
 		this.limit = limit;
 	}
 
 	/**
-	 * <p>Getter for the field <code>body</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>body</code>.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public byte[][] getBody() {
@@ -190,9 +234,12 @@ public class Select extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>body</code>.</p>
-	 *
-	 * @param body an array of byte.
+	 * <p>
+	 * Setter for the field <code>body</code>.
+	 * </p>
+	 * 
+	 * @param body
+	 *            an array of byte.
 	 */
 	public void setBody(byte[][] body) {
 		this.body = body;

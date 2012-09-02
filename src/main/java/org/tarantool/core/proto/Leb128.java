@@ -4,16 +4,19 @@ import java.nio.ByteBuffer;
 
 /**
  * Leb128 encoder/decoder
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
 public class Leb128 {
 
 	/**
-	 * <p>readUnsigned.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
+	 * <p>
+	 * readUnsigned.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
 	 * @return a int.
 	 */
 	public static int readUnsigned(ByteBuffer buffer) {
@@ -35,9 +38,12 @@ public class Leb128 {
 	}
 
 	/**
-	 * <p>unsignedSize.</p>
-	 *
-	 * @param value a int.
+	 * <p>
+	 * unsignedSize.
+	 * </p>
+	 * 
+	 * @param value
+	 *            a int.
 	 * @return a int.
 	 */
 	public static int unsignedSize(int value) {
@@ -51,10 +57,14 @@ public class Leb128 {
 	}
 
 	/**
-	 * <p>writeUnsigned.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
-	 * @param value a int.
+	 * <p>
+	 * writeUnsigned.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
+	 * @param value
+	 *            a int.
 	 * @return a {@link java.nio.ByteBuffer} object.
 	 */
 	public static ByteBuffer writeUnsigned(ByteBuffer buffer, int value) {

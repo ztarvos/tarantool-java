@@ -2,7 +2,7 @@ package org.tarantool.core.exception;
 
 /**
  * A remote server error with error code and message.
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -12,8 +12,10 @@ public class TarantoolException extends RuntimeException {
 	int code;
 
 	/**
-	 * <p>Getter for the field <code>code</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>code</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getCode() {
@@ -21,11 +23,16 @@ public class TarantoolException extends RuntimeException {
 	}
 
 	/**
-	 * <p>Constructor for TarantoolException.</p>
-	 *
-	 * @param code a int.
-	 * @param message a {@link java.lang.String} object.
-	 * @param cause a {@link java.lang.Throwable} object.
+	 * <p>
+	 * Constructor for TarantoolException.
+	 * </p>
+	 * 
+	 * @param code
+	 *            a int.
+	 * @param message
+	 *            a {@link java.lang.String} object.
+	 * @param cause
+	 *            a {@link java.lang.Throwable} object.
 	 */
 	public TarantoolException(int code, String message, Throwable cause) {
 		super(message, cause);
@@ -34,10 +41,14 @@ public class TarantoolException extends RuntimeException {
 	}
 
 	/**
-	 * <p>Constructor for TarantoolException.</p>
-	 *
-	 * @param code a int.
-	 * @param message a {@link java.lang.String} object.
+	 * <p>
+	 * Constructor for TarantoolException.
+	 * </p>
+	 * 
+	 * @param code
+	 *            a int.
+	 * @param message
+	 *            a {@link java.lang.String} object.
 	 */
 	public TarantoolException(int code, String message) {
 		super(message);

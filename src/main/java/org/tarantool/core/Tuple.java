@@ -12,7 +12,7 @@ import org.tarantool.core.proto.Leb128;
 
 /**
  * Implementing Tarantool tuple
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -21,8 +21,10 @@ public class Tuple {
 	byte[][] src;
 
 	/**
-	 * <p>Getter for the field <code>src</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>src</code>.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public byte[][] getSrc() {
@@ -31,7 +33,7 @@ public class Tuple {
 
 	/**
 	 * Creates new tuple with specified size
-	 *
+	 * 
 	 * @param size
 	 *            the size of tuple
 	 */
@@ -41,7 +43,7 @@ public class Tuple {
 
 	/**
 	 * Creates new tuple from binary elements data
-	 *
+	 * 
 	 * @param src
 	 *            binary representation of tuple elements
 	 */
@@ -58,8 +60,10 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>size.</p>
-	 *
+	 * <p>
+	 * size.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int size() {
@@ -67,9 +71,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getInt.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getInt.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a int.
 	 */
 	public int getInt(int i) {
@@ -77,10 +84,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setInt.</p>
-	 *
-	 * @param i a int.
-	 * @param value a int.
+	 * <p>
+	 * setInt.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setInt(int i, int value) {
@@ -89,9 +100,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getLong.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getLong.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a long.
 	 */
 	public long getLong(int i) {
@@ -99,10 +113,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setLong.</p>
-	 *
-	 * @param i a int.
-	 * @param value a long.
+	 * <p>
+	 * setLong.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setLong(int i, long value) {
@@ -111,9 +129,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getDouble.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getDouble.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a double.
 	 */
 	public double getDouble(int i) {
@@ -121,10 +142,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setDouble.</p>
-	 *
-	 * @param i a int.
-	 * @param value a double.
+	 * <p>
+	 * setDouble.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a double.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setDouble(int i, double value) {
@@ -133,9 +158,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getFloat.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getFloat.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a float.
 	 */
 	public float getFloat(int i) {
@@ -143,10 +171,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setFloat.</p>
-	 *
-	 * @param i a int.
-	 * @param value a float.
+	 * <p>
+	 * setFloat.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a float.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setFloat(int i, float value) {
@@ -155,9 +187,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getShort.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getShort.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a short.
 	 */
 	public short getShort(int i) {
@@ -165,10 +200,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setShort.</p>
-	 *
-	 * @param i a int.
-	 * @param value a short.
+	 * <p>
+	 * setShort.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a short.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setShort(int i, short value) {
@@ -177,9 +216,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getBigInteger.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getBigInteger.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a {@link java.math.BigInteger} object.
 	 */
 	public BigInteger getBigInteger(int i) {
@@ -187,10 +229,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setBigInteger.</p>
-	 *
-	 * @param i a int.
-	 * @param value a {@link java.math.BigInteger} object.
+	 * <p>
+	 * setBigInteger.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a {@link java.math.BigInteger} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setBigInteger(int i, BigInteger value) {
@@ -199,9 +245,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getBigDecimal.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getBigDecimal.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a {@link java.math.BigDecimal} object.
 	 */
 	public BigDecimal getBigDecimal(int i) {
@@ -210,10 +259,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setBigDecimal.</p>
-	 *
-	 * @param i a int.
-	 * @param value a {@link java.math.BigDecimal} object.
+	 * <p>
+	 * setBigDecimal.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a {@link java.math.BigDecimal} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setBigDecimal(int i, BigDecimal value) {
@@ -223,9 +276,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getDate.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getDate.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a {@link java.util.Date} object.
 	 */
 	public Date getDate(int i) {
@@ -233,10 +289,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setDate.</p>
-	 *
-	 * @param i a int.
-	 * @param value a {@link java.util.Date} object.
+	 * <p>
+	 * setDate.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a {@link java.util.Date} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setDate(int i, Date value) {
@@ -245,10 +305,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getString.</p>
-	 *
-	 * @param i a int.
-	 * @param encoding a {@link java.lang.String} object.
+	 * <p>
+	 * getString.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param encoding
+	 *            a {@link java.lang.String} object.
 	 * @return a {@link java.lang.String} object.
 	 */
 	public String getString(int i, String encoding) {
@@ -260,11 +324,16 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setString.</p>
-	 *
-	 * @param i a int.
-	 * @param value a {@link java.lang.String} object.
-	 * @param encoding a {@link java.lang.String} object.
+	 * <p>
+	 * setString.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a {@link java.lang.String} object.
+	 * @param encoding
+	 *            a {@link java.lang.String} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setString(int i, String value, String encoding) {
@@ -277,9 +346,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getBytes.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getBytes.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return an array of byte.
 	 */
 	public byte[] getBytes(int i) {
@@ -287,10 +359,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setBytes.</p>
-	 *
-	 * @param i a int.
-	 * @param bytes an array of byte.
+	 * <p>
+	 * setBytes.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param bytes
+	 *            an array of byte.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setBytes(int i, byte[] bytes) {
@@ -299,9 +375,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>getBoolean.</p>
-	 *
-	 * @param i a int.
+	 * <p>
+	 * getBoolean.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
 	 * @return a boolean.
 	 */
 	public boolean getBoolean(int i) {
@@ -309,10 +388,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>setBoolean.</p>
-	 *
-	 * @param i a int.
-	 * @param value a boolean.
+	 * <p>
+	 * setBoolean.
+	 * </p>
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a boolean.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple setBoolean(int i, boolean value) {
@@ -321,8 +404,10 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>pack.</p>
-	 *
+	 * <p>
+	 * pack.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public byte[] pack() {
@@ -333,9 +418,12 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>packFields.</p>
-	 *
-	 * @param buf a {@link java.nio.ByteBuffer} object.
+	 * <p>
+	 * packFields.
+	 * </p>
+	 * 
+	 * @param buf
+	 *            a {@link java.nio.ByteBuffer} object.
 	 * @return an array of byte.
 	 */
 	public byte[] packFields(ByteBuffer buf) {
@@ -346,8 +434,10 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>calcFieldsSize.</p>
-	 *
+	 * <p>
+	 * calcFieldsSize.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int calcFieldsSize() {
@@ -359,10 +449,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>createFQ.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
-	 * @param order a {@link java.nio.ByteOrder} object.
+	 * <p>
+	 * createFQ.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
+	 * @param order
+	 *            a {@link java.nio.ByteOrder} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	@SuppressWarnings("unused")
@@ -372,10 +466,14 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>create.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
-	 * @param order a {@link java.nio.ByteOrder} object.
+	 * <p>
+	 * create.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
+	 * @param order
+	 *            a {@link java.nio.ByteOrder} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public static Tuple create(ByteBuffer buffer, ByteOrder order) {
@@ -384,11 +482,16 @@ public class Tuple {
 	}
 
 	/**
-	 * <p>createFromPackedFields.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
-	 * @param order a {@link java.nio.ByteOrder} object.
-	 * @param cardinality a int.
+	 * <p>
+	 * createFromPackedFields.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
+	 * @param order
+	 *            a {@link java.nio.ByteOrder} object.
+	 * @param cardinality
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public static Tuple createFromPackedFields(ByteBuffer buffer, ByteOrder order, int cardinality) {

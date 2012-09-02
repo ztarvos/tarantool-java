@@ -3,18 +3,25 @@ package org.tarantool.core.cmd;
 import java.nio.ByteBuffer;
 
 /**
- * <p>Abstract DMLRequest class.</p>
- *
+ * <p>
+ * Abstract DMLRequest class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
 public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	/**
-	 * <p>Constructor for DMLRequest.</p>
-	 *
-	 * @param op a int.
-	 * @param id a int.
-	 * @param body an array of byte.
+	 * <p>
+	 * Constructor for DMLRequest.
+	 * </p>
+	 * 
+	 * @param op
+	 *            a int.
+	 * @param id
+	 *            a int.
+	 * @param body
+	 *            an array of byte.
 	 */
 	public DMLRequest(int op, int id, byte[] body) {
 		super(op, id);
@@ -26,9 +33,12 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	byte[] body;
 
 	/**
-	 * <p>space.</p>
-	 *
-	 * @param space a int.
+	 * <p>
+	 * space.
+	 * </p>
+	 * 
+	 * @param space
+	 *            a int.
 	 * @return a T object.
 	 */
 	@SuppressWarnings("unchecked")
@@ -38,9 +48,12 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>flags.</p>
-	 *
-	 * @param flags a int.
+	 * <p>
+	 * flags.
+	 * </p>
+	 * 
+	 * @param flags
+	 *            a int.
 	 * @return a T object.
 	 */
 	@SuppressWarnings("unchecked")
@@ -50,8 +63,10 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>space.</p>
-	 *
+	 * <p>
+	 * space.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int space() {
@@ -59,8 +74,10 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>flags.</p>
-	 *
+	 * <p>
+	 * flags.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int flags() {
@@ -80,8 +97,10 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>Getter for the field <code>space</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>space</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getSpace() {
@@ -89,17 +108,22 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>space</code>.</p>
-	 *
-	 * @param space a int.
+	 * <p>
+	 * Setter for the field <code>space</code>.
+	 * </p>
+	 * 
+	 * @param space
+	 *            a int.
 	 */
 	public void setSpace(int space) {
 		this.space = space;
 	}
 
 	/**
-	 * <p>Getter for the field <code>flags</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>flags</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getFlags() {
@@ -107,17 +131,22 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>flags</code>.</p>
-	 *
-	 * @param flags a int.
+	 * <p>
+	 * Setter for the field <code>flags</code>.
+	 * </p>
+	 * 
+	 * @param flags
+	 *            a int.
 	 */
 	public void setFlags(int flags) {
 		this.flags = flags;
 	}
 
 	/**
-	 * <p>Getter for the field <code>body</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>body</code>.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public byte[] getBody() {
@@ -125,9 +154,12 @@ public abstract class DMLRequest<T extends DMLRequest<T>> extends Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>body</code>.</p>
-	 *
-	 * @param body an array of byte.
+	 * <p>
+	 * Setter for the field <code>body</code>.
+	 * </p>
+	 * 
+	 * @param body
+	 *            an array of byte.
 	 */
 	public void setBody(byte[] body) {
 		this.body = body;

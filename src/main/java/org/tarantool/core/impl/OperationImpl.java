@@ -9,15 +9,17 @@ import org.tarantool.core.proto.Leb128;
 import org.tarantool.core.proto.Updates;
 
 /**
- * <p>OperationImpl class.</p>
- *
+ * <p>
+ * OperationImpl class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
 public class OperationImpl extends Operation {
 	/**
 	 * Creates update operation
-	 *
+	 * 
 	 * @param op
 	 *            Update operation {@link org.tarantool.core.proto.Updates}
 	 * @param fieldNo
@@ -43,8 +45,10 @@ public class OperationImpl extends Operation {
 	Tuple args;
 
 	/**
-	 * <p>Getter for the field <code>op</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>op</code>.
+	 * </p>
+	 * 
 	 * @return a {@link org.tarantool.core.proto.Updates} object.
 	 */
 	public Updates getOp() {
@@ -52,17 +56,22 @@ public class OperationImpl extends Operation {
 	}
 
 	/**
-	 * <p>Setter for the field <code>op</code>.</p>
-	 *
-	 * @param op a {@link org.tarantool.core.proto.Updates} object.
+	 * <p>
+	 * Setter for the field <code>op</code>.
+	 * </p>
+	 * 
+	 * @param op
+	 *            a {@link org.tarantool.core.proto.Updates} object.
 	 */
 	public void setOp(Updates op) {
 		this.op = op;
 	}
 
 	/**
-	 * <p>Getter for the field <code>fieldNo</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>fieldNo</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getFieldNo() {
@@ -70,17 +79,22 @@ public class OperationImpl extends Operation {
 	}
 
 	/**
-	 * <p>Setter for the field <code>fieldNo</code>.</p>
-	 *
-	 * @param fieldNo a int.
+	 * <p>
+	 * Setter for the field <code>fieldNo</code>.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
 	 */
 	public void setFieldNo(int fieldNo) {
 		this.fieldNo = fieldNo;
 	}
 
 	/**
-	 * <p>Getter for the field <code>args</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>args</code>.
+	 * </p>
+	 * 
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	public Tuple getArgs() {
@@ -88,17 +102,22 @@ public class OperationImpl extends Operation {
 	}
 
 	/**
-	 * <p>Setter for the field <code>args</code>.</p>
-	 *
-	 * @param args a {@link org.tarantool.core.Tuple} object.
+	 * <p>
+	 * Setter for the field <code>args</code>.
+	 * </p>
+	 * 
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 */
 	public void setArgs(Tuple args) {
 		this.args = args;
 	}
 
 	/**
-	 * <p>pack.</p>
-	 *
+	 * <p>
+	 * pack.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public byte[] pack() {

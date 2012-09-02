@@ -1,8 +1,10 @@
 package org.tarantool.core.proto;
 
 /**
- * <p>Flags interface.</p>
- *
+ * <p>
+ * Flags interface.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */

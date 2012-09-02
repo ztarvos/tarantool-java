@@ -8,8 +8,10 @@ import org.tarantool.core.Operation;
 import org.tarantool.core.Tuple;
 
 /**
- * <p>Update class.</p>
- *
+ * <p>
+ * Update class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -18,21 +20,30 @@ public class Update extends DMLRequest<Update> {
 	public static final int OP_CODE = 19;
 
 	/**
-	 * <p>Constructor for Update.</p>
-	 *
-	 * @param id a int.
-	 * @param body an array of byte.
+	 * <p>
+	 * Constructor for Update.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
+	 * @param body
+	 *            an array of byte.
 	 */
 	public Update(int id, byte[] body) {
 		super(OP_CODE, id, body);
 	}
 
 	/**
-	 * <p>Constructor for Update.</p>
-	 *
-	 * @param id a int.
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
-	 * @param ops a {@link java.util.List} object.
+	 * <p>
+	 * Constructor for Update.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param ops
+	 *            a {@link java.util.List} object.
 	 */
 	public Update(int id, Tuple tuple, List<Operation> ops) {
 		super(OP_CODE, id, null);
@@ -40,10 +51,14 @@ public class Update extends DMLRequest<Update> {
 	}
 
 	/**
-	 * <p>packTupleAndOps.</p>
-	 *
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
-	 * @param ops a {@link java.util.List} object.
+	 * <p>
+	 * packTupleAndOps.
+	 * </p>
+	 * 
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @param ops
+	 *            a {@link java.util.List} object.
 	 * @return an array of byte.
 	 */
 	protected byte[] packTupleAndOps(Tuple tuple, List<Operation> ops) {
@@ -67,9 +82,12 @@ public class Update extends DMLRequest<Update> {
 	}
 
 	/**
-	 * <p>encodeOps.</p>
-	 *
-	 * @param ops a {@link java.util.List} object.
+	 * <p>
+	 * encodeOps.
+	 * </p>
+	 * 
+	 * @param ops
+	 *            a {@link java.util.List} object.
 	 * @return an array of byte.
 	 */
 	protected byte[][] encodeOps(List<Operation> ops) {

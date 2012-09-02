@@ -14,8 +14,10 @@ import java.nio.channels.WritableByteChannel;
 import org.tarantool.core.Tuple;
 
 /**
- * <p>SnapshotWriter class.</p>
- *
+ * <p>
+ * SnapshotWriter class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -23,10 +25,14 @@ public class SnapshotWriter {
 	WritableByteChannel channel;
 
 	/**
-	 * <p>Constructor for SnapshotWriter.</p>
-	 *
-	 * @param channel a {@link java.nio.channels.WritableByteChannel} object.
-	 * @throws java.io.IOException if any.
+	 * <p>
+	 * Constructor for SnapshotWriter.
+	 * </p>
+	 * 
+	 * @param channel
+	 *            a {@link java.nio.channels.WritableByteChannel} object.
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public SnapshotWriter(WritableByteChannel channel) throws IOException {
 		this.channel = channel;
@@ -43,8 +49,10 @@ public class SnapshotWriter {
 	}
 
 	/**
-	 * <p>getTm.</p>
-	 *
+	 * <p>
+	 * getTm.
+	 * </p>
+	 * 
 	 * @return a double.
 	 */
 	protected double getTm() {
@@ -52,12 +60,18 @@ public class SnapshotWriter {
 	}
 
 	/**
-	 * <p>write.</p>
-	 *
-	 * @param space a int.
-	 * @param tag a short.
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
-	 * @throws java.io.IOException if any.
+	 * <p>
+	 * write.
+	 * </p>
+	 * 
+	 * @param space
+	 *            a int.
+	 * @param tag
+	 *            a short.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public void write(int space, short tag, Tuple tuple) throws IOException {
 		int sz = tuple.calcFieldsSize();
@@ -88,9 +102,12 @@ public class SnapshotWriter {
 	}
 
 	/**
-	 * <p>close.</p>
-	 *
-	 * @throws java.io.IOException if any.
+	 * <p>
+	 * close.
+	 * </p>
+	 * 
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public void close() throws IOException {
 		flipAndWriteFully(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(EOF_MARKER));

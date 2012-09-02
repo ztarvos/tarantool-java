@@ -46,7 +46,7 @@ public class TarantoolTemplate {
 	 * 
 	 * @param cls
 	 * @param id
-	 * @return
+	 * @return deleted object or null
 	 */
 	public <T> Delete<T> delete(Class<T> cls, Object... id) {
 		return new Delete<T>(getOrCreateMapping(cls), id);
@@ -57,7 +57,7 @@ public class TarantoolTemplate {
 	 * search.
 	 * 
 	 * @param cls
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	public <T> ContidionFirst<T> find(Class<T> cls) {
 		Mapping<T> m = getOrCreateMapping(cls);
@@ -69,7 +69,7 @@ public class TarantoolTemplate {
 	 * given index. search. Specified fields will be used for type check.
 	 * 
 	 * @param cls
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	public <T> ContidionFirst<T> find(Class<T> cls, int index, String... fields) {
 		Mapping<T> m = getOrCreateMapping(cls);
@@ -82,7 +82,7 @@ public class TarantoolTemplate {
 	 * mapping.
 	 * 
 	 * @param cls
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	public <T> ContidionFirst<T> find(Class<T> cls, int index) {
 		Mapping<T> m = getOrCreateMapping(cls);
@@ -93,7 +93,7 @@ public class TarantoolTemplate {
 	 * Start point of save configuration chain
 	 * 
 	 * @param value
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Insert<T> save(T value) {
@@ -106,7 +106,7 @@ public class TarantoolTemplate {
 	 * @param cls
 	 * @param id
 	 *            primary key of target object
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	public <T> OperationFirst<T> update(Class<T> cls, Object... id) {
 		return new Update<T>(getOrCreateMapping(cls), id);
@@ -116,7 +116,7 @@ public class TarantoolTemplate {
 	 * Gets or creates and cache mapping for class from annotations
 	 * 
 	 * @param cls
-	 * @return
+	 * @return first element in configuration chain
 	 */
 	public <T> Mapping<T> getOrCreateMapping(Class<T> cls) {
 		@SuppressWarnings("unchecked")

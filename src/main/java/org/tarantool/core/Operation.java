@@ -5,17 +5,21 @@ import org.tarantool.core.proto.Updates;
 
 /**
  * Update operations
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
 public abstract class Operation {
 
 	/**
-	 * <p>sub.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * sub.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation sub(int fieldNo, long value) {
@@ -23,10 +27,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>sub.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * sub.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation sub(int fieldNo, int value) {
@@ -34,10 +42,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>max.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * max.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation max(int fieldNo, long value) {
@@ -45,10 +57,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>max.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * max.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation max(int fieldNo, int value) {
@@ -56,10 +72,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>and.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * and.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation and(int fieldNo, int value) {
@@ -67,10 +87,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>and.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * and.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation and(int fieldNo, long value) {
@@ -78,10 +102,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>add.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * add.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation add(int fieldNo, int value) {
@@ -89,10 +117,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>add.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * add.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation add(int fieldNo, long value) {
@@ -100,10 +132,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>xor.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * xor.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation xor(int fieldNo, int value) {
@@ -111,10 +147,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>xor.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * xor.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation xor(int fieldNo, long value) {
@@ -122,10 +162,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>or.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a int.
+	 * <p>
+	 * or.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation or(int fieldNo, int value) {
@@ -133,24 +177,33 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>or.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param value a long.
+	 * <p>
+	 * or.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation or(int fieldNo, long value) {
 		return new OperationImpl(Updates.OR, fieldNo, longArg(value));
 	}
 
-
 	/**
-	 * <p>splice.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param removeFrom a int.
-	 * @param removeLength a int.
-	 * @param insert an array of byte.
+	 * <p>
+	 * splice.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param removeFrom
+	 *            a int.
+	 * @param removeLength
+	 *            a int.
+	 * @param insert
+	 *            an array of byte.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation splice(int fieldNo, int removeFrom, int removeLength, byte[] insert) {
@@ -158,21 +211,29 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>set.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param args a {@link org.tarantool.core.Tuple} object.
+	 * <p>
+	 * set.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation set(int fieldNo, Tuple args) {
 		return new OperationImpl(Updates.SET, fieldNo, args);
 	}
-	
+
 	/**
-	 * <p>splice.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param args a {@link org.tarantool.core.Tuple} object.
+	 * <p>
+	 * splice.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation splice(int fieldNo, Tuple args) {
@@ -180,9 +241,12 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>delete.</p>
-	 *
-	 * @param fieldNo a int.
+	 * <p>
+	 * delete.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation delete(int fieldNo) {
@@ -190,10 +254,14 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>insert.</p>
-	 *
-	 * @param fieldNo a int.
-	 * @param args a {@link org.tarantool.core.Tuple} object.
+	 * <p>
+	 * insert.
+	 * </p>
+	 * 
+	 * @param fieldNo
+	 *            a int.
+	 * @param args
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Operation} object.
 	 */
 	public static Operation insert(int fieldNo, Tuple args) {
@@ -201,9 +269,12 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>longArg.</p>
-	 *
-	 * @param value a long.
+	 * <p>
+	 * longArg.
+	 * </p>
+	 * 
+	 * @param value
+	 *            a long.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	protected static Tuple longArg(long value) {
@@ -211,9 +282,12 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>intArg.</p>
-	 *
-	 * @param value a int.
+	 * <p>
+	 * intArg.
+	 * </p>
+	 * 
+	 * @param value
+	 *            a int.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
 	protected static Tuple intArg(int value) {
@@ -221,8 +295,10 @@ public abstract class Operation {
 	}
 
 	/**
-	 * <p>pack.</p>
-	 *
+	 * <p>
+	 * pack.
+	 * </p>
+	 * 
 	 * @return an array of byte.
 	 */
 	public abstract byte[] pack();

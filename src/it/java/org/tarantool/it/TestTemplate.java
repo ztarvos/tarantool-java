@@ -26,8 +26,9 @@ public class TestTemplate {
 	public void testCycle() throws ParseException, MalformedURLException {
 		User user = new User();
 		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
-		Mapping<User> mapping = new Mapping<User>(User.class, TEMPLATE_SPACE,"id", "phone", "point",
-				"iq", "height", "lifeFormId", "salary", "birthday", "name", "sign", "male");
+		Mapping<User> mapping = new Mapping<User>(User.class, TEMPLATE_SPACE, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday",
+				"name", "sign", "male");
+
 		TarantoolTemplate template = new TarantoolTemplate(connectionFactory);
 		template.addMapping(mapping);
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
@@ -38,8 +39,8 @@ public class TestTemplate {
 
 		}
 		assertEquals(1, template.save(user).replace());
-		assertNotNull(template.find(User.class,0, "id").condition(user.getId()).list());
-		assertEquals(user.getPhone() + 1L, template.update(User.class,user.getId()).add("phone", 1).updateAndGet().getPhone());
+		assertNotNull(template.find(User.class, 0, "id").condition(user.getId()).list());
+		assertEquals(user.getPhone() + 1L, template.update(User.class, user.getId()).add("phone", 1).updateAndGet().getPhone());
 
 		connectionFactory.free();
 		return;
@@ -49,7 +50,7 @@ public class TestTemplate {
 	public void testCycle2() throws ParseException, MalformedURLException {
 		User user = new User();
 		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
-		TarantoolTemplate template = new TarantoolTemplate( connectionFactory);
+		TarantoolTemplate template = new TarantoolTemplate(connectionFactory);
 		assertNotNull(template.save(user).insertOrReplaceAndGet());
 		try {
 			template.save(user).insert();
@@ -58,14 +59,14 @@ public class TestTemplate {
 
 		}
 		assertEquals(1, template.save(user).replace());
-		assertNotNull(template.find(User.class,0, "id").condition(user.getId()).list());
-		assertNotNull(template.find(User.class,1).condition(user.getName()).one());
-		assertEquals(user.getPhone() + 1L, template.update(User.class,user.getId()).add("phone", 1).updateAndGet().getPhone());
+		assertNotNull(template.find(User.class, 0, "id").condition(user.getId()).list());
+		assertNotNull(template.find(User.class, 1).condition(user.getName()).one());
+		assertEquals(user.getPhone() + 1L, template.update(User.class, user.getId()).add("phone", 1).updateAndGet().getPhone());
 
 		connectionFactory.free();
 		return;
 	}
-	
+
 	@Test
 	public void testCycle3() throws MalformedURLException {
 		Mapping<User> mapping = new Mapping7<User>(User.class, 125, "id", "phone", "point", "iq", "height", "lifeFormId", "salary", "birthday", "name", "sign",

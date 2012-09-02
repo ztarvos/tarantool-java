@@ -12,8 +12,10 @@ import org.tarantool.core.exception.CommunicationException;
 import org.tarantool.core.exception.TarantoolException;
 
 /**
- * <p>ByteChannelTransport class.</p>
- *
+ * <p>
+ * ByteChannelTransport class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -29,9 +31,12 @@ public class ByteChannelTransport implements Transport {
 	}
 
 	/**
-	 * <p>Constructor for ByteChannelTransport.</p>
-	 *
-	 * @param channel a {@link java.nio.channels.ByteChannel} object.
+	 * <p>
+	 * Constructor for ByteChannelTransport.
+	 * </p>
+	 * 
+	 * @param channel
+	 *            a {@link java.nio.channels.ByteChannel} object.
 	 */
 	public ByteChannelTransport(ByteChannel channel) {
 		super();
@@ -39,8 +44,10 @@ public class ByteChannelTransport implements Transport {
 	}
 
 	/**
-	 * <p>read.</p>
-	 *
+	 * <p>
+	 * read.
+	 * </p>
+	 * 
 	 * @return a {@link org.tarantool.core.cmd.Response} object.
 	 */
 	protected Response read() {
@@ -64,10 +71,14 @@ public class ByteChannelTransport implements Transport {
 	}
 
 	/**
-	 * <p>handleErrorMessage.</p>
-	 *
-	 * @param response a {@link org.tarantool.core.cmd.Response} object.
-	 * @param body a {@link java.nio.ByteBuffer} object.
+	 * <p>
+	 * handleErrorMessage.
+	 * </p>
+	 * 
+	 * @param response
+	 *            a {@link org.tarantool.core.cmd.Response} object.
+	 * @param body
+	 *            a {@link java.nio.ByteBuffer} object.
 	 */
 	protected void handleErrorMessage(Response response, ByteBuffer body) {
 		byte[] message = new byte[body.capacity() - 4];
@@ -76,9 +87,12 @@ public class ByteChannelTransport implements Transport {
 	}
 
 	/**
-	 * <p>read.</p>
-	 *
-	 * @param size a int.
+	 * <p>
+	 * read.
+	 * </p>
+	 * 
+	 * @param size
+	 *            a int.
 	 * @return a {@link java.nio.ByteBuffer} object.
 	 */
 	protected ByteBuffer read(int size) {
@@ -98,9 +112,12 @@ public class ByteChannelTransport implements Transport {
 	}
 
 	/**
-	 * <p>write.</p>
-	 *
-	 * @param request a {@link org.tarantool.core.cmd.Request} object.
+	 * <p>
+	 * write.
+	 * </p>
+	 * 
+	 * @param request
+	 *            a {@link org.tarantool.core.cmd.Request} object.
 	 */
 	protected void write(Request request) {
 		ByteBuffer recvBuffer = request.pack();

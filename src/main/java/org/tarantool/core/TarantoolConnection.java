@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * A connection with a specific instance of tarantool
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -13,7 +13,7 @@ public interface TarantoolConnection {
 
 	/**
 	 * Finds tuple using primary key and removes it
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param id
@@ -24,7 +24,7 @@ public interface TarantoolConnection {
 
 	/**
 	 * Finds tuple using primary key and removes it
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param id
@@ -35,7 +35,7 @@ public interface TarantoolConnection {
 
 	/**
 	 * Finds tuple using primary key and performs specified update operations
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param id
@@ -48,7 +48,7 @@ public interface TarantoolConnection {
 
 	/**
 	 * Finds tuple using primary key and performs specified update operations
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param id
@@ -60,65 +60,75 @@ public interface TarantoolConnection {
 	Integer update(int space, Tuple id, List<Operation> ops);
 
 	/**
-	 * Inserts specified tuple or throws {@link org.tarantool.core.exception.TarantoolException} if tuple
-	 * already exists
-	 *
+	 * Inserts specified tuple or throws
+	 * {@link org.tarantool.core.exception.TarantoolException} if tuple already
+	 * exists
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuple inserted
 	 */
 	Tuple insertAndGet(int space, Tuple tuple);
 
 	/**
-	 * Inserts specified tuple or throws {@link org.tarantool.core.exception.TarantoolException} if tuple
-	 * already exists
-	 *
+	 * Inserts specified tuple or throws
+	 * {@link org.tarantool.core.exception.TarantoolException} if tuple already
+	 * exists
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuples inserted
 	 */
 	Integer insert(int space, Tuple tuple);
 
 	/**
-	 * Replaces specified tuple or throws {@link org.tarantool.core.exception.TarantoolException} if no tuple
-	 * with the same primary key found
-	 *
+	 * Replaces specified tuple or throws
+	 * {@link org.tarantool.core.exception.TarantoolException} if no tuple with
+	 * the same primary key found
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuples replaced
 	 */
 	Integer replace(int space, Tuple tuple);
 
 	/**
-	 * Replaces specified tuple or throws {@link org.tarantool.core.exception.TarantoolException} if no tuple
-	 * with the same primary key found
-	 *
+	 * Replaces specified tuple or throws
+	 * {@link org.tarantool.core.exception.TarantoolException} if no tuple with
+	 * the same primary key found
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuple replaced
 	 */
 	Tuple replaceAndGet(int space, Tuple tuple);
 
 	/**
 	 * Inserts or Replaces specified tuple
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuple affected
 	 */
 	Tuple insertOrReplaceAndGet(int space, Tuple tuple);
 
 	/**
 	 * Inserts or Replaces specified tuple
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
-	 * @param tuple a {@link org.tarantool.core.Tuple} object.
+	 * @param tuple
+	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return tuples affected
 	 */
 	Integer insertOrReplace(int space, Tuple tuple);
@@ -126,13 +136,15 @@ public interface TarantoolConnection {
 	/**
 	 * Finds elements using selected index and matches them against specified
 	 * keys
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param index
 	 *            Index to use. Should be configured in tarantool.cfg
-	 * @param offset a int.
-	 * @param limit a int.
+	 * @param offset
+	 *            a int.
+	 * @param limit
+	 *            a int.
 	 * @param keys
 	 *            Keys to match. If a tuple matches more than one key, it's
 	 *            returned twice.
@@ -143,13 +155,15 @@ public interface TarantoolConnection {
 	/**
 	 * Finds elements using selected index and matches them against specified
 	 * keys
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param index
 	 *            Index to use. Should be configured in tarantool.cfg
-	 * @param offset a int.
-	 * @param limit a int.
+	 * @param offset
+	 *            a int.
+	 * @param limit
+	 *            a int.
 	 * @param keys
 	 *            Keys to match. If a tuple matches more than one key, it's
 	 *            returned twice.
@@ -160,12 +174,13 @@ public interface TarantoolConnection {
 	/**
 	 * Finds first element using selected index and matches them against
 	 * specified keys
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param index
 	 *            Index to use. Should be configured in tarantool.cfg
-	 * @param offset a int.
+	 * @param offset
+	 *            a int.
 	 * @param keys
 	 *            Keys to match.
 	 * @return keys matched
@@ -175,12 +190,13 @@ public interface TarantoolConnection {
 	/**
 	 * Finds first element using selected index and matches them against
 	 * specified keys
-	 *
+	 * 
 	 * @param space
 	 *            Space to query. Should be configured in tarantool.cfg
 	 * @param index
 	 *            Index to use. Should be configured in tarantool.cfg
-	 * @param offset a int.
+	 * @param offset
+	 *            a int.
 	 * @param keys
 	 *            Keys to match.
 	 * @return keys matched
@@ -194,8 +210,9 @@ public interface TarantoolConnection {
 
 	/**
 	 * Pings server
-	 *
-	 * @return true of throws {@link org.tarantool.core.exception.CommunicationException}
+	 * 
+	 * @return true of throws
+	 *         {@link org.tarantool.core.exception.CommunicationException}
 	 */
 	Boolean ping();
 

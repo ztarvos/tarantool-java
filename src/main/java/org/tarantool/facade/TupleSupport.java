@@ -67,7 +67,7 @@ public class TupleSupport {
 	 * Creates new Tuple from array of given objects
 	 * 
 	 * @param args
-	 * @return
+	 * @return tuple created from given args
 	 */
 	public Tuple create(Object... args) {
 
@@ -111,7 +111,7 @@ public class TupleSupport {
 	 * Gets non primitive class of given object
 	 * 
 	 * @param object
-	 * @return
+	 * @return non primitive class for object
 	 */
 	protected Class<? extends Object> getNonPrimClassOf(Object object) {
 		Class<? extends Object> cls = object.getClass();
@@ -122,7 +122,7 @@ public class TupleSupport {
 	 * Converts given class to non primitive
 	 * 
 	 * @param cls
-	 * @return
+	 * @return non primitive class that can represent the same value
 	 */
 	protected Class<? extends Object> getNonPrimClass(Class<? extends Object> cls) {
 		if (cls.isPrimitive()) {
@@ -140,7 +140,7 @@ public class TupleSupport {
 	 * 
 	 * @param tuple
 	 * @param cls
-	 * @return
+	 * @return parse tuple to array of objects with given types
 	 */
 	public Object[] parse(Tuple tuple, Class<?>... cls) {
 		Object[] result = new Object[cls.length];
@@ -156,7 +156,7 @@ public class TupleSupport {
 	 * @param tuple
 	 * @param i
 	 * @param cls
-	 * @return
+	 * @return value from tuple element on given position
 	 */
 	protected Object parse(Tuple tuple, int i, Class<?> cls) {
 		Class<? extends Object> c = getNonPrimClass(cls);
@@ -186,7 +186,7 @@ public class TupleSupport {
 	 * @param tuple
 	 * @param cls
 	 * @param i
-	 * @return
+	 * @return deserialized value
 	 */
 	protected Object deserUnknown(Tuple tuple, Class<?> cls, int i) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(tuple.getBytes(i));

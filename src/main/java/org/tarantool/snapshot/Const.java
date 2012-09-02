@@ -1,8 +1,10 @@
 package org.tarantool.snapshot;
 
 /**
- * <p>Const class.</p>
- *
+ * <p>
+ * Const class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */

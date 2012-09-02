@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 
 /**
  * Request command base class
- *
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -17,10 +17,14 @@ public abstract class Request {
 	protected static final int REQUEST_HEADER_SIZE = 12;
 
 	/**
-	 * <p>Constructor for Request.</p>
-	 *
-	 * @param op a int.
-	 * @param id a int.
+	 * <p>
+	 * Constructor for Request.
+	 * </p>
+	 * 
+	 * @param op
+	 *            a int.
+	 * @param id
+	 *            a int.
 	 */
 	public Request(int op, int id) {
 		super();
@@ -29,15 +33,19 @@ public abstract class Request {
 	}
 
 	/**
-	 * <p>getCapacity.</p>
-	 *
+	 * <p>
+	 * getCapacity.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	protected abstract int getCapacity();
 
 	/**
-	 * <p>getRequestHeaderSize.</p>
-	 *
+	 * <p>
+	 * getRequestHeaderSize.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	protected int getRequestHeaderSize() {
@@ -45,16 +53,21 @@ public abstract class Request {
 	}
 
 	/**
-	 * <p>body.</p>
-	 *
-	 * @param buffer a {@link java.nio.ByteBuffer} object.
+	 * <p>
+	 * body.
+	 * </p>
+	 * 
+	 * @param buffer
+	 *            a {@link java.nio.ByteBuffer} object.
 	 * @return a {@link java.nio.ByteBuffer} object.
 	 */
 	public abstract ByteBuffer body(ByteBuffer buffer);
 
 	/**
-	 * <p>pack.</p>
-	 *
+	 * <p>
+	 * pack.
+	 * </p>
+	 * 
 	 * @return a {@link java.nio.ByteBuffer} object.
 	 */
 	public ByteBuffer pack() {
@@ -65,8 +78,10 @@ public abstract class Request {
 	}
 
 	/**
-	 * <p>Getter for the field <code>id</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>id</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getId() {
@@ -74,17 +89,22 @@ public abstract class Request {
 	}
 
 	/**
-	 * <p>Setter for the field <code>id</code>.</p>
-	 *
-	 * @param id a int.
+	 * <p>
+	 * Setter for the field <code>id</code>.
+	 * </p>
+	 * 
+	 * @param id
+	 *            a int.
 	 */
 	public void setId(int id) {
 		this.id = id;
 	}
 
 	/**
-	 * <p>Getter for the field <code>op</code>.</p>
-	 *
+	 * <p>
+	 * Getter for the field <code>op</code>.
+	 * </p>
+	 * 
 	 * @return a int.
 	 */
 	public int getOp() {

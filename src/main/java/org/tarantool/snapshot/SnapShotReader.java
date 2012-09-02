@@ -9,8 +9,10 @@ import java.util.Arrays;
 import org.tarantool.core.Tuple;
 
 /**
- * <p>SnapShotReader class.</p>
- *
+ * <p>
+ * SnapShotReader class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -18,10 +20,14 @@ public class SnapShotReader {
 	ReadableByteChannel channel;
 
 	/**
-	 * <p>Constructor for SnapShotReader.</p>
-	 *
-	 * @param channel a {@link java.nio.channels.ReadableByteChannel} object.
-	 * @throws java.io.IOException if any.
+	 * <p>
+	 * Constructor for SnapShotReader.
+	 * </p>
+	 * 
+	 * @param channel
+	 *            a {@link java.nio.channels.ReadableByteChannel} object.
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public SnapShotReader(ReadableByteChannel channel) throws IOException {
 		this.channel = channel;
@@ -58,10 +64,13 @@ public class SnapShotReader {
 	}
 
 	/**
-	 * <p>readNext.</p>
-	 *
+	 * <p>
+	 * readNext.
+	 * </p>
+	 * 
 	 * @return a {@link org.tarantool.snapshot.SnapShotReader.Row} object.
-	 * @throws java.io.IOException if any.
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public Row readNext() throws IOException {
 		headers.clear();
@@ -115,9 +124,12 @@ public class SnapShotReader {
 	}
 
 	/**
-	 * <p>close.</p>
-	 *
-	 * @throws java.io.IOException if any.
+	 * <p>
+	 * close.
+	 * </p>
+	 * 
+	 * @throws java.io.IOException
+	 *             if any.
 	 */
 	public void close() throws IOException {
 		channel.close();

@@ -33,7 +33,6 @@ public class StandardTest {
 
 	Tuple returnNameA;
 
-
 	Tuple empty = new Tuple(1).setInt(0, 0);
 
 	Tuple addMarkA;
@@ -79,8 +78,6 @@ public class StandardTest {
 		updateNameA = new Tuple(3).setInt(0, 0).setInt(1, 4).setString(2, "Johny", "UTF-8");
 
 		returnNameA = new Tuple(1).setString(0, "John Smith", "UTF-8");
-
-
 
 		addMarkA = new Tuple(1).setString(0, "[FIRED]", "UTF-8");
 

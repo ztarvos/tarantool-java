@@ -30,12 +30,7 @@ import org.tarantool.core.proto.Updates;
 import org.tarantool.pool.SingleQueryConnectionFactory;
 
 /**
- * <p>
- * InMemoryTarantoolImpl class.
- * </p>
- * 
- * @author dgreen
- * @version $Id: $
+ * InMemory implementation of basic Tarantool Box commands
  */
 public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Transport {
 
@@ -105,14 +100,10 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	ConcurrentMap<Integer, Space> spaces = new ConcurrentHashMap<Integer, Space>();
 
 	/**
-	 * <p>
-	 * initSpace.
-	 * </p>
+	 * Creates space with given index and primary key from specified fields
 	 * 
 	 * @param num
-	 *            a int.
 	 * @param pkFields
-	 *            a int.
 	 */
 	public void initSpace(int num, int... pkFields) {
 		Space space = new Space();
@@ -124,18 +115,12 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	}
 
 	/**
-	 * <p>
-	 * initSecondaryKey.
-	 * </p>
+	 * Initializes secondary index on given space
 	 * 
 	 * @param spaceNum
-	 *            a int.
 	 * @param keyNum
-	 *            a int.
 	 * @param unique
-	 *            a boolean.
 	 * @param fields
-	 *            a int.
 	 */
 	public void initSecondaryKey(int spaceNum, int keyNum, boolean unique, int... fields) {
 		Space space = spaces.get(spaceNum);

@@ -85,7 +85,7 @@ public class Mapping7<T> extends Mapping<T> {
 		if (acc instanceof Mapping7.Accessor7) {
 			Accessor7 accessor = (Accessor7) acc;
 			try {
-				accessor.writeHandle.invoke(newInstance,object);
+				accessor.writeHandle.invoke(newInstance, object);
 			} catch (Throwable e) {
 				throw new IllegalStateException("Can't read value for", e);
 			}

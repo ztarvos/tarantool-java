@@ -20,8 +20,10 @@ import org.tarantool.pool.ConnectionReturnPoint;
 import org.tarantool.pool.Returnable;
 
 /**
- * <p>TarantoolConnectionImpl class.</p>
- *
+ * <p>
+ * TarantoolConnectionImpl class.
+ * </p>
+ * 
  * @author dgreen
  * @version $Id: $
  */
@@ -31,9 +33,12 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 	AtomicInteger id = new AtomicInteger();
 
 	/**
-	 * <p>Constructor for TarantoolConnectionImpl.</p>
-	 *
-	 * @param transport a {@link org.tarantool.core.cmd.Transport} object.
+	 * <p>
+	 * Constructor for TarantoolConnectionImpl.
+	 * </p>
+	 * 
+	 * @param transport
+	 *            a {@link org.tarantool.core.cmd.Transport} object.
 	 */
 	public TarantoolConnectionImpl(Transport transport) {
 		this.transport = transport;
