@@ -159,9 +159,33 @@ Tarantool Connector for Java!
     
 * Snapshot Support
 
- Connector gives you ability to read/write tarantool snapshots. 
+ Connector gives you capability to read/write tarantool snapshots. 
  This feature gives many abilities. 
  With <<SnapshorReader>> and <<SnapshotWriter>> you can easily create new snapshots, aggregate just created, 
- change structure of each tuple and anything that you want. 
- All this operations becomes fast and simple on snapshots level.  
+ change structure of each tuple and anything that you want.   
+ All this operations becomes fast and simple on snapshot level.
+ You can create testing environment for you application using <<SnapshotReader>> and  <<InMemoryTarantoolImpl>>.
  
++-----+
+ SnapshotReader reader = new SnapshotReader(new FileInputStream("test.snap").getChannel());
+ try {
+   Row row = null;
+     while ((row = reader.readNext()) != null) {
+       Tuple tuple=row.data;
+       ...
+      }
+ } finally {
+   reader.close();
+ }
++-----+
+ 
++-----+
+ SnapshotWriter writer = new SnapshotWriter(new FileOutputStream("test.snap").getChannel());
+ try {
+    int space = 0;
+    Tuple tuple = new Tuple(3).setInt(0, 1).setString(1, "John Smith", "UTF-8").setInt(2, 1983);
+    writer.write(space, Const.SNAP_TAG, tuple);
+ } finally {
+    writer.close();
+ }
++-----+

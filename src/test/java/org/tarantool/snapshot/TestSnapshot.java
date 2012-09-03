@@ -16,7 +16,7 @@ import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
 import org.tarantool.facade.TupleSupport;
 import org.tarantool.pool.SocketChannelPooledConnectionFactory;
-import org.tarantool.snapshot.SnapShotReader.Row;
+import org.tarantool.snapshot.SnapshotReader.Row;
 
 public class TestSnapshot {
 	// @Test
@@ -81,6 +81,7 @@ public class TestSnapshot {
 
 	@Test
 	public void testSnapReader() throws IOException {
+
 		final AtomicBoolean closed = new AtomicBoolean(false);
 		DataInputStream is = new DataInputStream(ClassLoader.getSystemResourceAsStream("test.snap"));
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -111,7 +112,7 @@ public class TestSnapshot {
 			}
 		};
 		TupleSupport ts = new TupleSupport();
-		SnapShotReader snapShotReader = new SnapShotReader(readableByteChannel);
+		SnapshotReader snapShotReader = new SnapshotReader(readableByteChannel);
 		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");
 			Row row = snapShotReader.readNext();
@@ -119,6 +120,6 @@ public class TestSnapshot {
 		}
 		snapShotReader.close();
 		Assert.assertTrue(closed.get());
-	}
 
+	}
 }

@@ -16,7 +16,7 @@ import org.tarantool.core.Tuple;
  * @author dgreen
  * @version $Id: $
  */
-public class SnapShotReader {
+public class SnapshotReader {
 	ReadableByteChannel channel;
 
 	/**
@@ -29,7 +29,7 @@ public class SnapShotReader {
 	 * @throws java.io.IOException
 	 *             if any.
 	 */
-	public SnapShotReader(ReadableByteChannel channel) throws IOException {
+	public SnapshotReader(ReadableByteChannel channel) throws IOException {
 		this.channel = channel;
 		ByteBuffer snapHeader = ByteBuffer.allocate(Const.HEADER.length).order(ByteOrder.LITTLE_ENDIAN);
 		readFullyAndFlip(snapHeader);
@@ -68,7 +68,7 @@ public class SnapShotReader {
 	 * readNext.
 	 * </p>
 	 * 
-	 * @return a {@link org.tarantool.snapshot.SnapShotReader.Row} object.
+	 * @return a {@link org.tarantool.snapshot.SnapshotReader.Row} object.
 	 * @throws java.io.IOException
 	 *             if any.
 	 */
