@@ -3,7 +3,7 @@ Using Maven
 First add repository
 
 	<repository>
-		<id>tarantool-snapshots</id>
+		<id>dgreenru-repo</id>
 		<url>http://dgreenru.github.com/repo</url>
 	</repository>
 and dependency
