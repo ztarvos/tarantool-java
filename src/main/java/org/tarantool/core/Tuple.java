@@ -404,6 +404,48 @@ public class Tuple {
 	}
 
 	/**
+	 * Sets string argument for lua function. Equivalent to
+	 * setString(i,"'"+value+"'",encoding);
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a boolean.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
+	public Tuple setLuaString(int i, String value, String encoding) {
+		return setString(i, "'" + value + "'", encoding);
+	}
+
+	/**
+	 * Sets string argument for lua function. Equivalent to
+	 * setString(i,"'"+value.toString()+"'","UTF-8");
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a boolean.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
+	public Tuple setLuaStringUTF8(int i, Object value) {
+		return setString(i, "'" + value.toString() + "'", "UTF-8");
+	}
+
+	/**
+	 * Sets argument for lua function. Equivalent to
+	 * setString(i,value.toString(),"UTF-8");
+	 * 
+	 * @param i
+	 *            a int.
+	 * @param value
+	 *            a boolean.
+	 * @return a {@link org.tarantool.core.Tuple} object.
+	 */
+	public Tuple setLuaArgument(int i, Object value) {
+		return setString(i, value.toString(), "UTF-8");
+	}
+
+	/**
 	 * <p>
 	 * pack.
 	 * </p>

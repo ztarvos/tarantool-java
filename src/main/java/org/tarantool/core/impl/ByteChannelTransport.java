@@ -83,7 +83,7 @@ public class ByteChannelTransport implements Transport {
 	protected void handleErrorMessage(Response response, ByteBuffer body) {
 		byte[] message = new byte[body.capacity() - 4];
 		body.get(message);
-		throw new TarantoolException(response.getRet(), new String(message));
+		throw new TarantoolException(response.getRet(), new String(message).trim());
 	}
 
 	/**

@@ -8,12 +8,15 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
+import org.tarantool.core.cmd.Call;
 import org.tarantool.core.cmd.DMLRequest;
 import org.tarantool.core.cmd.Delete;
 import org.tarantool.core.cmd.Insert;
@@ -33,11 +36,16 @@ import org.tarantool.pool.SingleQueryConnectionFactory;
  * InMemory implementation of basic Tarantool Box commands
  */
 public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Transport {
+	public interface CallStub {
+		List<Tuple> call(InMemoryTarantoolImpl impl, String procName, int flags, Tuple args);
+	}
 
-	class Index {
+	Map<String, CallStub> calls = new HashMap<String, CallStub>();
+
+	public class Index {
 		int[] fields;
 		boolean unique;
-		private ConcurrentMap<BigInteger, List<Tuple>> idx = new ConcurrentHashMap<BigInteger, List<Tuple>>();
+		private SortedMap<BigInteger, List<Tuple>> idx = new TreeMap<BigInteger, List<Tuple>>();
 
 		private Index(boolean unique, int... fields) {
 			super();
@@ -61,6 +69,22 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 			return idx.get(toKey(tuple));
 		}
 
+		public List<Tuple> head(Tuple tuple) {
+			return toList(idx.headMap(toKey(tuple)).values());
+		}
+
+		protected List<Tuple> toList(Collection<List<Tuple>> values) {
+			List<Tuple> res = new ArrayList<Tuple>();
+			for (List<Tuple> list : values) {
+				res.addAll(list);
+			}
+			return res;
+		}
+
+		public List<Tuple> tail(Tuple tuple) {
+			return toList(idx.tailMap(toKey(tuple)).values());
+		}
+
 		public Tuple getOne(Tuple tuple) {
 			List<Tuple> collection = idx.get(toKey(tuple));
 			return collection == null || collection.isEmpty() ? null : collection.get(0);
@@ -78,10 +102,14 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 
 		}
 
+		public List<Tuple> all() {
+			return toList(idx.values());
+		}
+
 	}
 
-	class Space {
-		ConcurrentMap<Integer, Index> indexes = new ConcurrentHashMap<Integer, InMemoryTarantoolImpl.Index>();
+	public class Space {
+		Map<Integer, Index> indexes = new TreeMap<Integer, InMemoryTarantoolImpl.Index>();
 
 		Tuple get(Tuple pk) {
 			return indexes.get(0).getOne(pk);
@@ -97,7 +125,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		}
 	}
 
-	ConcurrentMap<Integer, Space> spaces = new ConcurrentHashMap<Integer, Space>();
+	Map<Integer, Space> spaces = new TreeMap<Integer, Space>();
 
 	/**
 	 * Creates space with given index and primary key from specified fields
@@ -110,7 +138,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		if (pkFields == null || pkFields.length == 0) {
 			pkFields = new int[] { 0 };
 		}
-		space.indexes.putIfAbsent(0, new Index(true, pkFields));
+		space.indexes.put(0, new Index(true, pkFields));
 		spaces.put(num, space);
 	}
 
@@ -124,7 +152,11 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 */
 	public void initSecondaryKey(int spaceNum, int keyNum, boolean unique, int... fields) {
 		Space space = spaces.get(spaceNum);
-		space.indexes.putIfAbsent(keyNum, new Index(unique, fields));
+		space.indexes.put(keyNum, new Index(unique, fields));
+	}
+
+	public void initProc(String name, CallStub stub) {
+		calls.put(name, stub);
 	}
 
 	/**
@@ -142,7 +174,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a boolean.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected Tuple put(int spaceNum, Tuple tuple, boolean insert, boolean replace) {
+	public Tuple put(int spaceNum, Tuple tuple, boolean insert, boolean replace) {
 		Space space = spaces.get(spaceNum);
 
 		if (space.getByValue(tuple) != null) {
@@ -176,7 +208,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link java.math.BigInteger} object.
 	 */
-	protected BigInteger toKey(Tuple tuple) {
+	public BigInteger toKey(Tuple tuple) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		try {
 			os.write(1);
@@ -207,7 +239,40 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link java.util.List} object.
 	 */
-	protected List<Tuple> get(int spaceNum, int idx, Tuple t) {
+	public List<Tuple> get(int spaceNum, int idx, Tuple t) {
+		Index index = getIndex(spaceNum, idx, t);
+		List<Tuple> result = index.idx.get(toKey(t));
+		return result == null ? new ArrayList<Tuple>() : result;
+
+	}
+
+	public List<Tuple> head(int spaceNum, int idx, Tuple t) {
+		Index index = getIndex(spaceNum, idx, t);
+		List<Tuple> result = index.head(t);
+		return result == null ? new ArrayList<Tuple>() : result;
+	}
+
+	public List<Tuple> all(int spaceNum, int idx) {
+		Index index = getIndexWithoutCheck(spaceNum, idx);
+		List<Tuple> result = index.all();
+		return result == null ? new ArrayList<Tuple>() : result;
+	}
+
+	public List<Tuple> tail(int spaceNum, int idx, Tuple t) {
+		Index index = getIndex(spaceNum, idx, t);
+		List<Tuple> result = index.tail(t);
+		return result == null ? new ArrayList<Tuple>() : result;
+	}
+
+	public Index getIndex(int spaceNum, int idx, Tuple t) {
+		Index index = getIndexWithoutCheck(spaceNum, idx);
+		if (t.size() != index.fields.length) {
+			throw new TarantoolException(47, String.format("Key part count %d is greater than index part count %d", t.size(), 1));
+		}
+		return index;
+	}
+
+	public Index getIndexWithoutCheck(int spaceNum, int idx) {
 		Space space = spaces.get(spaceNum);
 		if (space == null) {
 			throw new TarantoolException(52, String.format("Space %d is disabled", spaceNum));
@@ -217,12 +282,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 		if (index == null) {
 			throw new TarantoolException(53, String.format("No index #%u is defined in space %u", idx, spaceNum));
 		}
-		if (t.size() != index.fields.length) {
-			throw new TarantoolException(47, String.format("Key part count %d is greater than index part count %d", t.size(), 1));
-		}
-		List<Tuple> result = index.idx.get(toKey(t));
-		return result == null ? new ArrayList<Tuple>() : result;
-
+		return index;
 	}
 
 	/**
@@ -236,7 +296,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected Tuple delete(int spaceNum, Tuple t) {
+	public Tuple delete(int spaceNum, Tuple t) {
 		Space space = spaces.get(spaceNum);
 
 		Tuple stored = space.get(t);
@@ -261,7 +321,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link java.util.List} object.
 	 * @return a {@link java.util.List} object.
 	 */
-	protected List<Tuple> shiftAndLimit(int offset, int limit, List<Tuple> result) {
+	public List<Tuple> shiftAndLimit(int offset, int limit, List<Tuple> result) {
 		for (int i = 0; i < offset && !result.isEmpty(); i++)
 			result.remove(0);
 		while (result.size() > limit)
@@ -292,8 +352,20 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 
 		} else if (op == Select.OP_CODE) {
 			return executeSelect(request);
+		} else if (op == Call.OP_CODE) {
+			return executeCall(request);
 		}
 		throw new TarantoolException(2, String.format("Illegal parameters, %s", "Unknown operation " + op));
+	}
+
+	private Response executeCall(Request request) {
+		Call call = (Call) request;
+		CallStub callStub = calls.get(call.getProcName());
+		if (callStub == null) {
+			throw new TarantoolException(50, String.format("Procedure '%s' is not defined", call.getProcName()));
+		}
+		Tuple args = Tuple.create(ByteBuffer.wrap(call.getBody()).order(ByteOrder.LITTLE_ENDIAN), ByteOrder.LITTLE_ENDIAN);
+		return packResult(request, callStub.call(this, call.getProcName(), call.getFlags(), args), Call.OP_CODE);
 	}
 
 	private Response executeSelect(Request request) {
@@ -304,13 +376,18 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 			result.addAll(get(select.getSpace(), select.getIndex(), key));
 		}
 		shiftAndLimit(select.getOffset(), select.getLimit(), result);
+		return packResult(request, result, Select.OP_CODE);
+	}
+
+	public Response packResult(Request request, List<Tuple> result, int code) {
 		byte[][] responseBody = new byte[result.size()][];
 		int len = 4;
 		for (int i = 0; i < result.size(); i++) {
 			responseBody[i] = result.get(i).pack();
 			len += responseBody[i].length + 4;
 		}
-		Response response = new Response(Select.OP_CODE, len, request.getId());
+
+		Response response = new Response(code, len, request.getId());
 		ByteBuffer bodyBuffer = ByteBuffer.allocate(len).order(ByteOrder.LITTLE_ENDIAN).putInt(result.size());
 		for (byte[] tuple : responseBody) {
 			bodyBuffer.putInt(tuple.length).put(tuple);
@@ -416,7 +493,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 * @param stored
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected void splice(int fieldNo, Tuple args, Tuple stored) {
+	public void splice(int fieldNo, Tuple args, Tuple stored) {
 		byte[] fieldValue = stored.getBytes(fieldNo);
 		int from = args.getInt(0);
 		int len = args.getInt(1);
@@ -439,7 +516,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected Tuple insertField(int fieldNo, Tuple args, Tuple stored) {
+	public Tuple insertField(int fieldNo, Tuple args, Tuple stored) {
 		Tuple copy = new Tuple(stored.size() + 1);
 		for (int i = 0, offset = 0; i < stored.size() + 1; i++) {
 			if (i != fieldNo) {
@@ -463,7 +540,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a {@link org.tarantool.core.Tuple} object.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected Tuple deleteField(int fieldNo, Tuple stored) {
+	public Tuple deleteField(int fieldNo, Tuple stored) {
 		Tuple copy = new Tuple(stored.size() - 1);
 		for (int i = 0, offset = 0; i < copy.size(); i++) {
 			if (i == fieldNo) {
@@ -487,7 +564,7 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a long.
 	 * @return a long.
 	 */
-	protected long arithmeticUpdate(Updates up, long value, long arg) {
+	public long arithmeticUpdate(Updates up, long value, long arg) {
 		if (up == Updates.ADD)
 			value += arg;
 		else if (up == Updates.AND)
@@ -514,12 +591,31 @@ public class InMemoryTarantoolImpl implements SingleQueryConnectionFactory, Tran
 	 *            a int.
 	 * @return a {@link org.tarantool.core.Tuple} object.
 	 */
-	protected Tuple copy(Tuple tuple, int... fields) {
+	public Tuple copy(Tuple tuple, int... fields) {
 		Tuple t = new Tuple(fields.length);
 		for (int i = 0; i < fields.length; i++) {
 			t.setBytes(i, tuple.getBytes(fields[i]));
 		}
 		return t;
+	}
+
+	public Tuple copyExcept(Tuple tuple, Integer... fields) {
+		Tuple t = new Tuple(tuple.size() - fields.length);
+		List<Integer> except = Arrays.asList(fields);
+		for (int i = 0, j = 0; i < tuple.size(); i++) {
+			if (!except.contains(i)) {
+				t.setBytes(j++, tuple.getBytes(i));
+			}
+		}
+		return t;
+	}
+
+	public Map<String, CallStub> getCalls() {
+		return calls;
+	}
+
+	public Map<Integer, Space> getSpaces() {
+		return spaces;
 	}
 
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.tarantool.core.Operation;
 import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
+import org.tarantool.core.cmd.Call;
 import org.tarantool.core.cmd.Delete;
 import org.tarantool.core.cmd.Insert;
 import org.tarantool.core.cmd.Ping;
@@ -230,6 +231,17 @@ public class TarantoolConnectionImpl implements TarantoolConnection, Returnable 
 			transport.close();
 		} catch (IOException ignored) {
 
+		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public List<Tuple> call(int flags, String procName, Tuple args) {
+		try {
+			Response response = transport.execute(new Call(id.incrementAndGet(), procName, args).flags(flags));
+			return response.readTuples();
+		} finally {
+			returnConnection();
 		}
 	}
 

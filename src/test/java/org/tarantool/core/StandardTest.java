@@ -7,12 +7,14 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 
 import org.tarantool.core.exception.TarantoolException;
 
 public class StandardTest {
 	public static int PRIM_AND_SEC_SPACE = 123;
 	public static int COMPOSITE_SPACE = 124;
+	public static int CALL_SPACE = 126;
 	Integer ONE = Integer.valueOf(1);
 	Tuple a;
 	Tuple b;
@@ -51,6 +53,7 @@ public class StandardTest {
 	}
 
 	public void run() {
+		testCall();
 		testBase();
 		testCompositePK();
 	}
@@ -64,6 +67,7 @@ public class StandardTest {
 				.setBigDecimal(4, new BigDecimal(97654.312));
 		d = new Tuple(5).setInt(0, 4).setString(1, "Microsoft", "UTF-8").setInt(2, 2).setString(3, "Bill Smith", "UTF-8")
 				.setBigDecimal(4, new BigDecimal(98764.213));
+
 		aId = new Tuple(1).setInt(0, 1);
 		bId = new Tuple(1).setInt(0, 2);
 		cId = new Tuple(1).setInt(0, 3);
@@ -138,6 +142,21 @@ public class StandardTest {
 		assertEquals("Johny Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.delete(3))).getString(3, "UTF-8"));
 
 		assertEquals("John Smith", connection.updateAndGet(PRIM_AND_SEC_SPACE, aId, Arrays.asList(Operation.set(3, returnNameA))).getString(3, "UTF-8"));
+
+	}
+
+	public void testCall() {
+		List<Tuple> deleteRes = connection.call(0, "box.delete", new Tuple(2).setLuaArgument(0, CALL_SPACE).setInt(1, 4));
+		Tuple t = new Tuple(5).setLuaArgument(0, CALL_SPACE).setInt(1, 4).setString(2, "Microsoft", "UTF-8").setString(3, "Bill Smith", "UTF-8")
+				.setBigDecimal(4, new BigDecimal(98764.213));
+		Tuple ts = new Tuple(4).setInt(0, 4).setString(1, "Microsoft", "UTF-8").setString(2, "Bill Smith", "UTF-8").setBigDecimal(3, new BigDecimal(98764.213));
+		List<Tuple> result = connection.call(0, "box.insert", t);
+		Tuple is = result.get(0);
+		assertTrue(Arrays.equals(is.pack(), ts.pack()));
+		deleteRes = connection.call(0, "box.delete", new Tuple(2).setLuaArgument(0, CALL_SPACE).setInt(1, 5));
+		result = connection.call(0, "box.insert", t.setInt(1, 5));
+		List<Tuple> allData = connection.call(0, "box.select_range", new Tuple(3).setLuaArgument(0, CALL_SPACE).setLuaArgument(1, 0).setLuaArgument(2, 100));
+		assertEquals(2, allData.size());
 
 	}
 }

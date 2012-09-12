@@ -216,4 +216,14 @@ public interface TarantoolConnection {
 	 */
 	Boolean ping();
 
+	/**
+	 * Executes stored procedure on server
+	 * 
+	 * @param flags
+	 * @param procName
+	 * @param args
+	 * @return call result
+	 */
+	List<Tuple> call(int flags, String procName, Tuple args);
+
 }
