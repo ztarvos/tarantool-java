@@ -21,6 +21,7 @@ import org.tarantool.pool.SocketChannelPooledConnectionFactory;
 
 public class TestTemplate {
 	public static final int TEMPLATE_SPACE = 125;
+	public static final int TEMPLATE_CALL_SPACE = 127;
 
 	@Test
 	public void testCycle() throws ParseException, MalformedURLException {
@@ -100,5 +101,17 @@ public class TestTemplate {
 		assertTrue(user.equals(tpl.save(user).replaceAndGet()));
 
 		assertNotNull(tpl.find(User.class, 1, "name").condition(user.getName()).one());
+	}
+
+	@Test
+	public void testCall() throws MalformedURLException {
+		Mapping<User> mapping = new Mapping<User>(User.class, 126, "id", "phone");
+		SocketChannelPooledConnectionFactory connectionFactory = new SocketChannelPooledConnectionFactory("localhost", 33313, 1, 10);
+		TarantoolTemplate template = new TarantoolTemplate(connectionFactory);
+		template.addMapping(mapping);
+		template.call(User.class, "box.delete", "126", 4321).callForOne();
+		assertNotNull(template.call(User.class, "box.insert", "126", 4321, 323323L).callForOne());
+		assertNull(template.call(User.class, "box.select", 126, 0, 4321).luaMode(true).callForOne());
+		template.call(User.class, "box.delete", "126", 4321).callForOne();
 	}
 }
