@@ -16,7 +16,7 @@ import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
 import org.tarantool.facade.TupleSupport;
 import org.tarantool.pool.SocketChannelPooledConnectionFactory;
-import org.tarantool.snapshot.SnapshotReader.Row;
+import org.tarantool.snapshot.TupleReader.Row;
 
 public class TestSnapshot {
 	// @Test
@@ -66,7 +66,7 @@ public class TestSnapshot {
 		TupleSupport ts = new TupleSupport();
 		for (int i = 0; i < 10; i++) {
 			Tuple tuple = ts.create(i, Long.parseLong("98765432" + i), "Hello world " + i + "!");
-			snapshot.write(0, Const.SNAP_TAG, tuple);
+			snapshot.write(0,  tuple);
 		}
 
 		snapshot.close();

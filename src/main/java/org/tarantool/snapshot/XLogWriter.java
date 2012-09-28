@@ -1,7 +1,7 @@
 package org.tarantool.snapshot;
 
-import static org.tarantool.snapshot.Const.SNAP_HEADER;
-import static org.tarantool.snapshot.Const.SNAP_TAG;
+import static org.tarantool.snapshot.Const.XLOG_HEADER;
+import static org.tarantool.snapshot.Const.XLOG_TAG;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,7 +16,8 @@ import java.nio.channels.WritableByteChannel;
  * @author dgreen
  * @version $Id: $
  */
-public class SnapshotWriter extends TupleWriter {
+public class XLogWriter extends TupleWriter{
+
 
 	/**
 	 * <p>
@@ -28,11 +29,13 @@ public class SnapshotWriter extends TupleWriter {
 	 * @throws java.io.IOException
 	 *             if any.
 	 */
-	public SnapshotWriter(WritableByteChannel channel) throws IOException {
-		super(channel, SNAP_TAG);
-		ByteBuffer header = ByteBuffer.wrap(SNAP_HEADER).order(ByteOrder.LITTLE_ENDIAN);
+	public XLogWriter(WritableByteChannel channel) throws IOException {
+		super(channel,XLOG_TAG);
+		ByteBuffer header = ByteBuffer.wrap(XLOG_HEADER).order(ByteOrder.LITTLE_ENDIAN);
 		header.position(header.capacity());
 		flipAndWriteFully(header);
 	}
+
+	
 
 }

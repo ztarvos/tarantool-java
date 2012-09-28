@@ -10,9 +10,11 @@ package org.tarantool.snapshot;
  */
 public class Const {
 	/** Constant <code>HEADER="SNAP\n0.11\n\n".getBytes()</code> */
-	public static final byte[] HEADER = "SNAP\n0.11\n\n".getBytes();
+	public static final byte[] SNAP_HEADER = "SNAP\n0.11\n\n".getBytes();
+	public static final byte[] XLOG_HEADER = "XLOG\n0.11\n\n".getBytes();
 	/** Constant <code>SNAP_TAG=(short) 0xFFFF</code> */
 	public static final short SNAP_TAG = (short) 0xFFFF;
+	public static final short XLOG_TAG = (short) 0xFFFE;
 	/** Constant <code>ROW_HEADER_SIZE=32</code> */
 	public static final int ROW_HEADER_SIZE = 32;
 	/** Constant <code>DATA_HEADER_SIZE=22</code> */
@@ -21,5 +23,6 @@ public class Const {
 	public static final int ROW_START_MARKER = 0xba0babed;
 	/** Constant <code>EOF_MARKER=0x10adab1e</code> */
 	public static final int EOF_MARKER = 0x10adab1e;
+	public static final int VERSION = 11;
 
 }

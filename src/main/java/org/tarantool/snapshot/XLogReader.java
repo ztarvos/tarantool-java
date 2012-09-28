@@ -14,7 +14,8 @@ import java.util.Arrays;
  * @author dgreen
  * @version $Id: $
  */
-public class SnapshotReader extends TupleReader {
+public class XLogReader extends TupleReader{
+	
 
 	/**
 	 * <p>
@@ -26,13 +27,14 @@ public class SnapshotReader extends TupleReader {
 	 * @throws java.io.IOException
 	 *             if any.
 	 */
-	public SnapshotReader(ReadableByteChannel channel) throws IOException {
-		super(channel, Const.SNAP_TAG);
-		ByteBuffer snapHeader = ByteBuffer.allocate(Const.SNAP_HEADER.length).order(ByteOrder.LITTLE_ENDIAN);
-		readFullyAndFlip(snapHeader);
-		if (!Arrays.equals(Const.SNAP_HEADER, snapHeader.array())) {
-			throw new IllegalStateException("Snapshot file should have header " + new String(Const.SNAP_HEADER));
+	public XLogReader(ReadableByteChannel channel) throws IOException {
+		super(channel,Const.XLOG_TAG);
+		ByteBuffer xlogHeader = ByteBuffer.allocate(Const.XLOG_HEADER.length).order(ByteOrder.LITTLE_ENDIAN);
+		readFullyAndFlip(xlogHeader);
+		if (!Arrays.equals(Const.XLOG_HEADER, xlogHeader.array())) {
+			throw new IllegalStateException("Snapshot file should have header " + new String(Const.XLOG_HEADER));
 		}
 	}
+
 
 }
