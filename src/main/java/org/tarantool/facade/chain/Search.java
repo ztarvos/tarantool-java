@@ -9,14 +9,14 @@ import org.tarantool.pool.SingleQueryConnectionFactory;
 
 public class Search<T> extends Chain<T> implements ContidionFirst<T> {
 
-	public Search(SingleQueryConnectionFactory factory,  Mapping<T> mapping, int index, String[] fields) {
+	public Search(SingleQueryConnectionFactory factory, Mapping<T> mapping, int index, String[] fields) {
 		super(factory, mapping);
 		this.indexFields = fields;
 		this.index = index;
 		keys = new ArrayList<Object[]>();
 	}
 
-	public Search(SingleQueryConnectionFactory factory,  Mapping<T> mapping, int index) {
+	public Search(SingleQueryConnectionFactory factory, Mapping<T> mapping, int index) {
 		super(factory, mapping);
 		this.indexFields = mapping.indexFields(index);
 		if (this.indexFields == null) {

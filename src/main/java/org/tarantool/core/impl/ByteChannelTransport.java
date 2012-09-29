@@ -50,7 +50,7 @@ public class ByteChannelTransport implements Transport {
 	 * 
 	 * @return a {@link org.tarantool.core.cmd.Response} object.
 	 */
-	protected Response read() {
+	public Response read() {
 		ByteBuffer headers = read(HEADER_SIZE);
 		Response response = new Response(headers.getInt(), headers.getInt(), headers.getInt());
 		if (response.getSize() > 0) {

@@ -5,12 +5,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
 
-import org.tarantool.core.Tuple;
 import org.tarantool.core.exception.CommunicationException;
-import org.tarantool.core.impl.ByteChannelTransport;
 
-public class ReplicationClient extends ByteChannelTransport {
-	public ReplicationClient(ByteChannel channel, long lsn) {
+public class ReplicationClient extends XLogReader {
+
+	public ReplicationClient(ByteChannel channel, long lsn) throws IOException {
 		super(channel);
 		ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(lsn);
 		buffer.flip();
@@ -23,9 +22,7 @@ public class ReplicationClient extends ByteChannelTransport {
 		}
 		try {
 			ByteBuffer version = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-			while (version.remaining() > 0 && channel.read(version) > 0) {
-			}
-			version.flip();
+			readFullyAndFlip(version);
 			int v = version.getInt();
 			if (v != Const.VERSION) {
 				throw new CommunicationException("Server version " + v + " is not supported");
@@ -34,8 +31,10 @@ public class ReplicationClient extends ByteChannelTransport {
 			throw new CommunicationException("Can't get version", e);
 		}
 	}
-	
-	public Tuple readTuple() {
-		return read().readSingleTuple();
+
+	@Override
+	public XLogEntry nextEntry() throws IOException {
+		return readEntry();
 	}
+
 }

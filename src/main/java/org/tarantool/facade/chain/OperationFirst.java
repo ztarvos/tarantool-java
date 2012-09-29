@@ -1,6 +1,5 @@
 package org.tarantool.facade.chain;
 
-
 public interface OperationFirst<T> {
 	Update<T> add(String name, long value);
 

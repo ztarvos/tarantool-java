@@ -1,11 +1,10 @@
 package org.tarantool.snapshot;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
-
-import org.tarantool.core.Tuple;
 
 public class TupleReader {
 
@@ -16,91 +15,74 @@ public class TupleReader {
 		super();
 		this.channel = channel;
 		this.tag = tag;
+		this.header = ByteBuffer.allocate(Const.HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+		this.marker = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
 	}
 
 	protected ByteBuffer readFullyAndFlip(ByteBuffer buf) throws IOException {
-		while (buf.remaining() > 0 && channel.read(buf) > 0) {
-
+		int read = 0;
+		while (buf.remaining() > 0 && (read = channel.read(buf)) > 0) {
+		}
+		if (read == 0) {
+			throw new EOFException();
 		}
 		buf.flip();
 		return buf;
 	}
 
-	ByteBuffer headers = ByteBuffer.allocate(Const.DATA_HEADER_SIZE + Const.ROW_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+	protected ByteBuffer header;
 
-	public class Row {
-		public int marker;
+	protected ByteBuffer marker;
+
+	public class Header {
 		public int headerCrc32;
 		public long lsn;
 		public double tm;
 		public int len;
 		public int dataCrc32;
-		public short tag;
-		public long cookie;
-		public int space;
-		public int cardinality;
-		public int size;
-		public Tuple data;// create this tuple only from packed fields
+
+		@Override
+		public String toString() {
+			return "Header [headerCrc32=" + headerCrc32 + ", lsn=" + lsn + ", tm=" + tm + ", len=" + len + ", dataCrc32=" + dataCrc32 + "]";
+		}
+
 	}
 
-	/**
-	 * <p>
-	 * readNext.
-	 * </p>
-	 * 
-	 * @return a {@link org.tarantool.snapshot.SnapshotReader.Row} object.
-	 * @throws java.io.IOException
-	 *             if any.
-	 */
-	public Row readNext() throws IOException {
-		headers.clear();
-		readFullyAndFlip(headers);
-		if (headers.limit() == 4) {
-			if (headers.getInt() != Const.EOF_MARKER) {
-				throw new IllegalStateException("Snapshot should ends with EOF_MARKER");
-			} else {
-				return null;
-			}
-		}
-		Row row = new Row();
-		row.marker = headers.getInt();
-		if (row.marker != Const.ROW_START_MARKER) {
-			throw new IllegalStateException("Row should starts with ROW_START_MARKER but has "+Integer.toHexString(row.marker));
-		}
-		row.headerCrc32 = headers.getInt();
-		row.lsn = headers.getLong();
-		row.tm = headers.getDouble();
-		row.len = headers.getInt();
-		row.dataCrc32 = headers.getInt();
-		if (IntelCrc32c.crc32cSb864bitLE(0L, headers.array(), 8, 24) != row.headerCrc32) {
-			throw new IllegalStateException("Headers crc32 mismatch");
-		}
-		row.tag = headers.getShort();
-		if (row.tag != tag) {
-			throw new IllegalStateException("Row should has valid tag, actual " + row.tag + " excepted " + tag);
-		}
-		row.cookie = headers.getLong();
-		row.space = headers.getInt();
-		row.cardinality = headers.getInt();
-		row.size = headers.getInt();
-
-		ByteBuffer dataBuff = ByteBuffer.allocate(row.size + Const.ROW_HEADER_SIZE + Const.DATA_HEADER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-		headers.flip();
-		dataBuff.put(headers);
-
-		readFullyAndFlip(dataBuff);
-		if (row.dataCrc32 != IntelCrc32c.crc32cSb864bitLE(0L, dataBuff.array(), Const.ROW_HEADER_SIZE, row.size + Const.DATA_HEADER_SIZE)) {
+	protected ByteBuffer readBody(Header header) throws IOException {
+		ByteBuffer body = ByteBuffer.allocate(header.len).order(ByteOrder.LITTLE_ENDIAN);
+		readFullyAndFlip(body);
+		if (header.dataCrc32 != IntelCrc32c.crc32cSb864bitLE(0L, body.array(), 0, header.len)) {
 			throw new IllegalStateException("Data crc32 mismatch");
 		}
-		dataBuff.position(Const.ROW_HEADER_SIZE + Const.DATA_HEADER_SIZE);
-		dataBuff.limit(dataBuff.capacity());
-		row.data = Tuple.createFromPackedFields(dataBuff, ByteOrder.LITTLE_ENDIAN, row.cardinality);
+		return body;
+	}
 
-		if (row.data.size() != row.cardinality) {
-			throw new IllegalStateException("Row size is " + row.cardinality + " but tuple has " + row.data.size());
+	protected Header readHeader() throws IOException {
+		header.clear();
+		readFullyAndFlip(header);
+		Header head = new Header();
+		head.headerCrc32 = header.getInt();
+		head.lsn = header.getLong();
+		head.tm = header.getDouble();
+		head.len = header.getInt();
+		head.dataCrc32 = header.getInt();
+		if (IntelCrc32c.crc32cSb864bitLE(0L, header.array(), 4, 24) != head.headerCrc32) {
+			throw new IllegalStateException("Headers crc32 mismatch");
 		}
+		return head;
+	}
 
-		return row;
+	protected boolean hasNext() throws IOException {
+		marker.clear();
+		readFullyAndFlip(marker);
+		int marker = this.marker.getInt();
+		if (marker != Const.ROW_START_MARKER) {
+			throw new IllegalStateException("Row should starts with ROW_START_MARKER but has " + Integer.toHexString(marker));
+		}
+		if (marker == Const.EOF_MARKER) {
+			return false;
+		}
+		return true;
 	}
 
 	/**

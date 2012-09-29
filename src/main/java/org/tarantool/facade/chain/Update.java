@@ -122,10 +122,9 @@ public class Update<T> extends Chain<T> implements OperationFirst<T> {
 		ops.add(Operation.set(mapping.getFieldNo(name), mapping.getSupport().create(value)));
 		return this;
 	}
-	
+
 	protected Tuple id(TupleSupport support, Object... id) {
 		return support.create(id);
 	}
-
 
 }
