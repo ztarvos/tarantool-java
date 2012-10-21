@@ -222,5 +222,4 @@ public class TestSnapshotAndXLog {
 		return readableByteChannel;
 	}
 
-	
 }

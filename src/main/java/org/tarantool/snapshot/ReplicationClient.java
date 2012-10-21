@@ -10,7 +10,7 @@ import org.tarantool.core.exception.CommunicationException;
 public class ReplicationClient extends XLogReader {
 
 	public ReplicationClient(ByteChannel channel, long lsn) throws IOException {
-		super(channel,false);
+		super(channel, false);
 		ByteBuffer buffer = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(lsn);
 		buffer.flip();
 		while (buffer.hasRemaining()) {
