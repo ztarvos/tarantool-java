@@ -76,12 +76,13 @@ public class TupleReader {
 		marker.clear();
 		readFullyAndFlip(marker);
 		int marker = this.marker.getInt();
-		if (marker != Const.ROW_START_MARKER) {
-			throw new IllegalStateException("Row should starts with ROW_START_MARKER but has " + Integer.toHexString(marker));
-		}
 		if (marker == Const.EOF_MARKER) {
 			return false;
 		}
+		if (marker != Const.ROW_START_MARKER) {
+			throw new IllegalStateException("Row should starts with ROW_START_MARKER but has " + Integer.toHexString(marker));
+		}
+
 		return true;
 	}
 

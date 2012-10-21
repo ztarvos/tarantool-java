@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.tarantool.core.Tuple;
+import org.tarantool.core.cmd.Update;
+import org.tarantool.core.impl.OperationImpl;
 
 /**
  * <p>
@@ -18,6 +22,13 @@ import org.tarantool.core.Tuple;
  * @version $Id: $
  */
 public class XLogReader extends TupleReader {
+
+	protected XLogReader(ReadableByteChannel channel, boolean readHeader) throws IOException {
+		super(channel, Const.XLOG_TAG);
+		if (readHeader) {
+			readAndCheckFileHeader();
+		}
+	}
 
 	/**
 	 * <p>
@@ -31,6 +42,10 @@ public class XLogReader extends TupleReader {
 	 */
 	public XLogReader(ReadableByteChannel channel) throws IOException {
 		super(channel, Const.XLOG_TAG);
+		readAndCheckFileHeader();
+	}
+
+	protected void readAndCheckFileHeader() throws IOException {
 		ByteBuffer xlogHeader = ByteBuffer.allocate(Const.XLOG_HEADER.length).order(ByteOrder.LITTLE_ENDIAN);
 		readFullyAndFlip(xlogHeader);
 		if (!Arrays.equals(Const.XLOG_HEADER, xlogHeader.array())) {
@@ -52,6 +67,7 @@ public class XLogReader extends TupleReader {
 		}
 
 		public Tuple tuple;
+		public List<OperationImpl> ops;
 	}
 
 	protected XLogEntry readEntry() throws IOException {
@@ -64,6 +80,14 @@ public class XLogReader extends TupleReader {
 		cmd.space = body.getInt();
 		cmd.flags = body.getInt();
 		cmd.tuple = Tuple.create(body, ByteOrder.LITTLE_ENDIAN);
+		if (cmd.op == Update.OP_CODE) {
+			int operations = body.getInt();
+			List<OperationImpl> ops = new ArrayList<OperationImpl>();
+			for (int i = 0; i < operations; i++) {
+				ops.add(OperationImpl.unpack(body));
+			}
+			cmd.ops = ops;
+		}
 		return cmd;
 	}
 

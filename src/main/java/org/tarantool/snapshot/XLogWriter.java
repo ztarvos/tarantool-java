@@ -61,7 +61,7 @@ public class XLogWriter extends TupleWriter {
 
 	@Override
 	public void close() throws IOException {
-		channel.close();
+		super.close();
 	}
 
 }

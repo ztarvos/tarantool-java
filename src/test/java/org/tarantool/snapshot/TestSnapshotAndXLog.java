@@ -146,7 +146,6 @@ public class TestSnapshotAndXLog {
 		is.readFully(b);
 		Assert.assertTrue(is.available() == 0);
 		is.close();
-
 		Assert.assertTrue(Arrays.equals(b, os.toByteArray()));
 	}
 
@@ -223,4 +222,5 @@ public class TestSnapshotAndXLog {
 		return readableByteChannel;
 	}
 
+	
 }

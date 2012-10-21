@@ -132,4 +132,28 @@ public class OperationImpl extends Operation {
 		return args.packFields(buf);
 	}
 
+	public static OperationImpl unpack(ByteBuffer buffer) {
+		int fieldNo = buffer.getInt();
+		byte type = buffer.get();
+		Updates[] ups = Updates.values();
+		Updates update = null;
+		for (Updates up : ups) {
+			if (up.type == (int) type) {
+				update = up;
+				break;
+			}
+		}
+		if (update == null) {
+			throw new IllegalStateException("Unknown update op type " + type);
+		}
+		if (update.args > 1) {
+			int fields = Leb128.readUnsigned(buffer);
+			if (fields != update.args) {
+				throw new IllegalStateException("op " + update.name() + " should has " + update.args + " arguments, but has " + fields);
+			}
+		}
+		Tuple opArgs = Tuple.createFromPackedFields(buffer, ByteOrder.LITTLE_ENDIAN, update.args);
+		return new OperationImpl(update, fieldNo, opArgs);
+	}
+
 }
