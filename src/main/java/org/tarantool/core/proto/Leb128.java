@@ -17,12 +17,10 @@ public class Leb128 {
     public static int readUnsigned(ByteBuffer buffer) {
         int result = 0;
         int cur;
-        int count = 0;
         do {
             cur = buffer.get() & 0xff;
-            result <<=count * 7;
+            result <<= 7;
             result |= (cur & 0x7f);
-            count++;
         } while (((cur & 0x80) == 0x80));
 
         if ((cur & 0x80) == 0x80) {
