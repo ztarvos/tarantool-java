@@ -1,11 +1,12 @@
 package org.tarantool.pool;
 
+import org.tarantool.core.TarantoolConnection;
+import org.tarantool.core.exception.CommunicationException;
+import org.tarantool.core.impl.SocketChannelTarantoolConnection;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
-
-import org.tarantool.core.TarantoolConnection;
-import org.tarantool.core.impl.SocketChannelTarantoolConnection;
 
 /**
  * Simple pooled connection factory to tarantool server
@@ -125,21 +126,26 @@ public class SocketChannelPooledConnectionFactory implements SingleQueryConnecti
 	 *         method
 	 */
 	public TarantoolConnection getConnection() {
+
+        TarantoolConnection connection = pool == null ? null : pool.poll();
 		try {
 			connections.acquire();
+
+            if (connection == null) {
+                connection = newUnpooledConnection();
+            } else {
+                try {
+                    connection.ping();
+                } catch (Exception e) {
+                    connection = newUnpooledConnection();
+                }
+            }
 		} catch (InterruptedException e) {
 			throw new IllegalStateException(e);
-		}
-		TarantoolConnection connection = pool == null ? null : pool.poll();
-		if (connection == null) {
-			connection = newUnpooledConnection();
-		} else {
-			try {
-				connection.ping();
-			} catch (Exception e) {
-				connection = newUnpooledConnection();
-			}
-		}
+		} catch (CommunicationException e) {
+            connections.release();
+            throw e;
+        }
 
 		return connection;
 	}
