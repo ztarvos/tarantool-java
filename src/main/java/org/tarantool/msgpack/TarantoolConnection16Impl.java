@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.msgpack.type.ArrayValue;
@@ -20,8 +19,8 @@ import org.tarantool.core.exception.TarantoolException;
 import org.tarantool.pool.ConnectionReturnPoint;
 import org.tarantool.pool.Returnable;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import sun.misc.BASE64Decoder;
+
 
 public class TarantoolConnection16Impl implements TarantoolConnection16, Returnable {
     private final SocketChannel channel;
@@ -193,7 +192,8 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
             byte[] p2 = sha1.digest(p);
 
             sha1.reset();
-            sha1.update(Base64.decode(salt.getBytes()), 0, 20);
+            BASE64Decoder decoder = new BASE64Decoder();
+            sha1.update(decoder.decodeBuffer(salt), 0, 20);
             sha1.update(p2);
             byte[] scramble = sha1.digest();
             for (int i = 0, e = 20; i < e; i++) {
@@ -204,7 +204,7 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
 
         } catch (NoSuchAlgorithmException e) {
             throw new CommunicationException("Can't use sha-1", e);
-        } catch (Base64DecodingException e) {
+        } catch (IOException e) {
             throw new CommunicationException("Can't decode base-64", e);
 
         }

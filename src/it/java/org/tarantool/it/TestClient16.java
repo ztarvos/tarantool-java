@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
 import org.tarantool.msgpack.TarantoolConnection16;
 import org.tarantool.pool.SocketChannelPooledConnectionFactory16;
