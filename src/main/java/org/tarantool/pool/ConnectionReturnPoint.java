@@ -1,6 +1,5 @@
 package org.tarantool.pool;
 
-import org.tarantool.core.TarantoolConnection;
 
 /**
  * <p>
@@ -10,7 +9,7 @@ import org.tarantool.core.TarantoolConnection;
  * @author dgreen
  * @version $Id: $
  */
-public interface ConnectionReturnPoint {
+public interface ConnectionReturnPoint<T> {
 	/**
 	 * <p>
 	 * returnConnection.
@@ -19,5 +18,5 @@ public interface ConnectionReturnPoint {
 	 * @param client
 	 *            a {@link org.tarantool.core.TarantoolConnection} object.
 	 */
-	void returnConnection(TarantoolConnection client);
+	void returnConnection(T client);
 }

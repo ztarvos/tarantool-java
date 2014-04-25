@@ -1,5 +1,6 @@
 package org.tarantool.facade.chain;
 
+import org.tarantool.core.TarantoolConnection;
 import org.tarantool.core.Tuple;
 import org.tarantool.facade.Mapping;
 import org.tarantool.facade.TupleSupport;
@@ -9,7 +10,7 @@ public class Delete<T> extends Chain<T> {
 	Object[] id;
 	Mapping<T> mapping;
 
-	public Delete(SingleQueryConnectionFactory factory, Mapping<T> mapping, Object... id) {
+	public Delete(SingleQueryConnectionFactory<TarantoolConnection> factory, Mapping<T> mapping, Object... id) {
 		super(factory, mapping);
 		this.id = id;
 		this.mapping = mapping;

@@ -1,6 +1,5 @@
 package org.tarantool.pool;
 
-import org.tarantool.core.TarantoolConnection;
 
 /**
  * <p>
@@ -10,7 +9,7 @@ import org.tarantool.core.TarantoolConnection;
  * @author dgreen
  * @version $Id: $
  */
-public interface SingleQueryConnectionFactory {
+public interface SingleQueryConnectionFactory<T> {
 
 	/**
 	 * <p>
@@ -19,6 +18,6 @@ public interface SingleQueryConnectionFactory {
 	 * 
 	 * @return a {@link org.tarantool.core.TarantoolConnection} object.
 	 */
-	TarantoolConnection getSingleQueryConnection();
+	T getSingleQueryConnection();
 
 }
