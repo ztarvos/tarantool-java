@@ -6,9 +6,9 @@ import org.msgpack.packer.Packer;
 import org.msgpack.unpacker.Unpacker;
 
 public class EnumTemplate<T extends EnumWithId<T>> extends AbstractTemplate<T> {
-    private static final IntegerTemplate tpl = IntegerTemplate.getInstance();
+    protected static final IntegerTemplate tpl = IntegerTemplate.getInstance();
 
-    private T t;
+    protected T t;
     public EnumTemplate(T t) {
         this.t = t;
     }

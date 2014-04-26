@@ -9,7 +9,7 @@ public class ByteBufferStreams {
 
     protected ByteBuffer buf;
     protected double resizeFactor = 1.1;
-    private OutputStream os = new OutputStream() {
+    protected OutputStream os = new OutputStream() {
         @Override
         public void write(int b) throws IOException {
             buf.put((byte) b);
@@ -24,7 +24,7 @@ public class ByteBufferStreams {
         }
     };
 
-    private InputStream is = new InputStream() {
+    protected InputStream is = new InputStream() {
         @Override
         public int read() throws IOException {
             return 0xFF & buf.get();

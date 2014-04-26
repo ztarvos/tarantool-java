@@ -23,10 +23,10 @@ import sun.misc.BASE64Decoder;
 
 
 public class TarantoolConnection16Impl implements TarantoolConnection16, Returnable {
-    private final SocketChannel channel;
-    private final ConnetionState state;
-    private final String salt;
-    private ConnectionReturnPoint<TarantoolConnection16> connectionReturnPoint;
+    protected final SocketChannel channel;
+    protected final ConnetionState state;
+    protected final String salt;
+    protected ConnectionReturnPoint<TarantoolConnection16> connectionReturnPoint;
 
 
     public TarantoolConnection16Impl(String host, int port) {
@@ -48,7 +48,7 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
         }
     }
 
-    private int readFully(ByteBuffer buffer) {
+    protected int readFully(ByteBuffer buffer) {
         try {
             int code;
             while ((code = channel.read(buffer)) > -1 && buffer.remaining() > 0) {
@@ -63,7 +63,7 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
         }
     }
 
-    private ArrayValue exec(Code code, Object... args) {
+    protected ArrayValue exec(Code code, Object... args) {
         try {
             write(state.pack(code, args));
             return (ArrayValue) read();
@@ -74,7 +74,7 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
         }
     }
 
-    private <R> R exec(Class<R> cls, Code code, Object... args) {
+    protected <R> R exec(Class<R> cls, Code code, Object... args) {
         try {
             write(state.pack(code, args));
             return (R) read(cls);
@@ -86,11 +86,11 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
     }
 
 
-    private Object read() {
+    protected Object read() {
         return read(null);
     }
 
-    private Object read(Class<?> cls) {
+    protected Object read(Class<?> cls) {
         readFully(state.getLengthReadBuffer());
         readFully(state.getPacketReadBuffer());
         state.unpack(cls);
@@ -102,7 +102,7 @@ public class TarantoolConnection16Impl implements TarantoolConnection16, Returna
         return state.getBody().get(Key.DATA);
     }
 
-    private int write(ByteBuffer buffer) {
+    protected int write(ByteBuffer buffer) {
         try {
             int code;
             while ((code = channel.write(buffer)) > -1 && buffer.remaining() > 0) {

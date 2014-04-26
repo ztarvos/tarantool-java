@@ -7,7 +7,7 @@ import org.msgpack.packer.Packer;
 import org.msgpack.unpacker.Unpacker;
 
 public class CustomAnyTemplate extends AnyTemplate<Object> {
-    private LessLockTemplateRegistry registry;
+    protected LessLockTemplateRegistry registry;
 
     public CustomAnyTemplate(LessLockTemplateRegistry registry) {
         super(registry);

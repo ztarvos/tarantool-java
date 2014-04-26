@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class LessLockTemplateRegistry extends TemplateRegistry {
-    private static final Map<Type, Template> cache = new ConcurrentHashMap<>();
-    private CustomAnyTemplate anyTemplate;
+    protected static final Map<Type, Template> cache = new ConcurrentHashMap<>();
+    protected CustomAnyTemplate anyTemplate;
 
     /**
      * @param registry
@@ -34,12 +34,12 @@ public class LessLockTemplateRegistry extends TemplateRegistry {
         registerGeneric(Map.class, new GenericMapTemplate(this, MapTemplate.class));
     }
 
-    private AnyTemplate getAnyTemplate() {
+    protected AnyTemplate getAnyTemplate() {
         return this.anyTemplate == null ? this.anyTemplate = new CustomAnyTemplate(this) : anyTemplate;
     }
 
 
-    private Template getFromCache(Type type) {
+    protected Template getFromCache(Type type) {
         Template template = cache.get(type);
         if (template == null) {
             Class<?>[] interfaces = ((Class) type).getInterfaces();
