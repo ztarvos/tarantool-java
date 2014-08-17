@@ -9,7 +9,41 @@
 Tarantool Connector for Java!
 
  The Tarantool Connector for Java provides ability to interact with {{{http://tarantool.org}Tarantool Box}} on different levels of abstraction.
- 
+
+* Support for Tarantool 1.6
+
+ Experemental support for version 1.6 added in the latest snapshot. Quick example below
+
++-----+
+    SocketChannelPooledConnectionFactory16 factory = new SocketChannelPooledConnectionFactory16();
+
+    TarantoolConnection16 con = factory.getConnection();
+    con.auth("test", "test");
+
+    Message[] str = new Message[]{new Message()};
+
+    List<Value> delete0 = con.delete(0, Arrays.asList(0));
+    List<Value> delete = con.delete(0, Arrays.asList(1));
+
+    List<Value> insert = con.insert(0, Arrays.asList(1, "hello"));
+    Message[] insert1 = con.insert(Message[].class, 0, new Message());
+
+    List<Value> select0 = con.select(0, 0, Arrays.asList(1), 0, 100);
+    Message[] select = con.select(Message[].class, 0, 0, new int[]{0}, 0, 10);
+
+    List<Value> time = con.call("box.time");
+    float[][] time2 = con.call(float[][].class, "box.time");
+
+    Message[] updated = con.update(Message[].class, 0, new int[]{0}, Arrays.asList(Arrays.asList("=", 1, "!!!")));
+    factory.returnConnection(con);
+    factory.close();
++-----+
+
+ Tarantool 1.6 protocol based on msgpack which has synchronized parts of widly used code so current driver can has
+ performance issues in multithreading env. I'm trying to avoid this locks by
+ overriding some parts of message pack. I hope to fix synchonized issues in main message pack repository in the near future.
+
+
 * Quick Start
 
  First you should add repository
