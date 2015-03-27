@@ -101,8 +101,8 @@ public class TarantoolConnection16Impl<T> implements TarantoolConnection16 {
     }
 
     @Override
-    public List update(int space, Object key, Object tuple) {
-        return exec(Code.UPDATE, Key.SPACE, space, Key.KEY, key, Key.TUPLE, tuple);
+    public List update(int space, Object key, Object... args) {
+        return exec(Code.UPDATE, Key.SPACE, space, Key.KEY, key, Key.TUPLE, args);
     }
 
     @Override
@@ -112,12 +112,12 @@ public class TarantoolConnection16Impl<T> implements TarantoolConnection16 {
 
     @Override
     public List call(String function, Object... args) {
-        return exec(Code.CALL, Key.FUNCTION, function, Key.TUPLE, Arrays.asList(args));
+        return exec(Code.CALL, Key.FUNCTION, function, Key.TUPLE, args);
     }
 
     @Override
     public List eval(String expression, Object... args) {
-        return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, Arrays.asList(args));
+        return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, args);
     }
 
     @Override

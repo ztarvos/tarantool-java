@@ -34,6 +34,8 @@ public class TestClient16 {
         System.out.println(insert2);
         List select0 = con.select(spaceId, 0, Arrays.asList(1), 0, 100, 0);
         System.out.println(select0);
+        List update0 = con.update(spaceId, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
+        System.out.println(update0);
         List result = con.call("math.ceil", 1.3);
         System.out.println(result);
         List eval = con.eval("return ...", 1, 2, 3);
