@@ -1,0 +1,45 @@
+package org.tarantool;
+
+import java.util.Arrays;
+
+public class TestClient16WithJackson {
+    /*
+     Before executing this test you should configure your local tarantool
+
+     box.cfg{listen=3301}
+     box.schema.space.create('tester2')
+     box.space.tester2:create_index('primary', {type = 'hash', parts = {1, 'NUM'}})
+
+     box.schema.user.create('test', { password = 'test' })
+     box.schema.user.grant('test', 'execute,read,write', 'universe')
+
+
+    */
+
+
+
+
+    public static void main(String[] args) {
+        TarantoolGenericConnection16 con = new TarantoolGenericConnection16Impl("localhost", 3301, new JacksonMapper());
+        con.auth("test", "test");
+        int spaceId = (Integer) con.eval("return box.space.tester2.id").get(0);
+        Pojo[] delete = con.delete(Pojo[].class, spaceId, Arrays.asList(1));
+        System.out.println(Arrays.toString(delete));
+
+        Pojo[] insert = con.insert(Pojo[].class, spaceId, new Pojo());
+        System.out.println(Arrays.toString(insert));
+
+        Pojo[] select0 = con.select(Pojo[].class, spaceId, 0, Arrays.asList(1), 0, 100, 0);
+        System.out.println(Arrays.toString(select0));
+
+        Pojo[] eval = con.eval(Pojo[].class, "return {age=99}"); //age should be overriden
+        System.out.println(Arrays.toString(eval));
+
+        Pojo eval2 = con.eval(Pojo.class,"return 1,99,'hello',false,{'no'},{4,5,6}");
+        System.out.println(eval2);
+
+        Pojo[] eval3= con.eval(Pojo[].class,"return {1,99,'hello',false,{'no'},{4,5,6}}");
+        System.out.println(Arrays.toString(eval3));
+        con.close();
+    }
+}
