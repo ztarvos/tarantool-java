@@ -14,7 +14,7 @@ public interface TarantoolConnection16 {
     List replace(int space, Object tuple);
 
 
-    List update(int space, Object key, Object... args);
+    List update(int space, Object key, Object... tuple);
 
 
     List delete(int space, Object key);

@@ -7,11 +7,10 @@ import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
-public class TarantoolConnection16Impl<T> implements TarantoolConnection16 {
+public class TarantoolConnection16Impl implements TarantoolConnection16 {
     protected final SocketChannel channel;
     protected final ConneсtionState state;
     protected final String salt;
@@ -33,6 +32,15 @@ public class TarantoolConnection16Impl<T> implements TarantoolConnection16 {
         } catch (IOException e) {
             throw new CommunicationException("Can't connect with tarantool", e);
         }
+    }
+
+
+    protected SocketChannel getChannel() {
+        return channel;
+    }
+
+    protected ConneсtionState getState() {
+        return state;
     }
 
     protected int readFully(ByteBuffer buffer) {
@@ -87,7 +95,7 @@ public class TarantoolConnection16Impl<T> implements TarantoolConnection16 {
 
     @Override
     public List select(int space, int index, Object key, int offset, int limit, int iterator) {
-        return exec(Code.SELECT, Key.SPACE, space, Key.INDEX, index, Key.KEY, key, Key.ITERATOR, iterator, Key.LIMIT, limit);
+        return exec(Code.SELECT, Key.SPACE, space, Key.INDEX, index, Key.KEY, key, Key.ITERATOR, iterator, Key.LIMIT, limit, Key.OFFSET, offset);
     }
 
     @Override
