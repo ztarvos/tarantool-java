@@ -1,11 +1,19 @@
 package org.tarantool;
 
 
+import java.io.IOException;
+import java.nio.channels.SocketChannel;
+
 public class TarantoolGenericConnection16Impl extends TarantoolConnection16Impl implements TarantoolGenericConnection16 {
     private final Mapper mapper;
 
-    public TarantoolGenericConnection16Impl(String host, int port, Mapper mapper) {
+    public TarantoolGenericConnection16Impl(String host, int port, Mapper mapper) throws IOException {
         super(host, port);
+        this.mapper = mapper;
+    }
+
+    public TarantoolGenericConnection16Impl(SocketChannel channel, Mapper mapper) {
+        super(channel);
         this.mapper = mapper;
     }
 
@@ -25,8 +33,8 @@ public class TarantoolGenericConnection16Impl extends TarantoolConnection16Impl 
     }
 
     @Override
-    public <T> T update(Class<T> clz, int space, Object key, Object tuple) {
-        return mapper.toObject(clz, super.update(space, key, mapper.toTuple(tuple)));
+    public <T> T update(Class<T> clz, int space, Object key, Object...args) {
+        return mapper.toObject(clz, super.update(space, key, mapper.toTuples(args)));
     }
 
     @Override

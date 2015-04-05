@@ -15,9 +15,9 @@ public class TarantoolConnection16Impl implements TarantoolConnection16 {
     protected final ConneсtionState state;
     protected final String salt;
 
-    public TarantoolConnection16Impl(String host, int port) {
+    public TarantoolConnection16Impl(SocketChannel channel) {
         try {
-            this.channel = SocketChannel.open(new InetSocketAddress(host, port));
+            this.channel = channel;
             this.state = new ConneсtionState();
             ByteBuffer welcome = state.getWelcomeBuffer();
             readFully(welcome);
@@ -32,6 +32,10 @@ public class TarantoolConnection16Impl implements TarantoolConnection16 {
         } catch (IOException e) {
             throw new CommunicationException("Can't connect with tarantool", e);
         }
+    }
+
+    public TarantoolConnection16Impl(String host, int port) throws IOException {
+        this(SocketChannel.open(new InetSocketAddress(host, port)));
     }
 
 

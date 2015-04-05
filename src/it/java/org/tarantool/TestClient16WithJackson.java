@@ -1,5 +1,6 @@
 package org.tarantool;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class TestClient16WithJackson {
@@ -19,7 +20,7 @@ public class TestClient16WithJackson {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         TarantoolGenericConnection16 con = new TarantoolGenericConnection16Impl("localhost", 3301, new JacksonMapper());
         con.auth("test", "test");
         int spaceId = (Integer) con.eval("return box.space.tester2.id").get(0);
@@ -32,8 +33,12 @@ public class TestClient16WithJackson {
         Pojo[] select0 = con.select(Pojo[].class, spaceId, 0, Arrays.asList(1), 0, 100, 0);
         System.out.println(Arrays.toString(select0));
 
+        Pojo[] update0 = con.update(Pojo[].class, spaceId, Arrays.asList("=", 1, 66));
+        System.out.println(Arrays.toString(update0));
+
         Pojo[] eval = con.eval(Pojo[].class, "return {age=99}"); //age should be overriden
         System.out.println(Arrays.toString(eval));
+
 
         Pojo eval2 = con.eval(Pojo.class,"return 1,99,'hello',false,{'no'},{4,5,6}");
         System.out.println(eval2);

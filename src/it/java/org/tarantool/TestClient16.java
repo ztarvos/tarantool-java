@@ -1,5 +1,6 @@
 package org.tarantool;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,7 @@ public class TestClient16 {
 
 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         TarantoolConnection16 con = new TarantoolConnection16Impl("localhost", 3301);
         con.auth("test", "test");
 

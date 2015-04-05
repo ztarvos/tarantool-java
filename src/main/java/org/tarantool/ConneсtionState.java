@@ -69,6 +69,10 @@ public class ConneсtionState {
 
 
     public ByteBuffer pack(Code code, Object[] args) {
+        return pack(code, null, args);
+    }
+
+    public ByteBuffer pack(Code code, Long syncId, Object[] args) {
         beginBody();
         if (args != null) {
             for (int i = 0, e = args.length; i < e; i += 2) {
@@ -77,7 +81,7 @@ public class ConneсtionState {
             }
         }
         endBody();
-        return pack(code, null, body);
+        return pack(code, syncId, body);
     }
 
     public ByteBuffer pack(Code code, Object sync, EnumMap<Key, Object> body) {
