@@ -6,7 +6,9 @@
     <artifactId>connector</artifactId>
     <version>1.6.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <name>Tarantool Connector for Java</name>
     <url>http://dgreenru.github.com/tarantool6-java</url>
     <build>
