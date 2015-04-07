@@ -33,7 +33,7 @@ public class TestClient16WithJackson {
         Pojo[] select0 = con.select(Pojo[].class, spaceId, 0, Arrays.asList(1), 0, 100, 0);
         System.out.println(Arrays.toString(select0));
 
-        Pojo[] update0 = con.update(Pojo[].class, spaceId, Arrays.asList("=", 1, 66));
+        Pojo[] update0 = con.update(Pojo[].class, spaceId, Arrays.asList(1), Arrays.asList("=", 1, 66));
         System.out.println(Arrays.toString(update0));
 
         Pojo[] eval = con.eval(Pojo[].class, "return {age=99}"); //age should be overriden

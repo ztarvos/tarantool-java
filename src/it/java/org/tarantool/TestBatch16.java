@@ -21,7 +21,7 @@ public class TestBatch16 {
 
     */
     public static void main(String[] args) throws IOException {
-        BatchConnection16 con = new BatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
+        TarantoolBatchConnection16 con = new TarantoolBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
         con.auth("test", "test");
 
         int spaceId = (Integer)con.eval("return box.space.tester.id").get(0);
@@ -38,7 +38,7 @@ public class TestBatch16 {
 
         List select0 = con.select(spaceId, 0, Arrays.asList(1), 0, 100, 0);
         ;
-        List update0 = con.update(spaceId, Arrays.asList(1), Arrays.asList("=", 1, "Тариф индивидуальный 1%."));
+        List update0 = con.update(spaceId, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
 
         List result = con.call("math.ceil", 1.3);
 

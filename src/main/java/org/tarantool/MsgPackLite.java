@@ -269,7 +269,7 @@ public class MsgPackLite {
         } else if (value <= MAX_7BIT) {//MP_FIXNUM - the value is value as an int
             return value;
         } else {
-            throw new IllegalArgumentException("Input contains invalid type value");
+            throw new IllegalArgumentException("Input contains invalid type value "+(byte) value);
         }
     }
 

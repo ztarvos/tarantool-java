@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class BatchConnection16Impl extends TarantoolConnection16Base implements BatchConnection16 {
+public class TarantoolBatchConnection16Impl extends TarantoolConnection16Base implements TarantoolBatchConnection16 {
     protected final AtomicLong syncId = new AtomicLong(0);
     protected Map<Long, Q> batch;
     protected boolean sent = false;
@@ -19,11 +19,11 @@ public class BatchConnection16Impl extends TarantoolConnection16Base implements 
 
     @Override
     public void end() {
-        sent = true;
         for (Map.Entry<Long, Q> entry : batch.entrySet()) {
             Q q = entry.getValue();
             write(state.pack(q.code, entry.getKey(), q.args));
         }
+        sent = true;
     }
 
     @Override
@@ -37,6 +37,7 @@ public class BatchConnection16Impl extends TarantoolConnection16Base implements 
             Q q = batch.remove(syncId);
             q.result.addAll((List) state.getBody().get(Key.DATA));
         }
+        batch = null;
         sent = false;
     }
 
@@ -52,7 +53,7 @@ public class BatchConnection16Impl extends TarantoolConnection16Base implements 
         }
     }
 
-    public BatchConnection16Impl(SocketChannel channel) {
+    public TarantoolBatchConnection16Impl(SocketChannel channel) {
         super(channel);
     }
 
