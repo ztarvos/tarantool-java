@@ -10,21 +10,21 @@ import java.util.List;
 
 public abstract class TarantoolConnection16Base {
     protected final SocketChannel channel;
-    protected final ConneсtionState state;
+    protected final ConnectionState state;
     protected final String salt;
 
     protected SocketChannel getChannel() {
         return channel;
     }
 
-    protected ConneсtionState getState() {
+    protected ConnectionState getState() {
         return state;
     }
 
     public TarantoolConnection16Base(SocketChannel channel) {
         try {
             this.channel = channel;
-            this.state = new ConneсtionState();
+            this.state = new ConnectionState();
             ByteBuffer welcome = state.getWelcomeBuffer();
             readFully(welcome);
             String firstLine = new String(welcome.array(), 0, welcome.position());
