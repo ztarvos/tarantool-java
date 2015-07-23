@@ -37,7 +37,7 @@ public class TestBatch16 {
 
         List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
 
-        List select0 = con.select(schema.tester.id, 0, Arrays.asList(1), 0, 100, 0);
+        List select0 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
 
         List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
 

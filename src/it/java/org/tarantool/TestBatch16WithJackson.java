@@ -33,7 +33,7 @@ public class TestBatch16WithJackson {
 
         TarantoolGenericBatchConnection16.Holder<Pojo[]> insert = con.insert(Pojo[].class, schema.tester.id, new Pojo());
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, schema.tester.id, 0, Arrays.asList(1), 0, 100, 0);
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
 
         TarantoolGenericBatchConnection16.Holder<Pojo[]> update0 = con.update(Pojo[].class, schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, 66));
 
