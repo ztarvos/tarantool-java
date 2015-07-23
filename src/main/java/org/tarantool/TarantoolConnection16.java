@@ -26,6 +26,8 @@ public interface TarantoolConnection16 {
 
     void auth(String username, String password);
 
+    <T> T schema(T schema);
+
     boolean ping();
 
     void close();

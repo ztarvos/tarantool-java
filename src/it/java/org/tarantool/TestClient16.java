@@ -23,19 +23,20 @@ public class TestClient16 {
         TarantoolConnection16 con = new TarantoolConnection16Impl("localhost", 3301);
         con.auth("test", "test");
 
-        int spaceId = (Integer) con.eval("return box.space.tester.id").get(0);
+        final TestSchema schema = con.schema(new TestSchema());
+        System.out.println(schema);
 
-        List delete0 = con.delete(spaceId, Arrays.asList(0));
+        List delete0 = con.delete(schema.tester.id, Arrays.asList(0));
         System.out.println(delete0);
-        List delete = con.delete(spaceId, Arrays.asList(1));
+        List delete = con.delete(schema.tester.id, Arrays.asList(1));
         System.out.println(delete);
-        List insert = con.insert(spaceId, Arrays.asList(1, "hello"));
+        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
         System.out.println(insert);
-        List insert2 = con.replace(spaceId, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
+        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
         System.out.println(insert2);
-        List select0 = con.select(spaceId, 0, Arrays.asList(1), 0, 100, 0);
+        List select0 = con.select(schema.tester.id, 0, Arrays.asList(1), 0, 100, 0);
         System.out.println(select0);
-        List update0 = con.update(spaceId, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
+        List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
         System.out.println(update0);
         List result = con.call("math.ceil", 1.3);
         System.out.println(result);

@@ -24,21 +24,22 @@ public class TestBatch16 {
         TarantoolBatchConnection16 con = new TarantoolBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
         con.auth("test", "test");
 
-        int spaceId = (Integer)con.eval("return box.space.tester.id").get(0);
+        final TestSchema schema = con.schema(new TestSchema());
+        System.out.println(schema);
 
         con.begin();
 
-        List delete0 = con.delete(spaceId, Arrays.asList(0));
+        List delete0 = con.delete(schema.tester.id, Arrays.asList(0));
 
-        List delete = con.delete(spaceId, Arrays.asList(1));
+        List delete = con.delete(schema.tester.id, Arrays.asList(1));
 
-        List insert = con.insert(spaceId, Arrays.asList(1, "hello"));
+        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
 
-        List insert2 = con.replace(spaceId, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
+        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
 
-        List select0 = con.select(spaceId, 0, Arrays.asList(1), 0, 100, 0);
-        ;
-        List update0 = con.update(spaceId, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
+        List select0 = con.select(schema.tester.id, 0, Arrays.asList(1), 0, 100, 0);
+
+        List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
 
         List result = con.call("math.ceil", 1.3);
 

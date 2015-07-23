@@ -25,16 +25,17 @@ public class TestBatch16WithJackson {
     public static void main(String[] args) throws IOException {
         TarantoolGenericBatchConnection16 con = new TarantoolGenericBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost",3301)), new JacksonMapper());
         con.auth("test", "test");
-        int spaceId = (Integer) con.eval("return box.space.tester2.id").get(0);
+        final TestSchema schema = con.schema(new TestSchema());
+        System.out.println(schema);
         con.begin();
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> delete = con.delete(Pojo[].class, spaceId, Arrays.asList(1));
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> delete = con.delete(Pojo[].class, schema.tester.id, Arrays.asList(1));
 
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> insert = con.insert(Pojo[].class, spaceId, new Pojo());
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> insert = con.insert(Pojo[].class, schema.tester.id, new Pojo());
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, spaceId, 0, Arrays.asList(1), 0, 100, 0);
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, schema.tester.id, 0, Arrays.asList(1), 0, 100, 0);
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> update0 = con.update(Pojo[].class, spaceId, Arrays.asList(1), Arrays.asList("=", 1, 66));
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> update0 = con.update(Pojo[].class, schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, 66));
 
         TarantoolGenericBatchConnection16.Holder<Pojo[]> eval = con.eval(Pojo[].class, "return {age=99}"); //age should be overriden
 

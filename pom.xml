@@ -4,13 +4,13 @@
 
     <groupId>org.tarantool</groupId>
     <artifactId>connector</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.2</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <name>Tarantool Connector for Java</name>
-    <url>http://dgreenru.github.com/tarantool6-java</url>
+    <url>https://github.com/tarantool/tarantool-java</url>
     <build>
         <plugins>
             <plugin>

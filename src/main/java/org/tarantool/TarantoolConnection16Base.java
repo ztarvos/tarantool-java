@@ -1,17 +1,25 @@
 package org.tarantool;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.tarantool.schema.IndexId;
+import org.tarantool.schema.Space;
+import org.tarantool.schema.SpaceId;
 
 public abstract class TarantoolConnection16Base {
     protected final SocketChannel channel;
     protected final ConnectionState state;
     protected final String salt;
+
 
     protected SocketChannel getChannel() {
         return channel;
@@ -153,6 +161,60 @@ public abstract class TarantoolConnection16Base {
 
         }
     }
+
+    public <T> T schema(T schema)  {
+        final Map<String, Integer> spaces = callMap("box.space._vspace:select", new int[]{2}, 0, "");
+        final String idxSep = "_";
+        final Map<String, Integer> indexes = callMap("box.space._vindex:select", new int[]{0, 2}, 1, idxSep);
+        final Field[] fields = schema.getClass().getFields();
+        for (Field field : fields) {
+            final Space space = field.getAnnotation(Space.class);
+            if (space != null) {
+                String spaceName = space.value().isEmpty() ? field.getName() : space.value();
+                final Integer spaceIndex = spaces.get(spaceName);
+                if(spaceIndex == null) {
+                    throw new IllegalStateException("Can't find ID for space "+spaceName);
+                }
+                try {
+                    final Object spaceObject = field.get(schema);
+                    for (Field f : spaceObject.getClass().getFields()) {
+                        final SpaceId spaceId = f.getAnnotation(SpaceId.class);
+                        final IndexId indexId = f.getAnnotation(IndexId.class);
+                        if (spaceId != null) {
+                            f.set(spaceObject, f.getClass().isPrimitive() ? spaceIndex.intValue() : spaceIndex);
+                        } else if(indexId!=null) {
+                            final String indexName = indexId.value().isEmpty() ? f.getName() : indexId.value();
+                            final Integer indexIdx = indexes.get(spaceIndex + idxSep + indexName);
+                            if(indexIdx == null) {
+                                throw new IllegalStateException("Can't find index id " + spaceName + "." + indexName);
+                            }
+                            f.set(spaceObject, indexIdx);
+                        }
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("All schema field should be accessible", e);
+                }
+            }
+        }
+        return schema;
+    }
+
+    protected <K, V> Map<K, V> callMap(String function, int[] key, int value, String keySeparator, Object... args) {
+        final List<List> tuples = call(function, args);
+        Map result = new HashMap();
+        for (List tuple : tuples) {
+            StringBuilder keyValue = new StringBuilder();
+            for (Integer k : key) {
+                if (keyValue.length() > 0) {
+                    keyValue.append(keySeparator);
+                }
+                keyValue.append(tuple.get(k));
+            }
+            result.put(keyValue.toString(), tuple.get(value));
+        }
+        return result;
+    }
+
 
     protected abstract List exec(Code code, Object... args);
 }
