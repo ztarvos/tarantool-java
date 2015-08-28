@@ -38,6 +38,13 @@ public class TestClient16 {
         System.out.println(select0);
         List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
         System.out.println(update0);
+
+        con.upsert(schema.tester.id, Arrays.asList(1), Arrays.asList(1, "hello"), Arrays.asList("=", 1, "Hello World!!!"));
+        con.upsert(schema.tester.id, Arrays.asList(2), Arrays.asList(2, "hello"),Arrays.asList("=", 1, "Hello World!!!"));
+        List select1 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
+        System.out.println(select1);
+        List select2 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(2), 0, 100, 0);
+        System.out.println(select2);
         List result = con.call("math.ceil", 1.3);
         System.out.println(result);
         List eval = con.eval("return ...", 1, 2, 3);

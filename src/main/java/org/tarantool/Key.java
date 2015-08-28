@@ -10,6 +10,7 @@ public enum Key implements Callable<Integer> {
     ITERATOR(0x14), KEY(0x20),
     TUPLE(0x21), FUNCTION(0x22),
     USER_NAME(0x23),EXPRESSION(0x27),
+    UPSERT_OPS(0x28),
     DATA(0x30), ERROR(0x31);
 
     int id;

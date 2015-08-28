@@ -18,5 +18,7 @@ public interface TarantoolAsyncConnection16 {
 
     Future<List> eval(String expression, Object... args);
 
+    boolean isValid();
+
     void close();
 }

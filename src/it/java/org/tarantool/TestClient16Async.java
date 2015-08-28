@@ -43,17 +43,22 @@ public class TestClient16Async {
                 @Override
                 public void run() {
                     for (int i = 0; i < 10; i++) {
-                        Future<List> call = con.call("math.ceil", 1.3);
-                        Future<List> eval = con.eval("return ...", 1, 2, 3);
-                        System.out.println(call.isDone() + " " + eval.isDone());
-                        try {
-                            List cr = call.get();
-                            List er = eval.get();
-                            System.out.println(cr);
-                            System.out.println(er);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        if (con.isValid()) {
+                            Future<List> call = con.call("math.ceil", 1.3);
+                            Future<List> eval = con.eval("return ...", 1, 2, 3);
+                            System.out.println(call.isDone() + " " + eval.isDone());
+                            try {
+                                List cr = call.get();
+                                List er = eval.get();
+                                System.out.println(cr);
+                                System.out.println(er);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            System.out.println("Connection is not valid");
                         }
+
                     }
                 }
             });

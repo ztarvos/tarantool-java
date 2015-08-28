@@ -172,6 +172,11 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
         close(null);
     }
 
+    @Override
+    public boolean isValid() {
+        return key.isValid();
+    }
+
     public void close(Exception e) {
         error = e;
         try {

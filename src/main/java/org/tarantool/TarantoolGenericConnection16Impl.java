@@ -38,6 +38,11 @@ public class TarantoolGenericConnection16Impl extends TarantoolConnection16Impl 
     }
 
     @Override
+    public <T> void upsert(Class<T> clz, int space, Object key, Object def, Object... args) {
+        super.upsert(space, key, mapper.toTuple(def), mapper.toTuples(args));
+    }
+
+    @Override
     public <T> T delete(Class<T> clz, int space, Object key) {
         return mapper.toObject(clz, super.delete(space, key));
     }

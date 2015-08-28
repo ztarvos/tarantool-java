@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,10 @@ public abstract class TarantoolConnection16Base {
         return exec(Code.UPDATE, Key.SPACE, space, Key.KEY, key, Key.TUPLE, args);
     }
 
+    public void upsert(int space, Object key, Object def,Object... args) {
+        exec(Code.UPSERT, Key.SPACE, space, Key.KEY, key, Key.TUPLE, def, Key.UPSERT_OPS, args);
+    }
+
     public List delete(int space, Object key) {
         return exec(Code.DELETE, Key.SPACE, space, Key.KEY, key);
     }
@@ -122,6 +127,8 @@ public abstract class TarantoolConnection16Base {
     public List eval(String expression, Object... args) {
         return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, args);
     }
+
+
 
     public void auth(String username, final String password) {
         try {
@@ -149,9 +156,8 @@ public abstract class TarantoolConnection16Base {
         }
     }
 
-    public boolean ping() {
+    public void ping() {
         exec(Code.PING);
-        return true;
     }
 
     public void close() {
@@ -163,9 +169,9 @@ public abstract class TarantoolConnection16Base {
     }
 
     public <T> T schema(T schema)  {
-        final Map<String, Integer> spaces = callMap("box.space._vspace:select", new int[]{2}, 0, "");
+        final Map<String, Integer> spaces = callMap(281, new int[]{2}, 0, "");
         final String idxSep = "_";
-        final Map<String, Integer> indexes = callMap("box.space._vindex:select", new int[]{0, 2}, 1, idxSep);
+        final Map<String, Integer> indexes = callMap(289, new int[]{0, 2}, 1, idxSep);
         final Field[] fields = schema.getClass().getFields();
         for (Field field : fields) {
             final Space space = field.getAnnotation(Space.class);
@@ -199,8 +205,8 @@ public abstract class TarantoolConnection16Base {
         return schema;
     }
 
-    protected <K, V> Map<K, V> callMap(String function, int[] key, int value, String keySeparator, Object... args) {
-        final List<List> tuples = call(function, args);
+    protected <K, V> Map<K, V> callMap(int space, int[] key, int value, String keySeparator, Object... args) {
+        final List<List> tuples = select(space, 0, Arrays.asList(), 0, 1000, 0);
         Map result = new HashMap();
         for (List tuple : tuples) {
             StringBuilder keyValue = new StringBuilder();

@@ -89,12 +89,14 @@ public abstract class TarantoolSelectorWorker implements Runnable {
                     }
                     Set<SelectionKey> keys = selector.keys();
                     for (SelectionKey key : keys) {
-                        ChannelProcessor ps = (ChannelProcessor) key.attachment();
-                        try {
-                            ps.idle();
-                        } catch (Exception e) {
-                            error(key, e);
-                            ps.close(e);
+                        if (key.isValid()) {
+                            ChannelProcessor ps = (ChannelProcessor) key.attachment();
+                            try {
+                                ps.idle();
+                            } catch (Exception e) {
+                                error(key, e);
+                                ps.close(e);
+                            }
                         }
                     }
                     while (!register.isEmpty()) {

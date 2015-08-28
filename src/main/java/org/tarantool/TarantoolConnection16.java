@@ -16,6 +16,7 @@ public interface TarantoolConnection16 {
 
     List update(int space, Object key, Object... tuple);
 
+    void upsert(int space, Object key, Object defTuple, Object... ops);
 
     List delete(int space, Object key);
 
@@ -28,7 +29,7 @@ public interface TarantoolConnection16 {
 
     <T> T schema(T schema);
 
-    boolean ping();
+    void ping();
 
     void close();
 

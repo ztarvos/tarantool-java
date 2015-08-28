@@ -46,6 +46,25 @@ public class TestClient16WithJackson {
 
         Pojo[] eval3= con.eval(Pojo[].class,"return {1,99,'hello',false,{'no'},{4,5,6}}");
         System.out.println(Arrays.toString(eval3));
+
+        con.upsert(Pojo[].class,schema.tester.id, Arrays.asList(1), new Pojo(), Arrays.asList("=", 1, 999));
+
+        Pojo[] delete2 = con.delete(Pojo[].class, schema.tester.id, Arrays.asList(2));
+
+        System.out.println(Arrays.toString(delete2));
+
+        final Pojo def = new Pojo();
+        def.id = 2;
+        con.upsert(Pojo[].class,schema.tester.id, Arrays.asList(2), def,Arrays.asList("=", 1, 998));
+
+
+
+        Pojo[] select1 = con.select(Pojo[].class, schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
+        System.out.println(Arrays.toString(select1));
+
+        Pojo[] select2 = con.select(Pojo[].class, schema.tester.id, schema.tester.primary, Arrays.asList(2), 0, 100, 0);
+        System.out.println(Arrays.toString(select2));
+
         con.close();
     }
 }

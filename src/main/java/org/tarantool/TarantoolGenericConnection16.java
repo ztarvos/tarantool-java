@@ -15,6 +15,9 @@ public interface TarantoolGenericConnection16 extends TarantoolConnection16 {
     <T> T update(Class<T> clz, int space, Object key, Object... args);
 
 
+    <T> void upsert(Class<T> clz, int space, Object key, Object def, Object... args);
+
+
     <T> T delete(Class<T> clz, int space, Object key);
 
 
