@@ -7,7 +7,7 @@ First you should add maven repository and dependency to your pom file
 <repository>
   <id>tarantool-java-repo</id>
   <name>Tarantool java connector repository</name>
-  <url>https://raw.githubusercontent.com/tarantool/tarantool-java/master/maven-repo/</url>
+  <url>https://cdn.rawgit.com/tarantool/tarantool-java/master/maven-repo/</url>
 </repository>
 ```
 ```xml
