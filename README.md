@@ -2,19 +2,12 @@
 
 ## How to start
 
-First you should add maven repository and dependency to your pom file
-```xml
-<repository>
-  <id>tarantool-java-repo</id>
-  <name>Tarantool java connector repository</name>
-  <url>https://cdn.rawgit.com/tarantool/tarantool-java/master/maven-repo/</url>
-</repository>
-```
+First you should add dependency to your pom file
 ```xml
 <dependency>
   <groupId>org.tarantool</groupId>
   <artifactId>connector</artifactId>
-  <version>1.6.3-SNAPSHOT</version>
+  <version>1.6.3</version>
 </dependency>
 ```
 Afterward you should configure you tarantool and create any type of connection ([source code] (https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16.java)):
