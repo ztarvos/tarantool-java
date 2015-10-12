@@ -11,6 +11,28 @@
     </properties>
     <name>Tarantool Connector for Java</name>
     <url>https://github.com/tarantool/tarantool-java</url>
+    <description>Tarantool client for java</description>
+    <licenses>
+        <license>
+            <name>The BSD licence</name>
+            <url>http://opensource.org/licenses/BSD-3-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/tarantool/tarantool-java</url>
+        <connection>scm:git:git://github.com/tarantool/tarantool-java.git</connection>
+        <developerConnection>scm:git:git@github.com:tarantool/tarantool-java.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>Dmitry Grytsovets</name>
+            <email>dmitry.grytsovets@gmail.com</email>
+            <organization>Tarantool</organization>
+            <organizationUrl>http://tarantool.org/</organizationUrl>
+        </developer>
+    </developers>
     <build>
         <plugins>
             <plugin>
