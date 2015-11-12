@@ -17,6 +17,7 @@ public class TestBatch16 {
 
      box.schema.user.create('test', { password = 'test' })
      box.schema.user.grant('test', 'execute,read,write', 'universe')
+     box.space.tester:format{{name='id',type='num'},{name='text',type='str'}}
 
 
     */

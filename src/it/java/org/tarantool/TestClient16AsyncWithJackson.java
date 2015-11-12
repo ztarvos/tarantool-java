@@ -22,6 +22,7 @@ public class TestClient16AsyncWithJackson {
 
     box.schema.user.create('test', { password = 'test' })
     box.schema.user.grant('test', 'execute,read,write', 'universe')
+    box.space['tester2']:format{{name='id', type='num'},{name='age', type='num'},{name='name', type='str'},{name='male', type='str'},{name='tags', type='array'},{name='links',type='array'}}
 
 
    */

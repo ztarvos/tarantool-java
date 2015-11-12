@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tarantool.schema.FieldsMapping;
 import org.tarantool.schema.IndexId;
 import org.tarantool.schema.Space;
 import org.tarantool.schema.SpaceId;
@@ -169,15 +170,16 @@ public abstract class TarantoolConnection16Base {
     }
 
     public <T> T schema(T schema)  {
-        final Map<String, Integer> spaces = callMap(281, new int[]{2}, 0, "");
+        final Map<String, List> spaces = callMap(281, new int[]{2}, "");
         final String idxSep = "_";
-        final Map<String, Integer> indexes = callMap(289, new int[]{0, 2}, 1, idxSep);
+        final Map<String, List> indexes = callMap(289, new int[]{0, 2}, idxSep);
         final Field[] fields = schema.getClass().getFields();
         for (Field field : fields) {
             final Space space = field.getAnnotation(Space.class);
             if (space != null) {
                 String spaceName = space.value().isEmpty() ? field.getName() : space.value();
-                final Integer spaceIndex = spaces.get(spaceName);
+                List spaceMeta = spaces.get(spaceName);
+                final Integer spaceIndex = (Integer) spaceMeta.get(0);
                 if(spaceIndex == null) {
                     throw new IllegalStateException("Can't find ID for space "+spaceName);
                 }
@@ -186,15 +188,33 @@ public abstract class TarantoolConnection16Base {
                     for (Field f : spaceObject.getClass().getFields()) {
                         final SpaceId spaceId = f.getAnnotation(SpaceId.class);
                         final IndexId indexId = f.getAnnotation(IndexId.class);
+                        final FieldsMapping fieldsMapping = f.getAnnotation(FieldsMapping.class);
                         if (spaceId != null) {
                             f.set(spaceObject, f.getClass().isPrimitive() ? spaceIndex.intValue() : spaceIndex);
                         } else if(indexId!=null) {
                             final String indexName = indexId.value().isEmpty() ? f.getName() : indexId.value();
-                            final Integer indexIdx = indexes.get(spaceIndex + idxSep + indexName);
+                            final Integer indexIdx = (Integer)indexes.get(spaceIndex + idxSep + indexName).get(1);
                             if(indexIdx == null) {
                                 throw new IllegalStateException("Can't find index id " + spaceName + "." + indexName);
                             }
                             f.set(spaceObject, indexIdx);
+                        } else if(fieldsMapping != null) {
+                            final List spaceFieldsMap = (List) spaceMeta.get(6);
+                            Map<String,Integer> fn = new HashMap<String, Integer>();
+                            for(int i=0;i<spaceFieldsMap.size();i++) {
+                               Map<String,String> elem = (Map<String, String>) spaceFieldsMap.get(i);
+                                fn.put(elem.get("name"), i);
+                            }
+                            Object fieldsObj = f.get(spaceObject);
+                            Field[] spaceFields = fieldsObj.getClass().getFields();
+                            for(Field sf:spaceFields) {
+                                final String fieldName = fieldsMapping.value().isEmpty() ? sf.getName() : fieldsMapping.value();
+                                Integer idx = fn.get(fieldName);
+                                if(idx == null) {
+                                    throw new IllegalStateException("Can't find field id " + spaceName + "." + fieldName);
+                                }
+                                sf.set(fieldsObj, sf.getClass().isPrimitive() ? idx.intValue() : idx);
+                            }
                         }
                     }
                 } catch (IllegalAccessException e) {
@@ -205,7 +225,7 @@ public abstract class TarantoolConnection16Base {
         return schema;
     }
 
-    protected <K, V> Map<K, V> callMap(int space, int[] key, int value, String keySeparator, Object... args) {
+    protected Map<String, List> callMap(int space, int[] key,String keySeparator) {
         final List<List> tuples = select(space, 0, Arrays.asList(), 0, 1000, 0);
         Map result = new HashMap();
         for (List tuple : tuples) {
@@ -216,7 +236,7 @@ public abstract class TarantoolConnection16Base {
                 }
                 keyValue.append(tuple.get(k));
             }
-            result.put(keyValue.toString(), tuple.get(value));
+            result.put(keyValue.toString(), tuple);
         }
         return result;
     }

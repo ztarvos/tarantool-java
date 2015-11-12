@@ -15,6 +15,7 @@ public class TestBatch16WithJackson {
 
      box.schema.user.create('test', { password = 'test' })
      box.schema.user.grant('test', 'execute,read,write', 'universe')
+     box.space['tester2']:format{{name='id', type='num'},{name='age', type='num'},{name='name', type='str'},{name='male', type='str'},{name='tags', type='array'},{name='links',type='array'}}
 
 
     */
@@ -25,17 +26,17 @@ public class TestBatch16WithJackson {
     public static void main(String[] args) throws IOException {
         TarantoolGenericBatchConnection16 con = new TarantoolGenericBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost",3301)), new JacksonMapper());
         con.auth("test", "test");
-        final TestSchema schema = con.schema(new TestSchema());
+        final TestSchema2 schema = con.schema(new TestSchema2());
         System.out.println(schema);
         con.begin();
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> delete = con.delete(Pojo[].class, schema.tester.id, Arrays.asList(1));
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> delete = con.delete(Pojo[].class, schema.tester2.id, Arrays.asList(1));
 
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> insert = con.insert(Pojo[].class, schema.tester.id, new Pojo());
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> insert = con.insert(Pojo[].class, schema.tester2.id, new Pojo());
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> select0 = con.select(Pojo[].class, schema.tester2.id, schema.tester2.primary, Arrays.asList(1), 0, 100, 0);
 
-        TarantoolGenericBatchConnection16.Holder<Pojo[]> update0 = con.update(Pojo[].class, schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, 66));
+        TarantoolGenericBatchConnection16.Holder<Pojo[]> update0 = con.update(Pojo[].class, schema.tester2.id, Arrays.asList(1), Arrays.asList("=", 1, 66));
 
         TarantoolGenericBatchConnection16.Holder<Pojo[]> eval = con.eval(Pojo[].class, "return {age=99}"); //age should be overriden
 

@@ -17,11 +17,12 @@ public class TestClient16Async {
     Before executing this test you should configure your local tarantool
 
     box.cfg{listen=3301}
-    box.schema.space.create('tester2')
+    box.schema.space.create('tester')
     box.space.tester2:create_index('primary', {type = 'hash', parts = {1, 'NUM'}})
 
     box.schema.user.create('test', { password = 'test' })
     box.schema.user.grant('test', 'execute,read,write', 'universe')
+    box.space.tester:format{{name='id',type='num'},{name='text',type='str'}}
 
 
    */

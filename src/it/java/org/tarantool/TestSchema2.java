@@ -6,17 +6,19 @@ import org.tarantool.schema.IndexId;
 import org.tarantool.schema.Space;
 import org.tarantool.schema.SpaceId;
 
-public class TestSchema {
+public class TestSchema2 {
 
     @Space
-    public SpaceWithPK tester = new SpaceWithPK();
+    public SpaceWithPK tester2 = new SpaceWithPK();
 
     public class SpaceFields {
         public int id;
-        public int text;
-
+        public int age;
+        public int name;
+        public int male;
+        public int tags;
+        public int links;
     }
-
 
     public class SpaceWithPK {
         @SpaceId
@@ -40,7 +42,7 @@ public class TestSchema {
     @Override
     public String toString() {
         return "TestSchema{" +
-                "tester=" + tester +
+                "tester=" + tester2 +
                 '}';
     }
 }
