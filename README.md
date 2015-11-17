@@ -7,7 +7,7 @@ First you should add dependency to your pom file
 <dependency>
   <groupId>org.tarantool</groupId>
   <artifactId>connector</artifactId>
-  <version>1.6.3</version>
+  <version>1.6.4</version>
 </dependency>
 ```
 Afterward you should configure you tarantool and create any type of connection ([source code] (https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16.java)):
