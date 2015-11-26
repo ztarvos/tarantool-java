@@ -66,7 +66,10 @@ public class ConnectionState {
     private void toKeyMap(Object unpack, EnumMap<Key, Object> result) {
         Map<Integer, Object> map = (Map<Integer, Object>) unpack;
         for (Map.Entry<Integer, Object> entry : map.entrySet()) {
-            result.put(Key.getById(entry.getKey()), entry.getValue());
+            Key key = Key.getById(entry.getKey());
+            if (key != null) {
+                result.put(key, entry.getValue());
+            }
         }
     }
 
