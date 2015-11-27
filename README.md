@@ -1,5 +1,8 @@
 # Java Connector for Tarantool 1.6
 
+## Problems & Questions
+http://stackoverflow.com/questions/ask/advice with tags `tarantool` and `java`.
+
 ## How to start
 
 First you should add dependency to your pom file
