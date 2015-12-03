@@ -3,10 +3,15 @@ package org.tarantool;
 
 import org.tarantool.schema.FieldsMapping;
 import org.tarantool.schema.IndexId;
+import org.tarantool.schema.SchemaId;
 import org.tarantool.schema.Space;
 import org.tarantool.schema.SpaceId;
 
 public class TestSchema {
+
+    @SchemaId
+    int schemaId;
+
 
     @Space
     public SpaceWithPK tester = new SpaceWithPK();
@@ -40,7 +45,8 @@ public class TestSchema {
     @Override
     public String toString() {
         return "TestSchema{" +
-                "tester=" + tester +
+                "schemaId=" + schemaId +
+                ", tester=" + tester +
                 '}';
     }
 }

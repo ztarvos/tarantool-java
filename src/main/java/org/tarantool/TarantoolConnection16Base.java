@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.tarantool.schema.FieldsMapping;
 import org.tarantool.schema.IndexId;
+import org.tarantool.schema.SchemaId;
 import org.tarantool.schema.Space;
 import org.tarantool.schema.SpaceId;
 
@@ -188,6 +189,7 @@ public abstract class TarantoolConnection16Base {
                     for (Field f : spaceObject.getClass().getFields()) {
                         final SpaceId spaceId = f.getAnnotation(SpaceId.class);
                         final IndexId indexId = f.getAnnotation(IndexId.class);
+                        final SchemaId schemaId = f.getAnnotation(SchemaId.class);
                         final FieldsMapping fieldsMapping = f.getAnnotation(FieldsMapping.class);
                         if (spaceId != null) {
                             f.set(spaceObject, f.getClass().isPrimitive() ? spaceIndex.intValue() : spaceIndex);
@@ -215,6 +217,12 @@ public abstract class TarantoolConnection16Base {
                                 }
                                 sf.set(fieldsObj, sf.getClass().isPrimitive() ? idx.intValue() : idx);
                             }
+                        } else if(schemaId!=null) {
+                            Integer value = (Integer) getState().getBody().get(Key.SCHEMA_ID);
+                            if (value == null) {
+                                throw new IllegalStateException("Didn't get schema id from server, please check tarantool version");
+                            }
+                            f.set(spaceObject, f.getClass().isPrimitive() ? value.intValue() : value);
                         }
                     }
                 } catch (IllegalAccessException e) {
