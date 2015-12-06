@@ -1,4 +1,4 @@
-package org.tarantool;
+package org.tarantool.generic;
 
 import java.util.List;
 

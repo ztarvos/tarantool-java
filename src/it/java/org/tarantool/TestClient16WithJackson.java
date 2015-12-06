@@ -3,6 +3,10 @@ package org.tarantool;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.tarantool.generic.TarantoolGenericConnection16;
+import org.tarantool.generic.TarantoolGenericConnection16Impl;
+import org.tarantool.schema.SchemaResolver;
+
 public class TestClient16WithJackson {
     /*
      Before executing this test you should configure your local tarantool
@@ -22,7 +26,7 @@ public class TestClient16WithJackson {
     public static void main(String[] args) throws IOException {
         TarantoolGenericConnection16 con = new TarantoolGenericConnection16Impl("localhost", 3301, new JacksonMapper());
         con.auth("test", "test");
-        final TestSchema2 schema = con.schema(new TestSchema2());
+        final TestSchema2 schema = new SchemaResolver().schema(new TestSchema2(), con);
         System.out.println(schema);
         Pojo[] delete = con.delete(Pojo[].class, schema.tester2.id, Arrays.asList(1));
         System.out.println(Arrays.toString(delete));

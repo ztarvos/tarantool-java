@@ -1,4 +1,4 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,40 +14,47 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.ChannelProcessor, TarantoolAsyncConnection16 {
+import org.tarantool.Code;
+import org.tarantool.CommunicationException;
+import org.tarantool.ConnectionState;
+import org.tarantool.Key;
+import org.tarantool.TarantoolConnection16Base;
+import org.tarantool.TarantoolException;
+
+public class TarantoolAsyncConnection16Impl extends TarantoolConnection16Base<Integer,Object,Object,Future<List>> implements TarantoolSelectorWorker.ChannelProcessor, TarantoolAsyncConnection16 {
     protected static final int ST_LENGTH = 0;
     protected static final int ST_BODY = 1;
     protected volatile SelectionKey key;
-    protected volatile SocketChannel channel;
     protected AtomicLong syncId = new AtomicLong(0);
-    protected final ConnectionState readState = new ConnectionState();
     protected ByteBuffer readBuffer;
     protected final ConnectionState writeState = new ConnectionState();
     protected ByteBuffer writeBuffer;
     protected LinkedBlockingQueue<AsyncQuery> writeQueue = new LinkedBlockingQueue<AsyncQuery>();
     protected Map<Long, AsyncQuery> futures = new ConcurrentHashMap<Long, AsyncQuery>();
 
-    protected int state = ST_LENGTH;
+    protected int conState = ST_LENGTH;
+    protected boolean syncMode;
     protected volatile Exception error;
+    protected volatile Long schemaId;
 
 
     public TarantoolAsyncConnection16Impl(TarantoolSelectorWorker worker, SocketChannel channel, String username, String password, long timeout, TimeUnit unit) {
-        TarantoolConnection16Impl connection = new TarantoolConnection16Impl(channel);
+        super(channel);
+        syncMode = true;
         if (username != null) {
-            connection.auth(username, password);
+            this.auth(username, password);
         }
-        BlockingQueue<SelectionKey> queue = worker.register(connection.getChannel(), this);
+        syncMode = false;
+        BlockingQueue<SelectionKey> queue = worker.register(channel, this);
         try {
             key = queue == null ? null : queue.poll(timeout, unit);
         } catch (InterruptedException e) {
             throw new CommunicationException("Can't register key", e);
         }
         if (key == null) {
-            connection.close();
             throw new CommunicationException("Can't register key");
         }
-        this.channel = channel;
-        readBuffer = readState.getLengthReadBuffer();
+        readBuffer = state.getLengthReadBuffer();
     }
 
     @Override
@@ -64,31 +71,37 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
             }
             if (read > 0) {
                 if (readBuffer.position() == readBuffer.limit()) {
-                    if (state == ST_LENGTH) {
-                        readBuffer = readState.getPacketReadBuffer();
-                        state = ST_BODY;
+                    if (conState == ST_LENGTH) {
+                        readBuffer = state.getPacketReadBuffer();
+                        conState = ST_BODY;
                         read();
-                    } else if (state == ST_BODY) {
-                        readState.unpack();
-                        long code = (Long) readState.getHeader().get(Key.CODE);
-                        long syncId = (Long) readState.getHeader().get(Key.SYNC);
-                        AsyncQuery q = futures.remove(syncId);
-                        if (q != null) {
-                            if (code != 0) {
-                                Object error = readState.getBody().get(Key.ERROR);
-                                q.setError(new TarantoolException((int) code, error instanceof String ? (String) error : new String((byte[]) error)));
-                            } else {
-                                q.setValue(readState.getBody().get(Key.DATA));
-                            }
-
-                        }
-                        readBuffer = readState.getLengthReadBuffer();
-                        state = ST_LENGTH;
+                    } else if (conState == ST_BODY) {
+                        state.unpack();
+                        long code = (Long) state.getHeader().get(Key.CODE);
+                        long syncId1 = (Long) state.getHeader().get(Key.SYNC);
+                        schemaId = (Long) state.getHeader().get(Key.SCHEMA_ID);
+                        AsyncQuery q = futures.remove(syncId1);
+                        setFutureResult(code, q);
+                        readBuffer = state.getLengthReadBuffer();
+                        conState = ST_LENGTH;
                     }
                 }
             }
         } catch (IOException e) {
             close(e);
+        }
+    }
+
+
+    protected void setFutureResult(long code, AsyncQuery q) {
+        if (q != null) {
+            if (code != 0) {
+                Object error = state.getBody().get(Key.ERROR);
+                q.setError(new TarantoolException((int) code, error instanceof String ? (String) error : new String((byte[]) error)));
+            } else {
+                q.setValue(state.getBody().get(Key.DATA));
+            }
+
         }
     }
 
@@ -117,55 +130,36 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
     }
 
 
-    protected Future<List> exec(Code code, Object... args) {
+    @Override
+    public Future<List> exec(Code code, Object... args) {
+        if (syncMode) {
+            write(state.pack(code, args));
+            AsyncQuery<List> q = new AsyncQuery<List>();
+            q.setValue((List) readData());
+            schemaId = (Long) state.getHeader().get(Key.SCHEMA_ID);
+            return q;
+        }
         if (key.isValid()) {
             AsyncQuery q = new AsyncQuery(syncId.incrementAndGet(), code, args);
-            futures.put(q.id, q);
-            writeQueue.add(q);
-            if (key.isValid()) {
-                key.selector().wakeup();
+            if (addQuery(q)) {
                 return q;
-            } else {
-                q.setError(error);
             }
         }
         throw new CommunicationException("Key is cancelled", error);
     }
 
-    @Override
-    public Future<List> select(int space, int index, Object key, int offset, int limit, int iterator) {
-        return exec(Code.SELECT, Key.SPACE, space, Key.INDEX, index, Key.KEY, key, Key.ITERATOR, iterator, Key.LIMIT, limit);
+    protected boolean addQuery(AsyncQuery q) {
+        futures.put(q.id, q);
+        writeQueue.add(q);
+        if (key.isValid()) {
+            key.selector().wakeup();
+            return true;
+        } else {
+            q.setError(error);
+        }
+        return false;
     }
 
-    @Override
-    public Future<List> insert(int space, Object tuple) {
-        return exec(Code.INSERT, Key.SPACE, space, Key.TUPLE, tuple);
-    }
-
-    @Override
-    public Future<List> replace(int space, Object tuple) {
-        return exec(Code.REPLACE, Key.SPACE, space, Key.TUPLE, tuple);
-    }
-
-    @Override
-    public Future<List> update(int space, Object key, Object... args) {
-        return exec(Code.UPDATE, Key.SPACE, space, Key.KEY, key, Key.TUPLE, args);
-    }
-
-    @Override
-    public Future<List> delete(int space, Object key) {
-        return exec(Code.DELETE, Key.SPACE, space, Key.KEY, key);
-    }
-
-    @Override
-    public Future<List> call(String function, Object... args) {
-        return exec(Code.CALL, Key.FUNCTION, function, Key.TUPLE, args);
-    }
-
-    @Override
-    public Future<List> eval(String expression, Object... args) {
-        return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, args);
-    }
 
     @Override
     public void close() {
@@ -191,4 +185,8 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
         }
     }
 
+    @Override
+    public Long getSchemaId() {
+        return schemaId;
+    }
 }

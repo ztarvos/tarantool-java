@@ -10,7 +10,7 @@ import org.tarantool.schema.SpaceId;
 public class TestSchema {
 
     @SchemaId
-    int schemaId;
+    long schemaId;
 
 
     @Space

@@ -1,4 +1,4 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
@@ -14,6 +14,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.tarantool.CommunicationException;
 
 public abstract class TarantoolSelectorWorker implements Runnable {
 

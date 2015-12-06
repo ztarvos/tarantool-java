@@ -5,6 +5,10 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
+import org.tarantool.batch.TarantoolGenericBatchConnection16;
+import org.tarantool.batch.TarantoolGenericBatchConnection16Impl;
+import org.tarantool.schema.SchemaResolver;
+
 public class TestBatch16WithJackson {
     /*
      Before executing this test you should configure your local tarantool
@@ -26,7 +30,13 @@ public class TestBatch16WithJackson {
     public static void main(String[] args) throws IOException {
         TarantoolGenericBatchConnection16 con = new TarantoolGenericBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost",3301)), new JacksonMapper());
         con.auth("test", "test");
-        final TestSchema2 schema = con.schema(new TestSchema2());
+
+        TarantoolConnection16 c = new TarantoolConnection16Impl("localhost", 3301);
+        con.auth("test", "test");
+
+        final TestSchema2 schema = new SchemaResolver().schema(new TestSchema2(), c);
+        c.close();
+
         System.out.println(schema);
         con.begin();
         TarantoolGenericBatchConnection16.Holder<Pojo[]> delete = con.delete(Pojo[].class, schema.tester2.id, Arrays.asList(1));

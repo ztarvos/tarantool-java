@@ -1,4 +1,5 @@
-package org.tarantool;
+package org.tarantool.batch;
+
 
 
 public interface TarantoolGenericBatchConnection16 extends TarantoolBatchConnection16 {

@@ -1,8 +1,10 @@
-package org.tarantool;
+package org.tarantool.generic;
 
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+
+import org.tarantool.TarantoolConnection16Impl;
 
 public class TarantoolGenericConnection16Impl extends TarantoolConnection16Impl implements TarantoolGenericConnection16 {
     private final Mapper mapper;

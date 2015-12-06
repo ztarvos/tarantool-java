@@ -5,12 +5,15 @@ import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import org.tarantool.async.TarantoolAsyncGenericConnection16;
+import org.tarantool.async.TarantoolAsyncGenericConnection16Impl;
+import org.tarantool.async.TarantoolSelectorWorker;
 
 public class TestClient16AsyncWithJackson {
     /*

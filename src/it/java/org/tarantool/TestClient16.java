@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.tarantool.schema.SchemaResolver;
+
 
 public class TestClient16 {
     /*
@@ -22,7 +24,7 @@ public class TestClient16 {
         TarantoolConnection16 con = new TarantoolConnection16Impl("localhost", 3301);
         con.auth("test", "test");
 
-        final TestSchema schema = con.schema(new TestSchema());
+        final TestSchema schema = new SchemaResolver().schema(new TestSchema(), con);
         System.out.println(schema);
 
         List delete0 = con.delete(schema.tester.id, Arrays.asList(0));

@@ -1,41 +1,19 @@
-package org.tarantool;
+package org.tarantool.schema;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.tarantool.schema.FieldsMapping;
-import org.tarantool.schema.IndexId;
-import org.tarantool.schema.SchemaId;
-import org.tarantool.schema.Space;
-import org.tarantool.schema.SpaceId;
+import org.tarantool.TarantoolConnection16Ops;
 
+public class SchemaResolver {
 
-public class TarantoolConnection16Impl extends TarantoolConnection16Base<Integer,Object,Object,List> implements TarantoolConnection16 {
-
-    public TarantoolConnection16Impl(SocketChannel channel) {
-        super(channel);
-    }
-
-    public TarantoolConnection16Impl(String host, int port) throws IOException {
-        this(SocketChannel.open(new InetSocketAddress(host, port)));
-    }
-
-
-    public List exec(Code code, Object... args) {
-        write(state.pack(code, args));
-        return (List) readData();
-    }
-
-    public <T> T schema(T schema)  {
-        final Map<String, List> spaces = callMap(281, new int[]{2}, "");
+    public <T> T schema(T schema, TarantoolConnection16Ops<Integer,Object,Object,List> ops)  {
+        final Map<String, List> spaces = callMap(ops, 281, new int[]{2}, "");
         final String idxSep = "_";
-        final Map<String, List> indexes = callMap(289, new int[]{0, 2}, idxSep);
+        final Map<String, List> indexes = callMap(ops, 289, new int[]{0, 2}, idxSep);
         final Field[] fields = schema.getClass().getFields();
         for (Field field : fields) {
             final Space space = field.getAnnotation(Space.class);
@@ -79,12 +57,12 @@ public class TarantoolConnection16Impl extends TarantoolConnection16Base<Integer
                                 }
                                 sf.set(fieldsObj, sf.getClass().isPrimitive() ? idx.intValue() : idx);
                             }
-                        } else if(schemaId!=null) {
-                            Integer value = (Integer) getState().getBody().get(Key.SCHEMA_ID);
+                        } else if (schemaId != null) {
+                            Long value = ((TarantoolConnectionSchemaAware) ops).getSchemaId();
                             if (value == null) {
                                 throw new IllegalStateException("Didn't get schema id from server, please check tarantool version");
                             }
-                            f.set(spaceObject, f.getClass().isPrimitive() ? value.intValue() : value);
+                            f.set(spaceObject, f.getClass().isPrimitive() ? value.longValue() : value);
                         }
                     }
                 } catch (IllegalAccessException e) {
@@ -95,8 +73,8 @@ public class TarantoolConnection16Impl extends TarantoolConnection16Base<Integer
         return schema;
     }
 
-    public Map<String, List> callMap(Integer space, int[] key,String keySeparator) {
-        final List<List> tuples = select(space, 0, Arrays.asList(), 0, 1000, 0);
+    private Map<String, List> callMap(TarantoolConnection16Ops<Integer,Object,Object,List> ops,Integer space, int[] key,String keySeparator) {
+        final List<List> tuples = ops.select(space, 0, Arrays.asList(), 0, 1000, 0);
         Map result = new HashMap();
         for (List tuple : tuples) {
             StringBuilder keyValue = new StringBuilder();
@@ -110,6 +88,4 @@ public class TarantoolConnection16Impl extends TarantoolConnection16Base<Integer
         }
         return result;
     }
-
-
 }

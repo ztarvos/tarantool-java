@@ -1,5 +1,7 @@
-package org.tarantool;
+package org.tarantool.generic;
 
+
+import org.tarantool.TarantoolConnection16;
 
 public interface TarantoolGenericConnection16 extends TarantoolConnection16 {
 

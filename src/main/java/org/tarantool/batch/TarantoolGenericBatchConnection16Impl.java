@@ -1,7 +1,8 @@
-package org.tarantool;
+package org.tarantool.batch;
 
 import java.nio.channels.SocketChannel;
-import java.util.List;
+
+import org.tarantool.generic.Mapper;
 
 public class TarantoolGenericBatchConnection16Impl extends TarantoolBatchConnection16Impl implements TarantoolGenericBatchConnection16 {
 
@@ -12,14 +13,17 @@ public class TarantoolGenericBatchConnection16Impl extends TarantoolBatchConnect
         this.mapper = mapper;
     }
 
-    protected <T> Holder<T> wrap(final Class<T> clz, final List result) {
+    protected <T> Holder<T> wrap(final Class<T> clz, final BatchedQueryResult result) {
         return new Holder<T>() {
             @Override
             public T get()  {
                 if (batch != null) {
                     throw new IllegalStateException("You should end batch first");
                 }
-                return mapper.toObject(clz, result);
+                if (result.getError() != null) {
+                    throw result.getError();
+                }
+                return mapper.toObject(clz, result.getResult());
             }
         };
     }

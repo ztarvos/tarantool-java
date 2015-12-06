@@ -1,10 +1,12 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.tarantool.generic.Mapper;
 
 public class AsyncGenericQuery<T> implements Future<T> {
     Future<List> delegate;

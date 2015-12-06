@@ -1,10 +1,12 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.tarantool.Code;
 
 public class AsyncQuery<V> implements Future<V> {
     protected Long id;
@@ -64,5 +66,13 @@ public class AsyncQuery<V> implements Future<V> {
             throw new ExecutionException(error);
         }
         return value;
+    }
+
+    public Code getCode() {
+        return code;
+    }
+
+    public Object[] getArgs() {
+        return args;
     }
 }

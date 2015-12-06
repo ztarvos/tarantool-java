@@ -1,4 +1,4 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.util.concurrent.Future;
 

@@ -1,8 +1,10 @@
-package org.tarantool;
+package org.tarantool.async;
 
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import org.tarantool.generic.Mapper;
 
 public class TarantoolAsyncGenericConnection16Impl extends TarantoolAsyncConnection16Impl implements TarantoolAsyncGenericConnection16 {
     private final Mapper mapper;

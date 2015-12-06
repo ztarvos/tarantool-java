@@ -5,7 +5,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import org.tarantool.batch.BatchedQueryResult;
+import org.tarantool.batch.TarantoolBatchConnection16;
+import org.tarantool.batch.TarantoolBatchConnection16Impl;
+import org.tarantool.schema.SchemaResolver;
 
 public class TestBatch16 {
     /*
@@ -25,26 +29,30 @@ public class TestBatch16 {
         TarantoolBatchConnection16 con = new TarantoolBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
         con.auth("test", "test");
 
-        final TestSchema schema = con.schema(new TestSchema());
+        TarantoolConnection16 c = new TarantoolConnection16Impl("localhost", 3301);
+        con.auth("test", "test");
+
+        final TestSchema schema = new SchemaResolver().schema(new TestSchema(), c);
+        c.close();
         System.out.println(schema);
 
         con.begin();
 
-        List delete0 = con.delete(schema.tester.id, Arrays.asList(0));
+        BatchedQueryResult delete0 = con.delete(schema.tester.id, Arrays.asList(0));
 
-        List delete = con.delete(schema.tester.id, Arrays.asList(1));
+        BatchedQueryResult delete = con.delete(schema.tester.id, Arrays.asList(1));
 
-        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
+        BatchedQueryResult insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
 
-        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
+        BatchedQueryResult insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
 
-        List select0 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
+        BatchedQueryResult select0 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
 
-        List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
+        BatchedQueryResult update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
 
-        List result = con.call("math.ceil", 1.3);
+        BatchedQueryResult result = con.call("math.ceil", 1.3);
 
-        List eval = con.eval("return ...", 1, 2, 3);
+        BatchedQueryResult eval = con.eval("return ...", 1, 2, 3);
 
         con.end();
         con.get();
