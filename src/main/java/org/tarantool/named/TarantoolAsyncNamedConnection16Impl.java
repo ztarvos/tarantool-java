@@ -40,7 +40,7 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
 
             @Override
             protected ByteBuffer write(AsyncQuery query) {
-                return isSchemaResolveQuery(query) ? writeState.pack(query.getCode(), query.getId(), query.getArgs()) : writeState.pack(query.getCode(), query.getId(), schemaId, query.getArgs());
+                return isSchemaResolveQuery(query) || !isCodeResolvable(query.getCode()) ? writeState.pack(query.getCode(), query.getId(), query.getArgs()) : writeState.pack(query.getCode(), query.getId(), schemaId, query.getArgs());
             }
 
             @Override
@@ -101,7 +101,7 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
     }
 
     @Override
-    protected long getSchemaId() {
+    public long getSchemaId() {
         return delegate.getSchemaId();
     }
 
@@ -140,4 +140,5 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
     public void setSchemaId(long schemaId) {
         delegate.setSchemaId(schemaId);
     }
+
 }

@@ -15,10 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.tarantool.async.TarantoolAsyncConnection16;
-import org.tarantool.async.TarantoolAsyncConnection16Impl;
 import org.tarantool.async.TarantoolSelectorWorker;
-import org.tarantool.named.TarantoolAsyncNamedConnection16;
 import org.tarantool.named.TarantoolAsyncNamedConnection16Impl;
 import org.tarantool.named.UpdateOperation;
 
@@ -58,6 +55,7 @@ public class TestClient16NamedAsync {
         final TarantoolAsyncNamedConnection16Impl con = new TarantoolAsyncNamedConnection16Impl(worker, SocketChannel.open(new InetSocketAddress("localhost", 3301)), "test", "test", 100, TimeUnit.MILLISECONDS);
         con.setSchemaId(1L);
         Future<List> delete0 = con.delete("tester", map("id",0));
+        System.out.println("schema: "+con.getSchemaId());
         System.out.println(delete0.get());
         Future<List> delete = con.delete("tester", map("id", 1));
         System.out.println(delete.get());
@@ -69,9 +67,9 @@ public class TestClient16NamedAsync {
         System.out.println(select0.get());
         Future<List> update0 = con.update("tester", map("id",1), new UpdateOperation("=", "text", "Hello"));
         System.out.println(update0.get());
-
         con.upsert("tester", map("id", 1), map("id", 1, "text", "hello"), new UpdateOperation("=", "text", "Hello World!!!"));
         con.upsert("tester",map("id", 2), map("id", 2, "text", "hello"), new UpdateOperation("=", "text", "Hello World!!!"));
+        System.out.println(con.getSchemaId());
         Future<List> select1 = con.select("tester", "primary", map("id", 1), 0, 100, 0);
         System.out.println(select1.get());
         Future<List> select2 = con.select("tester", "primary",map("id", 2), 0, 100, 0);
@@ -88,11 +86,13 @@ public class TestClient16NamedAsync {
                     for (int i = 0; i < 10; i++) {
                         if (con.isValid()) {
                             Future<List> call = con.call("math.ceil", 1.3);
+                            con.setSchemaId(1L);
                             Future<List> eval = con.eval("return ...", 1, 2, 3);
                             System.out.println(call.isDone() + " " + eval.isDone());
                             try {
                                 List cr = call.get();
                                 List er = eval.get();
+                                System.out.println("schema: "+con.getSchemaId());
                                 System.out.println(cr);
                                 System.out.println(er);
                             } catch (Exception e) {
