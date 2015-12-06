@@ -54,32 +54,30 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
                             q.setError(new TarantoolException((int) code, error instanceof String ? (String) error : new String((byte[]) error)));
                         }
                     } else {
-                        if (!isSchemaResolveQuery(q)) {
-                            q.setValue(resolveTuples(q.getCode(), q.getArgs(), (List) state.getBody().get(Key.DATA)));
-                        } else {
+                        if (isSchemaResolveQuery(q)) {
                             q.setValue(state.getBody().get(Key.DATA));
+                            performSchemaUpdate(q);
+                        } else {
+                            q.setValue(resolveTuples(q.getCode(), q.getArgs(), (List) state.getBody().get(Key.DATA)));
                         }
                     }
-                    performSchemaUpdate(q);
                 }
             }
 
             private void performSchemaUpdate(AsyncQuery q) {
-                if (isSchemaResolveQuery(q)) {
-                    if (spaces.isDone() && indexes.isDone()) {
-                        try {
-                            buildSchema(spaces.get(), indexes.get());
-                            schemaId = (Long)state.getHeader().get(Key.SCHEMA_ID);
-                        } catch (Exception e) {
-                            delegate.close(e);
-                        }
-                        schemaUpdate.release();
-                        AsyncQuery r;
-                        while ((r = reResovle.poll())!=null) {
-                            r.setId(syncId.incrementAndGet());
-                            if (!addQuery(r)) {
-                                r.setError(new CommunicationException("Query execution failed", error));
-                            }
+                if (spaces.isDone() && indexes.isDone()) {
+                    try {
+                        buildSchema(spaces.get(), indexes.get());
+                        schemaId = (Long) state.getHeader().get(Key.SCHEMA_ID);
+                    } catch (Exception e) {
+                        delegate.close(e);
+                    }
+                    schemaUpdate.release();
+                    AsyncQuery r;
+                    while ((r = reResovle.poll()) != null) {
+                        r.setId(syncId.incrementAndGet());
+                        if (!addQuery(r)) {
+                            r.setError(new CommunicationException("Query execution failed", error));
                         }
                     }
                 }
