@@ -25,7 +25,7 @@ public class TarantoolNamedConnection16Impl extends TarantoolNamedBase16<List> i
         Object[] mutableArgs = resolveArgs(code, args);
         try {
             List<List> tuples = delegate.exec(code, mutableArgs);
-            List resolved = resolveTuples(code, mutableArgs, tuples);
+            List resolved = resolveTuples(code, args, tuples);
             return resolved == null ? tuples : resolved;
         } catch (TarantoolException e) {
             if (e.getCode() == ER_SCHEMA_CHANGED) {
