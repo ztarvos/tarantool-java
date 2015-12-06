@@ -1,7 +1,12 @@
-package org.tarantool.batch;
+package org.tarantool.generic;
 
 
+import org.tarantool.batch.TarantoolBatchConnection16;
 
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public interface TarantoolGenericBatchConnection16 extends TarantoolBatchConnection16 {
      interface Holder<T> {
        T get(); 

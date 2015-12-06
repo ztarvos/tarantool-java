@@ -10,12 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.tarantool.batch.BatchedQueryResult;
-import org.tarantool.batch.TarantoolBatchConnection16;
-import org.tarantool.batch.TarantoolBatchConnection16Impl;
 import org.tarantool.named.TarantoolNamedBatchConnection16;
 import org.tarantool.named.TarantoolNamedBatchConnection16Impl;
 import org.tarantool.named.UpdateOperation;
-import org.tarantool.schema.SchemaResolver;
 
 public class TestNamedBatch16 {
     /*
@@ -39,9 +36,10 @@ public class TestNamedBatch16 {
         return map;
     }
     public static void main(String[] args) throws IOException {
-        TarantoolNamedBatchConnection16 con = new TarantoolNamedBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
+        TarantoolNamedBatchConnection16Impl con = new TarantoolNamedBatchConnection16Impl(SocketChannel.open(new InetSocketAddress("localhost", 3301)));
         con.auth("test", "test");
 
+        con.setSchemaId(1L);
 
         con.begin();
 
@@ -54,6 +52,8 @@ public class TestNamedBatch16 {
         BatchedQueryResult insert2 = con.replace("tester", map("id",2, "text",Collections.singletonMap("hello", "word")));
 
         BatchedQueryResult select0 = con.select("tester", "primary", map("id", 1), 0, 100, 0);
+
+        con.setSchemaId(1L);
 
         BatchedQueryResult update0 = con.update("tester", map("id",1), new UpdateOperation("=", "text", "Hello"));
 

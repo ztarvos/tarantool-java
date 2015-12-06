@@ -11,8 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.tarantool.async.TarantoolAsyncGenericConnection16;
-import org.tarantool.async.TarantoolAsyncGenericConnection16Impl;
+import org.tarantool.generic.TarantoolAsyncGenericConnection16;
+import org.tarantool.generic.TarantoolAsyncGenericConnection16Impl;
 import org.tarantool.async.TarantoolSelectorWorker;
 
 public class TestClient16AsyncWithJackson {

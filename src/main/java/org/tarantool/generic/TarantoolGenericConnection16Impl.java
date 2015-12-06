@@ -6,6 +6,10 @@ import java.nio.channels.SocketChannel;
 
 import org.tarantool.TarantoolConnection16Impl;
 
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public class TarantoolGenericConnection16Impl extends TarantoolConnection16Impl implements TarantoolGenericConnection16 {
     private final Mapper mapper;
 

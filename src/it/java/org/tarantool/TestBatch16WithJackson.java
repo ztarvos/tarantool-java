@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
-import org.tarantool.batch.TarantoolGenericBatchConnection16;
-import org.tarantool.batch.TarantoolGenericBatchConnection16Impl;
+import org.tarantool.generic.TarantoolGenericBatchConnection16;
+import org.tarantool.generic.TarantoolGenericBatchConnection16Impl;
 import org.tarantool.schema.SchemaResolver;
 
 public class TestBatch16WithJackson {
@@ -32,7 +32,7 @@ public class TestBatch16WithJackson {
         con.auth("test", "test");
 
         TarantoolConnection16 c = new TarantoolConnection16Impl("localhost", 3301);
-        con.auth("test", "test");
+        c.auth("test", "test");
 
         final TestSchema2 schema = new SchemaResolver().schema(new TestSchema2(), c);
         c.close();

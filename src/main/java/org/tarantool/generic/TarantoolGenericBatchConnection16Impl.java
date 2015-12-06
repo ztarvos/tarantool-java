@@ -1,9 +1,14 @@
-package org.tarantool.batch;
+package org.tarantool.generic;
 
 import java.nio.channels.SocketChannel;
 
-import org.tarantool.generic.Mapper;
+import org.tarantool.batch.BatchedQueryResult;
+import org.tarantool.batch.TarantoolBatchConnection16Impl;
 
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public class TarantoolGenericBatchConnection16Impl extends TarantoolBatchConnection16Impl implements TarantoolGenericBatchConnection16 {
 
     protected final Mapper mapper;

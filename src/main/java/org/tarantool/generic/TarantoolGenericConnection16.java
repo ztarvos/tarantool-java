@@ -3,6 +3,10 @@ package org.tarantool.generic;
 
 import org.tarantool.TarantoolConnection16;
 
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public interface TarantoolGenericConnection16 extends TarantoolConnection16 {
 
     <T> T select(Class<T> clz, int space, int index, Object key, int offset, int limit, int iterator);

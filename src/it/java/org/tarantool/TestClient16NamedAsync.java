@@ -55,7 +55,8 @@ public class TestClient16NamedAsync {
         ExecutorService exec = Executors.newFixedThreadPool(16);
         Thread thread = new Thread(worker);
         thread.start();
-        final TarantoolAsyncNamedConnection16 con = new TarantoolAsyncNamedConnection16Impl(worker, SocketChannel.open(new InetSocketAddress("localhost", 3301)), "test", "test", 100, TimeUnit.MILLISECONDS);
+        final TarantoolAsyncNamedConnection16Impl con = new TarantoolAsyncNamedConnection16Impl(worker, SocketChannel.open(new InetSocketAddress("localhost", 3301)), "test", "test", 100, TimeUnit.MILLISECONDS);
+        con.setSchemaId(1L);
         Future<List> delete0 = con.delete("tester", map("id",0));
         System.out.println(delete0.get());
         Future<List> delete = con.delete("tester", map("id", 1));

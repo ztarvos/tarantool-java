@@ -117,6 +117,10 @@ public abstract class TarantoolConnection16Base<T,O,P,R> extends AbstractTaranto
     }
 
 
+    protected int write(Code code, Object[] args) {
+        return write(state.pack(code, args));
+    }
+
     @Override
     public Long getSchemaId() {
         return (Long) getState().getHeader().get(Key.SCHEMA_ID);

@@ -10,9 +10,15 @@ import org.tarantool.TarantoolException;
 
 public class TarantoolNamedConnection16Impl extends TarantoolNamedBase16<List> implements TarantoolNamedConnection16 {
     protected TarantoolConnection16Impl delegate;
+    protected long schemaId;
 
     public TarantoolNamedConnection16Impl(SocketChannel channel) {
-        delegate = new TarantoolConnection16Impl(channel);
+        delegate = new TarantoolConnection16Impl(channel) {
+            @Override
+            protected int write(Code code, Object[] args) {
+                return write(state.pack(code, null, schemaId, args));
+            }
+        };
     }
 
     public List exec(Code code, Object... args) {
@@ -44,18 +50,21 @@ public class TarantoolNamedConnection16Impl extends TarantoolNamedBase16<List> i
 
     @Override
     protected long getSchemaId() {
-        return delegate.getSchemaId();
+        return schemaId;
     }
-
 
 
     protected List<List> select(int space) {
-        return delegate.select(space,0, Collections.emptyList(), 0, 1000, 0);
+        return delegate.select(space, 0, Collections.emptyList(), 0, 1000, 0);
     }
 
     protected void updateSchema() {
+        schemaId = 0L;
         buildSchema(select(VSPACE), select(VINDEX));
+        schemaId = delegate.getSchemaId();
     }
 
-
+    public void setSchemaId(long schemaId) {
+        this.schemaId = schemaId;
+    }
 }

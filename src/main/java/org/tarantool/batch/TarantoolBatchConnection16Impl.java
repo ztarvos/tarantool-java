@@ -25,9 +25,13 @@ public class TarantoolBatchConnection16Impl extends TarantoolConnection16Base<In
     public void end() {
         for (Map.Entry<Long, BatchedQuery> entry : batch.entrySet()) {
             BatchedQuery q = entry.getValue();
-            write(state.pack(q.code, entry.getKey(), q.args));
+            write(q);
         }
         sent = true;
+    }
+
+    protected void write(BatchedQuery q) {
+        write(state.pack(q.code, q.id, q.args));
     }
 
     @Override
@@ -58,7 +62,7 @@ public class TarantoolBatchConnection16Impl extends TarantoolConnection16Base<In
     @Override
     public BatchedQueryResult exec(Code code, Object... args) {
         if (batch == null) {
-            write(state.pack(code, args));
+            write(code, args);
             try {
                 return new BatchedQueryResult((List) readData());
             } catch (TarantoolException e) {
@@ -69,13 +73,13 @@ public class TarantoolBatchConnection16Impl extends TarantoolConnection16Base<In
             throw new IllegalStateException("Batch is already sent. Call get to read it");
         }
         BatchedQueryResult result = new BatchedQueryResult();
-        BatchedQuery q = new BatchedQuery(code, args, result);
+        BatchedQuery q = new BatchedQuery(syncId.incrementAndGet(), code, args, result);
         addQuery(q);
         return result;
     }
 
     public void addQuery(BatchedQuery q) {
-        this.batch.put(syncId.incrementAndGet(), q);
+        this.batch.put(q.id, q);
     }
 
     public Map<Long, BatchedQuery> getBatch() {

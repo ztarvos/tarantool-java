@@ -1,7 +1,13 @@
-package org.tarantool.async;
+package org.tarantool.generic;
 
 import java.util.concurrent.Future;
 
+import org.tarantool.async.TarantoolAsyncConnection16;
+
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public interface TarantoolAsyncGenericConnection16 extends TarantoolAsyncConnection16 {
     <T> Future<T> select(Class<T> clz, int space, int index, Object key, int offset, int limit, int iterator);
 

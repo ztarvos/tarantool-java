@@ -12,7 +12,7 @@ import org.tarantool.Code;
 import org.tarantool.Key;
 
 public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnection16<String, Map<String, Object>, UpdateOperation, R> {
-    protected static final int ER_SCHEMA_CHANGED = 109;
+    protected static final int ER_SCHEMA_CHANGED = 32877;
     protected static final int VSPACE = 281;
     protected static final int VINDEX = 289;
     protected Map<String, Integer> schema;
@@ -152,12 +152,8 @@ public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnectio
     }
 
     protected Object[] resolveArgs(Code code, Object[] args) {
-        return resolveArgs(code, args, getSchemaId());
-    }
-
-    protected Object[] resolveArgs(Code code, Object[] args, long schemaId) {
         String spaceName = null;
-        Object[] mutableArgs = new Object[args.length + 2];
+        Object[] mutableArgs = new Object[args.length];
         for (int i = 0, e = args.length; i < e; i += 2) {
             Object value = args[i + 1];
             Key key = (Key) args[i];
@@ -175,8 +171,6 @@ public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnectio
                 mutableArgs[i + 1] = resolveTuple(spaceName, (Map<String, Object>) value);
             }
         }
-        mutableArgs[mutableArgs.length - 2] = Key.SCHEMA_ID;
-        mutableArgs[mutableArgs.length - 1] = schemaId;
         return mutableArgs;
     }
 

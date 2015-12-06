@@ -12,9 +12,15 @@ import org.tarantool.batch.TarantoolBatchConnection16Impl;
 
 public class TarantoolNamedBatchConnection16Impl extends TarantoolNamedBase16<BatchedQueryResult> implements TarantoolNamedBatchConnection16 {
     protected TarantoolBatchConnection16Impl delegate;
+    protected long schemaId;
 
     public TarantoolNamedBatchConnection16Impl(SocketChannel channel) {
-        delegate = new TarantoolBatchConnection16Impl(channel);
+        delegate = new TarantoolBatchConnection16Impl(channel) {
+            @Override
+            protected void write(BatchedQuery q) {
+                write(state.pack(q.code, q.id, schemaId, q.args));
+            }
+        };
     }
 
     @Override
@@ -75,7 +81,7 @@ public class TarantoolNamedBatchConnection16Impl extends TarantoolNamedBase16<Ba
 
     @Override
     protected long getSchemaId() {
-        return delegate.getSchemaId();
+        return schemaId;
     }
 
     protected List<List> select(int space) {
@@ -83,6 +89,12 @@ public class TarantoolNamedBatchConnection16Impl extends TarantoolNamedBase16<Ba
     }
 
     protected void updateSchema() {
+        schemaId = 0L;
         buildSchema(select(VSPACE), select(VINDEX));
+        schemaId = delegate.getSchemaId();
+    }
+
+    public void setSchemaId(long schemaId) {
+        this.schemaId = schemaId;
     }
 }

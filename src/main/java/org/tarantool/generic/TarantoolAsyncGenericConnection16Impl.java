@@ -1,11 +1,17 @@
-package org.tarantool.async;
+package org.tarantool.generic;
 
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.tarantool.generic.Mapper;
+import org.tarantool.async.AsyncGenericQuery;
+import org.tarantool.async.TarantoolAsyncConnection16Impl;
+import org.tarantool.async.TarantoolSelectorWorker;
 
+/**
+ * You should use NamedConnections instead
+ */
+@Deprecated
 public class TarantoolAsyncGenericConnection16Impl extends TarantoolAsyncConnection16Impl implements TarantoolAsyncGenericConnection16 {
     private final Mapper mapper;
 

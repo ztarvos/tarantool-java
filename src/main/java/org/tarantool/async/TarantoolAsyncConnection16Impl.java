@@ -111,7 +111,7 @@ public class TarantoolAsyncConnection16Impl extends TarantoolConnection16Base<In
             AsyncQuery query = writeQueue.poll();
             try {
                 if (query != null) {
-                    writeBuffer = writeState.pack(query.code, query.id, query.args);
+                    writeBuffer = write(query);
                 }
             } catch (Exception e) {
                 query.setError(e);
@@ -127,6 +127,10 @@ public class TarantoolAsyncConnection16Impl extends TarantoolConnection16Base<In
                 close(e);
             }
         }
+    }
+
+    protected ByteBuffer write(AsyncQuery query) {
+        return writeState.pack(query.code, query.id, query.args);
     }
 
 
@@ -188,5 +192,9 @@ public class TarantoolAsyncConnection16Impl extends TarantoolConnection16Base<In
     @Override
     public Long getSchemaId() {
         return schemaId;
+    }
+
+    public void setSchemaId(Long schemaId) {
+        this.schemaId = schemaId;
     }
 }

@@ -75,10 +75,14 @@ public class ConnectionState {
 
 
     public ByteBuffer pack(Code code, Object[] args) {
-        return pack(code, null, args);
+        return pack(code, null, null, args);
     }
 
     public ByteBuffer pack(Code code, Long syncId, Object[] args) {
+        return pack(code, syncId, null, args);
+    }
+
+    public ByteBuffer pack(Code code, Long syncId, Long schemaId, Object[] args) {
         beginBody();
         if (args != null) {
             for (int i = 0, e = args.length; i < e; i += 2) {
@@ -87,14 +91,17 @@ public class ConnectionState {
             }
         }
         endBody();
-        return pack(code, syncId, body);
+        return pack(code, syncId, schemaId, body);
     }
 
-    public ByteBuffer pack(Code code, Object sync, EnumMap<Key, Object> body) {
+    public ByteBuffer pack(Code code, Long sync, Long schemaId, EnumMap<Key, Object> body) {
         header.clear();
         header.put(Key.CODE, code);
         if (sync != null) {
             header.put(Key.SYNC, sync);
+        }
+        if (schemaId != null) {
+            header.put(Key.SCHEMA_ID, schemaId);
         }
 
         ByteBuffer buf = buffer.getBuf();
