@@ -135,7 +135,7 @@ public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnectio
             int spaceIdx = -1;
             for (int i = 0, e = args.length; i < e; i += 2) {
                 if(args[i] == Key.SPACE) {
-                    spaceIdx = (Integer)args[i+1];
+                    spaceIdx = resolveSpace((String) args[i + 1]);
                     break;
                 }
             }
