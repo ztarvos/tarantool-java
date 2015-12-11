@@ -1,5 +1,7 @@
 # Java Connector for Tarantool 1.6
 
+[![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Problems & Questions
 http://stackoverflow.com/questions/ask/advice with tags `tarantool` and `java`.
 
