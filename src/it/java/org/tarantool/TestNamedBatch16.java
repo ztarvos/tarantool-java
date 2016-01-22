@@ -44,15 +44,12 @@ public class TestNamedBatch16 {
         con.begin();
 
         BatchedQueryResult delete0 = con.delete("tester", map("id",0));
-
         BatchedQueryResult delete = con.delete("tester", map("id", 1));
 
         BatchedQueryResult insert = con.insert("tester", map("id", 1, "text", "hello"));
-
         BatchedQueryResult insert2 = con.replace("tester", map("id",2, "text",Collections.singletonMap("hello", "word")));
 
         BatchedQueryResult select0 = con.select("tester", "primary", map("id", 1), 0, 100, 0);
-
         con.setSchemaId(1L);
 
         BatchedQueryResult update0 = con.update("tester", map("id",1), new UpdateOperation("=", "text", "Hello"));

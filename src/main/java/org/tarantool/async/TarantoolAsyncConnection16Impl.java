@@ -144,12 +144,16 @@ public class TarantoolAsyncConnection16Impl extends TarantoolConnection16Base<In
             return q;
         }
         if (key.isValid()) {
-            AsyncQuery q = new AsyncQuery(syncId.incrementAndGet(), code, args);
+            AsyncQuery q = newAsyncQuery(syncId.incrementAndGet(), code, args);
             if (addQuery(q)) {
                 return q;
             }
         }
         throw new CommunicationException("Key is cancelled", error);
+    }
+
+    protected AsyncQuery newAsyncQuery(long id, Code code, Object[] args) {
+        return new AsyncQuery(id, code, args);
     }
 
     protected boolean addQuery(AsyncQuery q) {

@@ -43,8 +43,6 @@ public class TestNamedClient16 {
         System.out.println(delete0);
         List delete = con.delete("tester", map("id", 1));
         System.out.println(delete);
-        List er = con.eval("return box.space.tester:format(...)", Arrays.asList(map("name", "id", "type", "num"), map("name", "name", "type", "str"), map("name", "text", "type", "str")));
-        System.out.println(er);
         List insert = con.insert("tester", map("id", 1, "text", "hello"));
 
         System.out.println(insert);
@@ -54,6 +52,7 @@ public class TestNamedClient16 {
         System.out.println(select0);
         List update0 = con.update("tester", map("id",1), new UpdateOperation("=", "text", "Hello"));
         System.out.println(update0);
+
 
         con.upsert("tester", map("id", 1), map("id", 1, "text", "hello"), new UpdateOperation("=", "text", "Hello World!!!"));
         con.upsert("tester",map("id", 2), map("id", 2, "text", "hello"), new UpdateOperation("=", "text", "Hello World!!!"));

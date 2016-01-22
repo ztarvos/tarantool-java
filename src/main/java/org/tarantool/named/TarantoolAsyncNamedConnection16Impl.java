@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -25,6 +26,22 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
     protected Semaphore schemaUpdate = new Semaphore(1);
     protected BlockingQueue<AsyncQuery> reResovle = new LinkedBlockingDeque<AsyncQuery>();
 
+    private static class AsyncQueryEx<V> extends AsyncQuery<V> {
+        Map<String, String> fields;
+        Long schemaId;
+
+        public AsyncQueryEx(Long id, Code code, Object[] args) {
+            super(id, code, args);
+        }
+
+        @Override
+        public String toString() {
+            return "AsyncQueryEx{code=" + code.name()+", " +
+                    " schemaId=" + schemaId +
+                    '}';
+        }
+    }
+
     public TarantoolAsyncNamedConnection16Impl(TarantoolSelectorWorker worker, SocketChannel channel, String username, String password, long timeout, TimeUnit unit) {
         delegate = new TarantoolAsyncConnection16Impl(worker, channel, username, password, timeout, unit) {
 
@@ -40,7 +57,21 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
 
             @Override
             protected ByteBuffer write(AsyncQuery query) {
-                return isSchemaResolveQuery(query) || !isCodeResolvable(query.getCode()) ? writeState.pack(query.getCode(), query.getId(), query.getArgs()) : writeState.pack(query.getCode(), query.getId(), schemaId, resolveArgs(query.getCode(), query.getArgs()));
+                if (isSchemaResolveQuery(query) || !isCodeResolvable(query.getCode())) {
+                    return writeState.pack(query.getCode(), query.getId(), query.getArgs());
+                }
+                Object[] args;
+                Long schemaId;
+                AsyncQueryEx qEx = (AsyncQueryEx) query;
+                do {
+                    schemaId = getSchemaId();
+                    qEx.fields = fields;
+                    args = TarantoolAsyncNamedConnection16Impl.this.resolveArgs(query.getCode(), query.getArgs());
+                } while (schemaId != null && !schemaId.equals(getSchemaId()));
+                qEx.schemaId = schemaId;
+                return writeState.pack(query.getCode(), query.getId(), schemaId, args);
+
+
             }
 
             @Override
@@ -58,7 +89,7 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
                             q.setValue(state.getBody().get(Key.DATA));
                             performSchemaUpdate(q);
                         } else {
-                            q.setValue(resolveTuples(q.getCode(), q.getArgs(), (List) state.getBody().get(Key.DATA)));
+                            q.setValue(resolveTuplesWithFields(q.getCode(), q.getArgs(), (List) state.getBody().get(Key.DATA), ((AsyncQueryEx)q).fields));
                         }
                     }
                 }
@@ -82,6 +113,11 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
                     }
                 }
             }
+
+            @Override
+            protected AsyncQuery newAsyncQuery(long id, Code code, Object[] args) {
+                return new AsyncQueryEx(id, code, args);
+            }
         };
     }
 
@@ -101,17 +137,6 @@ public class TarantoolAsyncNamedConnection16Impl extends TarantoolNamedBase16<Fu
     @Override
     public long getSchemaId() {
         return delegate.getSchemaId();
-    }
-
-    @Override
-    protected Object[] resolveArgs(Code code, Object[] args) {
-        Object[] result;
-        Long schemaId;
-        do {
-            schemaId = getSchemaId();
-            result = super.resolveArgs(code, args);
-        } while (schemaId != null && !schemaId.equals(getSchemaId()));
-        return result;
     }
 
     @Override

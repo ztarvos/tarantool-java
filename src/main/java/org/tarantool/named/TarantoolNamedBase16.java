@@ -130,6 +130,10 @@ public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnectio
 
 
     protected List resolveTuples(Code code, Object[] args, List<List> tuples) {
+        return resolveTuplesWithFields(code, args, tuples, this.fields);
+    }
+
+    protected List resolveTuplesWithFields(Code code, Object[] args, List<List> tuples, Map<String, String> fields) {
         List<Map<String, Object>> objects = new ArrayList<Map<String, Object>>(tuples.size());
         if (isCodeResolvable(code)) {
             int spaceIdx = -1;
@@ -151,7 +155,7 @@ public abstract class TarantoolNamedBase16<R> extends AbstractTarantoolConnectio
         return tuples;
     }
 
-    protected boolean isCodeResolvable(Code code) {
+    protected boolean   isCodeResolvable(Code code) {
         return code.getId() >= Code.SELECT.getId() && code.getId() <= Code.DELETE.getId();
     }
 
