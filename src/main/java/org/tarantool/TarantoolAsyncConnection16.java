@@ -18,6 +18,8 @@ public interface TarantoolAsyncConnection16 {
 
     Future<List> eval(String expression, Object... args);
 
+    void upsert(int space, Object key, Object defTuple, Object... ops);
+
     boolean isValid();
 
     void close();

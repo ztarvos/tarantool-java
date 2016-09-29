@@ -168,6 +168,11 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
     }
 
     @Override
+    public void upsert(int space, Object key, Object def, Object... args) {
+        exec(Code.UPSERT, Key.SPACE, space, Key.KEY, key, Key.TUPLE, def, Key.UPSERT_OPS, args);
+    }
+
+    @Override
     public void close() {
         close(null);
     }
