@@ -125,6 +125,10 @@ public abstract class TarantoolConnection16Base {
         return exec(Code.CALL, Key.FUNCTION, function, Key.TUPLE, args);
     }
 
+    public List call17(String function, Object... args) {
+        return exec(Code.CALL17, Key.FUNCTION, function, Key.TUPLE, args);
+    }
+
     public List eval(String expression, Object... args) {
         return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, args);
     }

@@ -16,6 +16,8 @@ public interface TarantoolAsyncConnection16 {
 
     Future<List> call(String function, Object... args);
 
+    Future<List> call17(String function, Object... args);
+
     Future<List> eval(String expression, Object... args);
 
     void upsert(int space, Object key, Object defTuple, Object... ops);

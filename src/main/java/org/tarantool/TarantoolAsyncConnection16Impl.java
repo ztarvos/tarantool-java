@@ -117,7 +117,7 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
     }
 
 
-    protected Future<List> exec(Code code, Object... args) {
+    protected <T> Future<T> exec(Code code, Object... args) {
         if (key.isValid()) {
             AsyncQuery q = new AsyncQuery(syncId.incrementAndGet(), code, args);
             futures.put(q.id, q);
@@ -160,6 +160,11 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
     @Override
     public Future<List> call(String function, Object... args) {
         return exec(Code.CALL, Key.FUNCTION, function, Key.TUPLE, args);
+    }
+
+    @Override
+    public Future<List> call17(String function, Object... args) {
+        return exec(Code.CALL17, Key.FUNCTION, function, Key.TUPLE, args);
     }
 
     @Override

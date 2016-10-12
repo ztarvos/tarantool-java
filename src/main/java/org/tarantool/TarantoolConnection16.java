@@ -23,6 +23,8 @@ public interface TarantoolConnection16 {
 
     List call(String function, Object... args);
 
+    List call17(String function, Object... args);
+
     List eval(String expression, Object... args);
 
     void auth(String username, String password);
