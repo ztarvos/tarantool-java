@@ -1,4 +1,4 @@
-# Java Connector for Tarantool 1.6
+# Java Connector for Tarantool 1.7
 
 [![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -12,52 +12,59 @@ First you should add dependency to your pom file
 <dependency>
   <groupId>org.tarantool</groupId>
   <artifactId>connector</artifactId>
-  <version>1.6.5</version>
+  <version>1.7.0</version>
 </dependency>
 ```
-Afterward you should configure you tarantool and create any type of connection ([source code] (https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16.java)):
+First you should configure TarantoolClientConfig.
+
 ```java
-public class TestClient16 {
-    /*
-      Before executing this test you should configure your local tarantool
-      box.cfg{listen=3301}
-      box.schema.space.create('tester')
-      box.space.tester:create_index('primary', {type = 'hash', parts = {1, 'NUM'}})
-      box.schema.user.create('test', { password = 'test' })
-      box.schema.user.grant('test', 'execute,read,write', 'universe')
-     */
-    public static void main(String[] args) throws IOException {
-        TarantoolConnection16 con = new TarantoolConnection16Impl("localhost", 3301);
-        con.auth("test", "test");
-
-        final TestSchema schema = con.schema(new TestSchema());
-        System.out.println(schema);
-
-        List delete0 = con.delete(schema.tester.id, Arrays.asList(0));
-        System.out.println(delete0);
-        List delete = con.delete(schema.tester.id, Arrays.asList(1));
-        System.out.println(delete);
-        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
-        System.out.println(insert);
-        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
-        System.out.println(insert2);
-        List select0 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
-        System.out.println(select0);
-        List update0 = con.update(schema.tester.id, Arrays.asList(1), Arrays.asList("=", 1, "Hello"));
-        System.out.println(update0);
-        List result = con.call("math.ceil", 1.3);
-        System.out.println(result);
-        List eval = con.eval("return ...", 1, 2, 3);
-        System.out.println(eval);
-        con.close();
-    }
-}
+     TarantoolClientConfig config = new TarantoolClientConfig();
+     config.username = "test";
+     config.password = "test";
 ```
-We also provide more usable connection implementations:
-* [pojo mapping example](https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16WithJackson.java)
-* [async queries example](https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16Async.java) 
-* [async queries with pojo mapping example](https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16AsyncWithJackson.java) 
-* [batch mode example](https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestBatch16.java) 
-* [batch mode with pojo mapping example](https://github.com/tarantool/tarantool-java/blob/master/src/it/java/org/tarantool/TestClient16Async.java) 
+
+Then implements your SocketChannelProvider. SocketChannelProvider should return connected SocketChannel.
+Here you also could implement some reconnect or fallback policy. Remember that TarantoolClient uses [fail fast
+policy](https://en.wikipedia.org/wiki/Fail-fast) when client is not connected.
+
+
+```java
+     SocketChannelProvider socketChannelProvider = new SocketChannelProvider() {
+                @Override
+                public SocketChannel get(int retryNumber, Throwable lastError) {
+                    if (lastError != null) {
+                        lastError.printStackTrace(System.out);
+                    }
+                    try {
+                        return SocketChannel.open(new InetSocketAddress("localhost", 3301));
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            };
+```
+
+Now you are ready to create client
+```java
+TarantoolClient client = new TarantoolClientImpl(socketChannelProvider, config);
+```
+
+TarantoolClient is thread safe and async so you should use one client inside whole application. 
+
+TarantoolClient provides 3 interfaces to execute queries
+
+* SyncOps returns operation result
+* AsyncOps returns operation result Future
+* FireAndForgetOps returns query ID
+
+
+Feel free to override any method of TarantoolClientImpl. For example you
+could override 
+```java
+protected void complete(long code, FutureImpl<List> q);
+```
+to hook all results.
+
+
 
 
