@@ -1,7 +1,7 @@
 package org.tarantool;
 
 
-public interface TarantoolConnection16Ops<T,O,P,R> {
+public interface TarantoolConnectionOps<T,O,P,R> {
     R select(T space, T index, O key, int offset, int limit, int iterator);
 
 
@@ -17,11 +17,9 @@ public interface TarantoolConnection16Ops<T,O,P,R> {
 
     R delete(T space, O key);
 
-    R call(String function, Object... args);
+    Object call(String function, Object... args);
 
     R eval(String expression, Object... args);
-
-    void auth(String username, String password);
 
     void ping();
 
