@@ -14,7 +14,7 @@ First you should add dependency to your pom file
 <dependency>
   <groupId>org.tarantool</groupId>
   <artifactId>connector</artifactId>
-  <version>1.7.0</version>
+  <version>1.7.0-SNAPSHOT</version>
 </dependency>
 ```
 First you should configure TarantoolClientConfig.
