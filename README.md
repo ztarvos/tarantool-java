@@ -1,6 +1,6 @@
-# Java Connector for Tarantool 1.7
+You could find latest stable release [here](https://github.com/tarantool/tarantool-java/blob/connector-1.6.7/)
 
-[![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Java Connector for Tarantool 1.7.0-SNAPSHOT
 
 [![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
