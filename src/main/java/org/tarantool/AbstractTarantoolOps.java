@@ -35,7 +35,7 @@ public abstract class AbstractTarantoolOps<Space, Tuple, Operation, Result> {
     }
 
     public Result call(String function, Object... args) {
-        return exec(config.useOldCall ? Code.OLD_CALL : Code.CALL, Key.FUNCTION, function, Key.TUPLE, args);
+        return exec(config.useNewCall ? Code.CALL : Code.OLD_CALL, Key.FUNCTION, function, Key.TUPLE, args);
     }
 
     public Result eval(String expression, Object... args) {

@@ -11,21 +11,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 public class TestTarantoolClient {
+
+    public static final int TESTER_SPACE_ID = 512;
+
     /*
-      Before executing this test you should configure your local tarantool
+              Before executing this test you should configure your local tarantool
 
-      box.cfg{listen=3301}
-      space = box.schema.space.create('tester')
-      box.space.tester:create_index('primary', {type = 'hash', parts = {1, 'NUM'}})
+              box.cfg{listen=3301}
+              space = box.schema.space.create('tester')
+              box.space.tester:create_index('primary', {type = 'hash', parts = {1, 'NUM'}})
 
-      box.schema.user.create('test', { password = 'test' })
-      box.schema.user.grant('test', 'execute,received,write', 'universe')
-      box.space.tester:format{{name='id',type='num'},{name='text',type='str'}}
-     */
+              box.schema.user.create('test', { password = 'test' })
+              box.schema.user.grant('test', 'execute,received,write', 'universe')
+              box.space.tester:format{{name='id',type='num'},{name='text',type='str'}}
+             */
     public static class TarantoolClientTestImpl extends TarantoolClientImpl {
         final Semaphore s = new Semaphore(0);
 
@@ -34,17 +36,17 @@ public class TestTarantoolClient {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        System.out.println("closed");
-//                        channel.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        System.out.println("closed");
+                        channel.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
             t.setDaemon(true);
@@ -71,7 +73,7 @@ public class TestTarantoolClient {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException, SQLException {
-        final int calls = 1000000;
+        final int calls = 2000000;
 
         TarantoolClientConfig config = new TarantoolClientConfig();
         config.username = "test";
@@ -81,22 +83,17 @@ public class TestTarantoolClient {
             @Override
             public SocketChannel get(int retryNumber, Throwable lastError) {
                 if (lastError != null) {
-                   // lastError.printStackTrace(System.out);
+                    lastError.printStackTrace(System.out);
                 }
                 try {
-                    return SocketChannel.open(new InetSocketAddress("vcdevm20.mail.msk", 3301));
+                    return SocketChannel.open(new InetSocketAddress("localhost", 3301));
                 } catch (IOException e) {
                     throw new IllegalStateException(e);
                 }
             }
         };
         final TarantoolClientTestImpl client = new TarantoolClientTestImpl(socketChannelProvider, config);
-        for (int i = 0; i < 100; i++) {
-            long st = System.nanoTime();
-            client.syncOps().replace(512, Arrays.asList(i % 10000, "hello"));
-            System.out.println(System.nanoTime() - st);
 
-        }
         long st = System.currentTimeMillis();
         final int threads = 16;
         ExecutorService exec = Executors.newFixedThreadPool(threads);
@@ -106,7 +103,7 @@ public class TestTarantoolClient {
                 public void run() {
                     for (long i = 0; i < Math.ceil((double) calls / threads); i++) {
                         try {
-                            client.asyncOps().replace(512, Arrays.asList(i % 10000, "hello"));
+                            client.fireAndForgetOps().replace(TESTER_SPACE_ID, Arrays.asList(i % 10000, "hello"));
                         } catch (Exception e) {
                             try {
                                 client.waitAlive();
@@ -125,7 +122,7 @@ public class TestTarantoolClient {
         System.out.println("pushed " + (System.currentTimeMillis() - st) + "ms \n" + client.stats.toString());
         client.s.acquire(calls);
         client.close();
-        System.out.println("completed " +(System.currentTimeMillis() - st) + "ms \n" + client.stats.toString());
+        System.out.println("completed " + (System.currentTimeMillis() - st) + "ms \n" + client.stats.toString());
 
     }
 }

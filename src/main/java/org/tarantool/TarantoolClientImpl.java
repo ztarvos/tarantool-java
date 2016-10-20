@@ -77,8 +77,10 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
     protected Thread connector = new Thread(new Runnable() {
         @Override
         public void run() {
-            reconnect(0, thumbstone);
-            LockSupport.park();
+            while (!Thread.interrupted()) {
+                reconnect(0, thumbstone);
+                LockSupport.park();
+            }
         }
     });
 
@@ -430,6 +432,9 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
         }
         if (writer != null) {
             writer.interrupt();
+        }
+        if (connector != null) {
+            connector.interrupt();
         }
         if (is != null) {
             try {

@@ -41,7 +41,8 @@ public class TarantoolClientConfig {
     public double directWriteFactor = 0.5d;
 
     /**
-     *
+     *  Use old call command https://github.com/tarantool/doc/issues/54,
+     *  please ensure that you server supports new call command
      */
-    public boolean useOldCall = true;
+    public boolean useNewCall = false;
 }
