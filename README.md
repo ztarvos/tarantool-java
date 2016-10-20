@@ -1,4 +1,4 @@
-You could find latest stable version is [1.6.7](https://github.com/tarantool/tarantool-java/tree/connector-1.6.7)
+The latest stable version is [1.6.7](https://github.com/tarantool/tarantool-java/tree/connector-1.6.7)
 
 # Java Connector for Tarantool 1.7.0-SNAPSHOT
 
