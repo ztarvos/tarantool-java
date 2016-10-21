@@ -7,6 +7,11 @@ The latest stable version is [1.6.7](https://github.com/tarantool/tarantool-java
 ## Problems & Questions
 http://stackoverflow.com/questions/ask/advice with tags `tarantool` and `java`.
 
+## Note
+Tarantool client is not supports name resolving for fields, indexes, space etc. I highly recommend to use server side lua to
+operate with named items. For example you could create dao object with simple CRUD functions.
+If you still need client name resolving for some reasons you could create function which will return required maps with name to id mappings.
+
 ## How to start
 
 First you should add dependency to your pom file
