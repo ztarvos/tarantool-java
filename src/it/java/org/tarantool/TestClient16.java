@@ -29,9 +29,9 @@ public class TestClient16 {
         System.out.println(delete0);
         List delete = con.delete(schema.tester.id, Arrays.asList(1));
         System.out.println(delete);
-        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello"));
+        List insert = con.insert(schema.tester.id, Arrays.asList(1, "hello",new byte[]{1,2,3}));
         System.out.println(insert);
-        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"}));
+        List insert2 = con.replace(schema.tester.id, Arrays.asList(2, Collections.singletonMap("hello", "word"),new String[]{"a","b","c"},new byte[]{1,2,3}));
         System.out.println(insert2);
         List select0 = con.select(schema.tester.id, schema.tester.primary, Arrays.asList(1), 0, 100, 0);
         System.out.println(select0);

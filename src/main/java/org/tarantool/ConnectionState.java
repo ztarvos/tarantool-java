@@ -33,7 +33,7 @@ public class ConnectionState {
         buf.limit(buf.position());
         buf.rewind();
         try {
-            long size = (Long) MsgPackLite.unpack(buffer.asInputStream(), 0);
+            long size = (Long) MsgPackLite.unpack(buffer.asInputStream());
             buf.clear();
             buffer.checkCapacity((int) size);
             buf = buffer.getBuf();
@@ -53,9 +53,9 @@ public class ConnectionState {
         body.clear();
         header.clear();
         try {
-            toKeyMap(MsgPackLite.unpack(buffer.asInputStream(), MsgPackLite.OPTION_UNPACK_RAW_AS_STRING), header);
+            toKeyMap(MsgPackLite.unpack(buffer.asInputStream()), header);
             if (buf.remaining() > 0) {
-                toKeyMap(MsgPackLite.unpack(buffer.asInputStream(), MsgPackLite.OPTION_UNPACK_RAW_AS_STRING), body);
+                toKeyMap(MsgPackLite.unpack(buffer.asInputStream()), body);
             }
         } catch (IOException e) {
             //this shouldn't happens
