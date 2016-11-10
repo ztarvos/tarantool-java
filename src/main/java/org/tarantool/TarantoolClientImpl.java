@@ -146,6 +146,14 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
         } finally {
             bufferLock.unlock();
         }
+
+        channel.configureBlocking(false);
+        this.channel = channel;
+
+        startThreads(channel.getRemoteAddress().toString());
+    }
+
+    protected void startThreads(String threadName) throws IOException, InterruptedException {
         final CountDownLatch init = new CountDownLatch(2);
         reader = new Thread(new Runnable() {
             @Override
@@ -162,16 +170,18 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
             }
         });
 
-        channel.configureBlocking(false);
-        this.channel = channel;
 
-        reader.setName("Tarantool " + channel.getRemoteAddress().toString() + " reader");
-        writer.setName("Tarantool " + channel.getRemoteAddress().toString() + " writer");
-        writer.setPriority(config.writerThreadPriority);
-        reader.setPriority(config.readerThreadPriority);
+        configureThreads(threadName);
         reader.start();
         writer.start();
         init.await();
+    }
+
+    protected void configureThreads(String threadName) {
+        reader.setName("Tarantool " + threadName + " reader");
+        writer.setName("Tarantool " + threadName + " writer");
+        writer.setPriority(config.writerThreadPriority);
+        reader.setPriority(config.readerThreadPriority);
     }
 
 
@@ -324,7 +334,7 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
 
     protected void readThread() {
         try {
-            while (!Thread.interrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     long code;
                     readPacket();
@@ -358,13 +368,13 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
 
     protected void writeThread() {
         writerBuffer.clear();
-        while (!Thread.interrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 bufferLock.lock();
-                if (sharedBuffer.position() == 0) {
-                    bufferNotEmpty.await();
-                }
                 try {
+                    while (sharedBuffer.position() == 0) {
+                        bufferNotEmpty.await();
+                    }
                     sharedBuffer.flip();
                     writerBuffer.put(sharedBuffer);
                     sharedBuffer.clear();

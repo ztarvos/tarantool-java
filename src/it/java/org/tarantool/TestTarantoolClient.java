@@ -53,6 +53,14 @@ public class TestTarantoolClient {
             t.start();
         }
 
+
+        @Override
+        protected void configureThreads(String threadName) {
+            super.configureThreads(threadName);
+            reader.setDaemon(true);
+            writer.setDaemon(true);
+        }
+
         @Override
         protected void reconnect(int retry, Throwable lastError) {
             if (s != null) {
