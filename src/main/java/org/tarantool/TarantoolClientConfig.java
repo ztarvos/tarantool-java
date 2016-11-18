@@ -16,11 +16,6 @@ public class TarantoolClientConfig {
     public int defaultRequestSize = 1024;
 
     /**
-     * MessagePack options when reading from upstream
-     */
-    public int msgPackOptions = MsgPackLite.OPTION_UNPACK_NUMBER_AS_LONG | MsgPackLite.OPTION_UNPACK_RAW_AS_STRING;
-
-    /**
      * initial size for map which holds futures of sent request
      */
     public int predictedFutures = (int) ((1024 * 1024) / 0.75) + 1;

@@ -41,6 +41,7 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
     protected AtomicLong syncId = new AtomicLong();
     protected Map<Long, FutureImpl<List>> futures;
     protected AtomicInteger wait = new AtomicInteger();
+    protected MsgPackLite msgPackLite = MsgPackLite.INSTANCE;
 
     /**
      * Read properties
@@ -282,8 +283,8 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
                 body.put((Key) args[i], value);
             }
         }
-        MsgPackLite.pack(header, ds);
-        MsgPackLite.pack(body, ds);
+        msgPackLite.pack(header, ds);
+        msgPackLite.pack(body, ds);
         ds.flush();
         ByteBuffer buffer = bos.toByteBuffer();
         buffer.put(0, (byte) 0xce);
@@ -355,12 +356,12 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
     }
 
     protected void readPacket() throws IOException {
-        int size = ((Number) MsgPackLite.unpack(is, config.msgPackOptions)).intValue();
+        int size = ((Number) msgPackLite.unpack(is)).intValue();
         long mark = bytesRead;
         is.mark(size);
-        headers = (Map<Integer, Object>) MsgPackLite.unpack(is, config.msgPackOptions);
+        headers = (Map<Integer, Object>) msgPackLite.unpack(is);
         if (bytesRead - mark < size) {
-            body = (Map<Integer, Object>) MsgPackLite.unpack(is, config.msgPackOptions);
+            body = (Map<Integer, Object>) msgPackLite.unpack(is);
         }
         is.skipBytes((int) (bytesRead - mark - size));
     }
