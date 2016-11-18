@@ -19,56 +19,58 @@ import java.util.concurrent.Callable;
  */
 public class MsgPackLite {
 
-    protected static final int MAX_4BIT = 0xf;
-    protected static final int MAX_5BIT = 0x1f;
-    protected static final int MAX_7BIT = 0x7f;
-    protected static final int MAX_8BIT = 0xff;
-    protected static final int MAX_15BIT = 0x7fff;
-    protected static final int MAX_16BIT = 0xffff;
-    protected static final int MAX_31BIT = 0x7fffffff;
-    protected static final long MAX_32BIT = 0xffffffffL;
+    public static final MsgPackLite INSTANCE = new MsgPackLite();
+
+    protected final int MAX_4BIT = 0xf;
+    protected final int MAX_5BIT = 0x1f;
+    protected final int MAX_7BIT = 0x7f;
+    protected final int MAX_8BIT = 0xff;
+    protected final int MAX_15BIT = 0x7fff;
+    protected final int MAX_16BIT = 0xffff;
+    protected final int MAX_31BIT = 0x7fffffff;
+    protected final long MAX_32BIT = 0xffffffffL;
 
     //these values are from http://wiki.msgpack.org/display/MSGPACK/Format+specification
-    protected static final byte MP_NULL = (byte) 0xc0;
-    protected static final byte MP_FALSE = (byte) 0xc2;
-    protected static final byte MP_TRUE = (byte) 0xc3;
-    protected static final byte MP_BIN8 = (byte) 0xc4;
-    protected static final byte MP_BIN16 = (byte) 0xc5;
-    protected static final byte MP_BIN32 = (byte) 0xc6;
+    protected final byte MP_NULL = (byte) 0xc0;
+    protected final byte MP_FALSE = (byte) 0xc2;
+    protected final byte MP_TRUE = (byte) 0xc3;
+    protected final byte MP_BIN8 = (byte) 0xc4;
+    protected final byte MP_BIN16 = (byte) 0xc5;
+    protected final byte MP_BIN32 = (byte) 0xc6;
 
-    protected static final byte MP_FLOAT = (byte) 0xca;
-    protected static final byte MP_DOUBLE = (byte) 0xcb;
+    protected final byte MP_FLOAT = (byte) 0xca;
+    protected final byte MP_DOUBLE = (byte) 0xcb;
 
-    protected static final byte MP_FIXNUM = (byte) 0x00;//last 7 bits is value
-    protected static final byte MP_UINT8 = (byte) 0xcc;
-    protected static final byte MP_UINT16 = (byte) 0xcd;
-    protected static final byte MP_UINT32 = (byte) 0xce;
-    protected static final byte MP_UINT64 = (byte) 0xcf;
+    protected final byte MP_FIXNUM = (byte) 0x00;//last 7 bits is value
+    protected final byte MP_UINT8 = (byte) 0xcc;
+    protected final byte MP_UINT16 = (byte) 0xcd;
+    protected final byte MP_UINT32 = (byte) 0xce;
+    protected final byte MP_UINT64 = (byte) 0xcf;
 
-    protected static final byte MP_NEGATIVE_FIXNUM = (byte) 0xe0;//last 5 bits is value
-    protected static final int MP_NEGATIVE_FIXNUM_INT = 0xe0;//  /me wishes for signed numbers.
-    protected static final byte MP_INT8 = (byte) 0xd0;
-    protected static final byte MP_INT16 = (byte) 0xd1;
-    protected static final byte MP_INT32 = (byte) 0xd2;
-    protected static final byte MP_INT64 = (byte) 0xd3;
+    protected final byte MP_NEGATIVE_FIXNUM = (byte) 0xe0;//last 5 bits is value
+    protected final int MP_NEGATIVE_FIXNUM_INT = 0xe0;//  /me wishes for signed numbers.
+    protected final byte MP_INT8 = (byte) 0xd0;
+    protected final byte MP_INT16 = (byte) 0xd1;
+    protected final byte MP_INT32 = (byte) 0xd2;
+    protected final byte MP_INT64 = (byte) 0xd3;
 
-    protected static final byte MP_FIXARRAY = (byte) 0x90;//last 4 bits is size
-    protected static final int MP_FIXARRAY_INT = 0x90;
-    protected static final byte MP_ARRAY16 = (byte) 0xdc;
-    protected static final byte MP_ARRAY32 = (byte) 0xdd;
+    protected final byte MP_FIXARRAY = (byte) 0x90;//last 4 bits is size
+    protected final int MP_FIXARRAY_INT = 0x90;
+    protected final byte MP_ARRAY16 = (byte) 0xdc;
+    protected final byte MP_ARRAY32 = (byte) 0xdd;
 
-    protected static final byte MP_FIXMAP = (byte) 0x80;//last 4 bits is size
-    protected static final int MP_FIXMAP_INT = 0x80;
-    protected static final byte MP_MAP16 = (byte) 0xde;
-    protected static final byte MP_MAP32 = (byte) 0xdf;
+    protected final byte MP_FIXMAP = (byte) 0x80;//last 4 bits is size
+    protected final int MP_FIXMAP_INT = 0x80;
+    protected final byte MP_MAP16 = (byte) 0xde;
+    protected final byte MP_MAP32 = (byte) 0xdf;
 
-    protected static final byte MP_FIXSTR = (byte) 0xa0;//last 5 bits is size
-    protected static final int MP_FIXSTR_INT = 0xa0;
-    protected static final byte MP_STR8 = (byte) 0xd9;
-    protected static final byte MP_STR16 = (byte) 0xda;
-    protected static final byte MP_STR32 = (byte) 0xdb;
+    protected final byte MP_FIXSTR = (byte) 0xa0;//last 5 bits is size
+    protected final int MP_FIXSTR_INT = 0xa0;
+    protected final byte MP_STR8 = (byte) 0xd9;
+    protected final byte MP_STR16 = (byte) 0xda;
+    protected final byte MP_STR32 = (byte) 0xdb;
 
-    public static void pack(Object item, OutputStream os) throws IOException {
+    public void pack(Object item, OutputStream os) throws IOException {
         DataOutputStream out = new DataOutputStream(os);
         if (item instanceof Callable) {
             try {
@@ -206,7 +208,7 @@ public class MsgPackLite {
         }
     }
 
-    public static Object unpack(InputStream is) throws IOException {
+    public Object unpack(InputStream is) throws IOException {
         DataInputStream in = new DataInputStream(is);
         int value = in.read();
         if (value < 0) {
@@ -289,7 +291,7 @@ public class MsgPackLite {
         }
     }
 
-    protected static List unpackList(int size, DataInputStream in) throws IOException {
+    protected List unpackList(int size, DataInputStream in) throws IOException {
         if (size < 0) {
             throw new IllegalArgumentException("Array to unpack too large for Java (more than 2^31 elements)!");
         }
@@ -300,7 +302,7 @@ public class MsgPackLite {
         return ret;
     }
 
-    protected static Map unpackMap(int size, DataInputStream in) throws IOException {
+    protected Map unpackMap(int size, DataInputStream in) throws IOException {
         if (size < 0) {
             throw new IllegalArgumentException("Map to unpack too large for Java (more than 2^31 elements)!");
         }
@@ -313,7 +315,7 @@ public class MsgPackLite {
         return ret;
     }
 
-    protected static Object unpackStr(int size, DataInputStream in) throws IOException {
+    protected Object unpackStr(int size, DataInputStream in) throws IOException {
         if (size < 0) {
             throw new IllegalArgumentException("byte[] to unpack too large for Java (more than 2^31 elements)!");
         }
@@ -323,7 +325,7 @@ public class MsgPackLite {
         return new String(data, "UTF-8");
     }
 
-    protected static Object unpackBin(int size, DataInputStream in) throws IOException {
+    protected Object unpackBin(int size, DataInputStream in) throws IOException {
         if (size < 0) {
             throw new IllegalArgumentException("byte[] to unpack too large for Java (more than 2^31 elements)!");
         }

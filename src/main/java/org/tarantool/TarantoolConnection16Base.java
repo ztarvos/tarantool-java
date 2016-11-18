@@ -34,7 +34,7 @@ public abstract class TarantoolConnection16Base {
     public TarantoolConnection16Base(SocketChannel channel) {
         try {
             this.channel = channel;
-            this.state = new ConnectionState();
+            this.state = getConnectionState();
             ByteBuffer welcome = state.getWelcomeBuffer();
             readFully(welcome);
             String firstLine = new String(welcome.array(), 0, welcome.position());
@@ -48,6 +48,10 @@ public abstract class TarantoolConnection16Base {
         } catch (IOException e) {
             throw new CommunicationException("Can't connect with tarantool", e);
         }
+    }
+
+    protected ConnectionState getConnectionState() {
+        return new ConnectionState();
     }
 
     protected int readFully(ByteBuffer buffer) {

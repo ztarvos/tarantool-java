@@ -20,9 +20,9 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
     protected volatile SelectionKey key;
     protected volatile SocketChannel channel;
     protected AtomicLong syncId = new AtomicLong(0);
-    protected final ConnectionState readState = new ConnectionState();
+    protected final ConnectionState readState;
     protected ByteBuffer readBuffer;
-    protected final ConnectionState writeState = new ConnectionState();
+    protected final ConnectionState writeState;
     protected ByteBuffer writeBuffer;
     protected LinkedBlockingQueue<AsyncQuery> writeQueue = new LinkedBlockingQueue<AsyncQuery>();
     protected Map<Long, AsyncQuery> futures = new ConcurrentHashMap<Long, AsyncQuery>();
@@ -47,7 +47,13 @@ public class TarantoolAsyncConnection16Impl implements TarantoolSelectorWorker.C
             throw new CommunicationException("Can't register key");
         }
         this.channel = channel;
+        this.readState = getConnectionState();
+        this.writeState = getConnectionState();
         readBuffer = readState.getLengthReadBuffer();
+    }
+
+    protected ConnectionState getConnectionState() {
+        return new ConnectionState();
     }
 
     @Override

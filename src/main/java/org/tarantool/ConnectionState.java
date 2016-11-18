@@ -7,12 +7,11 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class ConnectionState {
-
+    protected MsgPackLite msgPackLite = MsgPackLite.INSTANCE;
     protected EnumMap<Key, Object> header = new EnumMap<Key, Object>(Key.class);
     protected EnumMap<Key, Object> body = new EnumMap<Key, Object>(Key.class);
 
     protected ByteBufferStreams buffer = new ByteBufferStreams(ByteBuffer.allocate(32 * 1024), 1.1d);
-
 
     public ByteBuffer getWelcomeBuffer() {
         ByteBuffer buf = buffer.getBuf();
@@ -33,7 +32,7 @@ public class ConnectionState {
         buf.limit(buf.position());
         buf.rewind();
         try {
-            long size = (Long) MsgPackLite.unpack(buffer.asInputStream());
+            long size = (Long) msgPackLite.unpack(buffer.asInputStream());
             buf.clear();
             buffer.checkCapacity((int) size);
             buf = buffer.getBuf();
@@ -53,9 +52,9 @@ public class ConnectionState {
         body.clear();
         header.clear();
         try {
-            toKeyMap(MsgPackLite.unpack(buffer.asInputStream()), header);
+            toKeyMap(msgPackLite.unpack(buffer.asInputStream()), header);
             if (buf.remaining() > 0) {
-                toKeyMap(MsgPackLite.unpack(buffer.asInputStream()), body);
+                toKeyMap(msgPackLite.unpack(buffer.asInputStream()), body);
             }
         } catch (IOException e) {
             //this shouldn't happens
@@ -102,8 +101,8 @@ public class ConnectionState {
         buf.put((byte) 0xce);
         buf.putInt(0);
         try {
-            MsgPackLite.pack(header, buffer.asOutputStream());
-            MsgPackLite.pack(body, buffer.asOutputStream());
+            msgPackLite.pack(header, buffer.asOutputStream());
+            msgPackLite.pack(body, buffer.asOutputStream());
         } catch (IOException e) {
             //this shouldn't happens
             throw new IllegalStateException(e);
