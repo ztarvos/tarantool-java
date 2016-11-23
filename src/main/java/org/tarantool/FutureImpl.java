@@ -81,7 +81,9 @@ public class FutureImpl<V> extends AbstractQueuedSynchronizer implements Future<
 
     @Override
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        tryAcquireSharedNanos(1, unit.toNanos(timeout));
+        if(!tryAcquireSharedNanos(1, unit.toNanos(timeout))) {
+            throw new TimeoutException();
+        }
         return value();
     }
 
