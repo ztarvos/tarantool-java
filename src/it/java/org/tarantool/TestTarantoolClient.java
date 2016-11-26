@@ -102,6 +102,7 @@ public class TestTarantoolClient {
         };
         final TarantoolClientTestImpl client = new TarantoolClientTestImpl(socketChannelProvider, config);
 
+        client.syncOps.ping();
         long st = System.currentTimeMillis();
         final int threads = 16;
         ExecutorService exec = Executors.newFixedThreadPool(threads);

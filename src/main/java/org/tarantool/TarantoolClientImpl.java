@@ -47,7 +47,7 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
      * Read properties
      */
     protected DataInputStream is;
-    protected long bytesRead;
+    protected ByteBufferInputStream bis;
     protected Map<Integer, Object> headers;
     protected Map<Integer, Object> body;
 
@@ -124,7 +124,7 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
     }
 
     protected void connect(final SocketChannel channel) throws Exception {
-        is = new DataInputStream(new ByteBufferInputStream(channel));
+        is = new DataInputStream(bis = new ByteBufferInputStream(channel));
         byte[] bytes = new byte[64];
         is.readFully(bytes);
         String firstLine = new String(bytes);
@@ -357,13 +357,12 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
 
     protected void readPacket() throws IOException {
         int size = ((Number) msgPackLite.unpack(is)).intValue();
-        long mark = bytesRead;
-        is.mark(size);
+        long mark = bis.bytesRead;
         headers = (Map<Integer, Object>) msgPackLite.unpack(is);
-        if (bytesRead - mark < size) {
+        if (bis.bytesRead - mark < size) {
             body = (Map<Integer, Object>) msgPackLite.unpack(is);
         }
-        is.skipBytes((int) (bytesRead - mark - size));
+        is.skipBytes((int) (bis.bytesRead - mark - size));
     }
 
 
