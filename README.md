@@ -22,7 +22,7 @@ First you should add dependency to your pom file
   <version>1.7.0-SNAPSHOT</version>
 </dependency>
 ```
-First you should configure TarantoolClientConfig.
+Second configure TarantoolClientConfig.
 
 ```java
      TarantoolClientConfig config = new TarantoolClientConfig();
