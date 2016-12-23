@@ -24,7 +24,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, Object, Future<List>> implements TarantoolClient, TarantoolClientOps<Integer, Object, Object, Future<List>> {
+public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, List<?>, Object, Future<List>> implements TarantoolClient, TarantoolClientOps<Integer, List<?>, Object, Future<List>> {
 
     /**
      * External
@@ -476,21 +476,21 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
     }
 
     @Override
-    public TarantoolClientOps<Integer, Object, Object, List> syncOps() {
+    public TarantoolClientOps<Integer, List<?>, Object, List> syncOps() {
         return syncOps;
     }
 
     @Override
-    public TarantoolClientOps<Integer, Object, Object, Future<List>> asyncOps() {
+    public TarantoolClientOps<Integer, List<?>, Object, Future<List>> asyncOps() {
         return this;
     }
 
     @Override
-    public TarantoolClientOps<Integer, Object, Object, Long> fireAndForgetOps() {
+    public TarantoolClientOps<Integer, List<?>, Object, Long> fireAndForgetOps() {
         return fireAndForgetOps;
     }
 
-    protected class SyncOps extends AbstractTarantoolOps<Integer, Object, Object, List> implements TarantoolClientOps<Integer, Object, Object, List> {
+    protected class SyncOps extends AbstractTarantoolOps<Integer, List<?>, Object, List> implements TarantoolClientOps<Integer, List<?>, Object, List> {
         public SyncOps(TarantoolClientConfig config) {
             super(config);
         }
@@ -506,7 +506,7 @@ public class TarantoolClientImpl extends AbstractTarantoolOps<Integer, Object, O
         }
     }
 
-    protected class FireAndForgetOps extends AbstractTarantoolOps<Integer, Object, Object, Long> implements TarantoolClientOps<Integer, Object, Object, Long> {
+    protected class FireAndForgetOps extends AbstractTarantoolOps<Integer, List<?>, Object, Long> implements TarantoolClientOps<Integer, List<?>, Object, Long> {
         public FireAndForgetOps(TarantoolClientConfig config) {
             super(config);
         }

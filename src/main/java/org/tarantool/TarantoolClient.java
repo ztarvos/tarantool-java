@@ -5,11 +5,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public interface TarantoolClient {
-    TarantoolClientOps<Integer, Object, Object, List> syncOps();
+    TarantoolClientOps<Integer, List<?>, Object, List> syncOps();
 
-    TarantoolClientOps<Integer, Object, Object, Future<List>> asyncOps();
+    TarantoolClientOps<Integer, List<?>, Object, Future<List>> asyncOps();
 
-    TarantoolClientOps<Integer, Object, Object, Long> fireAndForgetOps();
+    TarantoolClientOps<Integer, List<?>, Object, Long> fireAndForgetOps();
 
     void close();
 
