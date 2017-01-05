@@ -1,12 +1,8 @@
 package org.tarantool;
 
 
-public abstract class AbstractTarantoolOps<Space, Tuple, Operation, Result> {
-    protected TarantoolClientConfig config;
-
-    public AbstractTarantoolOps(TarantoolClientConfig config) {
-        this.config = config;
-    }
+public abstract class AbstractTarantoolOps<Space, Tuple, Operation, Result> implements TarantoolClientOps<Space, Tuple, Operation, Result> {
+    private Code callCode = Code.OLD_CALL;
 
     public abstract Result exec(Code code, Object... args);
 
@@ -35,17 +31,18 @@ public abstract class AbstractTarantoolOps<Space, Tuple, Operation, Result> {
     }
 
     public Result call(String function, Object... args) {
-        return exec(config.useNewCall ? Code.CALL : Code.OLD_CALL, Key.FUNCTION, function, Key.TUPLE, args);
+        return exec(callCode, Key.FUNCTION, function, Key.TUPLE, args);
     }
 
     public Result eval(String expression, Object... args) {
         return exec(Code.EVAL, Key.EXPRESSION, expression, Key.TUPLE, args);
     }
 
-
     public void ping() {
         exec(Code.PING);
     }
 
-
+    public void setCallCode(Code callCode) {
+        this.callCode = callCode;
+    }
 }

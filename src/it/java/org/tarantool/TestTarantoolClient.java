@@ -2,6 +2,7 @@ package org.tarantool;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TestTarantoolClient {
 
-    public static final int TESTER_SPACE_ID = 512;
+    public static final int TESTER_SPACE_ID = 513;
 
     /*
               Before executing this test you should configure your local tarantool
@@ -42,7 +43,7 @@ public class TestTarantoolClient {
                         e.printStackTrace();
                     }
                     try {
-                        System.out.println("closed");
+                        System.out.println("manually closed");
                         channel.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -70,7 +71,7 @@ public class TestTarantoolClient {
         }
 
         @Override
-        protected void complete(long code, FutureImpl<List> q) {
+        protected void complete(long code, FutureImpl<List<?>> q) {
             super.complete(code, q);
             if (code != 0) {
                 System.out.println(code);
@@ -86,6 +87,8 @@ public class TestTarantoolClient {
         TarantoolClientConfig config = new TarantoolClientConfig();
         config.username = "test";
         config.password = "test";
+        config.initTimeoutMillis = 1000;
+
         //config.sharedBufferSize = 0;
         SocketChannelProvider socketChannelProvider = new SocketChannelProvider() {
             @Override
@@ -93,6 +96,7 @@ public class TestTarantoolClient {
                 if (lastError != null) {
                     lastError.printStackTrace(System.out);
                 }
+                System.out.println("reconnect");
                 try {
                     return SocketChannel.open(new InetSocketAddress("localhost", 3301));
                 } catch (IOException e) {
@@ -101,7 +105,7 @@ public class TestTarantoolClient {
             }
         };
         final TarantoolClientTestImpl client = new TarantoolClientTestImpl(socketChannelProvider, config);
-
+        config.writeTimeoutMillis = 1;
         client.syncOps.ping();
         long st = System.currentTimeMillis();
         final int threads = 16;
@@ -110,9 +114,9 @@ public class TestTarantoolClient {
             exec.execute(new Runnable() {
                 @Override
                 public void run() {
-                    for (long i = 0; i < Math.ceil((double) calls / threads); i++) {
+                    for (int i = 0; i < Math.ceil((double) calls / threads); i++) {
                         try {
-                            client.fireAndForgetOps().replace(TESTER_SPACE_ID, Arrays.asList(i % 10000, "hello"));
+                            client.fireAndForgetOps().replace(TESTER_SPACE_ID, Arrays.asList(ByteBuffer.allocate(4).putInt(i % 10000).array(), new byte[]{0,1,2,3,4,5,6}));
                         } catch (Exception e) {
                             try {
                                 client.waitAlive();

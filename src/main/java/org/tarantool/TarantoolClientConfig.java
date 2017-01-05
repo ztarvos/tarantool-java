@@ -1,6 +1,8 @@
 package org.tarantool;
 
 
+import java.util.concurrent.TimeUnit;
+
 public class TarantoolClientConfig {
 
     /**
@@ -40,4 +42,12 @@ public class TarantoolClientConfig {
      *  please ensure that you server supports new call command
      */
     public boolean useNewCall = false;
+
+    /**
+     * Any blocking ops timeout
+     */
+    public long initTimeoutMillis = 60*1000L;
+
+    public long writeTimeoutMillis = 60*1000L;
+
 }

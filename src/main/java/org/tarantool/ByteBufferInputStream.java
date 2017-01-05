@@ -8,10 +8,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-public class ByteBufferInputStream extends InputStream {
-    protected SocketChannel channel;
-    protected ByteBuffer buffer;
-    protected Selector selector;
+public class ByteBufferInputStream extends CountInputStream {
+    protected final SocketChannel channel;
+    protected final ByteBuffer buffer;
+    protected final Selector selector;
     protected long bytesRead;
 
     public ByteBufferInputStream(SocketChannel channel) throws IOException {
@@ -79,5 +79,9 @@ public class ByteBufferInputStream extends InputStream {
     public void close() throws IOException {
         selector.close();
         channel.close();
+    }
+
+    public long getBytesRead() {
+        return bytesRead;
     }
 }
