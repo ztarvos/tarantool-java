@@ -260,7 +260,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
         if (bufferLock.tryLock(config.writeTimeoutMillis, TimeUnit.MILLISECONDS)) {
             try {
                 while (sharedBuffer.remaining() < buffer.limit()) {
-                    long remaining = config.writeTimeoutMillis - System.currentTimeMillis() - start;
+                    long remaining = config.writeTimeoutMillis - (System.currentTimeMillis() - start);
                     try {
                         if (remaining < 1 || !bufferEmpty.await(remaining, TimeUnit.MILLISECONDS)) {
                             throw new TimeoutException(config.writeTimeoutMillis + "ms is exceeded while waiting for empty buffer you could configure write timeout it in TarantoolConfig");
