@@ -22,7 +22,7 @@ public abstract class TarantoolBase<Result> extends AbstractTarantoolOps<Integer
     protected String salt;
     protected MsgPackLite msgPackLite = MsgPackLite.INSTANCE;
     protected AtomicLong syncId = new AtomicLong();
-    protected int initialRequestSize = 8192;
+    protected int initialRequestSize = 4096;
     /**
      * Read properties
      */

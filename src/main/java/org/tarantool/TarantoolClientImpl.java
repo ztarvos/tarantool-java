@@ -72,6 +72,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
         super();
         this.thumbstone = NOT_INIT_EXCEPTION;
         this.config = config;
+        this.initialRequestSize = config.defaultRequestSize;
         this.alive = new CountDownLatch(1);
         this.socketProvider = socketProvider;
         this.stats = new TarantoolClientStats();

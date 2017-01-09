@@ -15,7 +15,7 @@ public class TarantoolClientConfig {
     /**
      * default ByteArrayOutputStream size  when make query serialization
      */
-    public int defaultRequestSize = 1024;
+    public int defaultRequestSize = 4096;
 
     /**
      * initial size for map which holds futures of sent request
