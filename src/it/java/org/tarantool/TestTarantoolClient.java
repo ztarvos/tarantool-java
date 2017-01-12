@@ -31,6 +31,7 @@ public class TestTarantoolClient {
              */
     public static class TarantoolClientTestImpl extends TarantoolClientImpl {
         final Semaphore s = new Semaphore(0);
+        long latency = 1L;
 
         public TarantoolClientTestImpl(SocketChannelProvider socketProvider, TarantoolClientConfig options) {
             super(socketProvider, options);
@@ -54,6 +55,15 @@ public class TestTarantoolClient {
             t.start();
         }
 
+        @Override
+        protected void writeFully(SocketChannel channel, ByteBuffer buffer) throws IOException {
+            try {
+                Thread.sleep(1L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            super.writeFully(channel, buffer);
+        }
 
         @Override
         protected void configureThreads(String threadName) {
@@ -82,12 +92,14 @@ public class TestTarantoolClient {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException, SQLException {
-        final int calls = 2000000;
+        final int calls = 1000;
 
         TarantoolClientConfig config = new TarantoolClientConfig();
         config.username = "test";
         config.password = "test";
         config.initTimeoutMillis = 1000;
+
+        config.sharedBufferSize = 128;
 
         //config.sharedBufferSize = 0;
         SocketChannelProvider socketChannelProvider = new SocketChannelProvider() {
@@ -105,7 +117,8 @@ public class TestTarantoolClient {
             }
         };
         final TarantoolClientTestImpl client = new TarantoolClientTestImpl(socketChannelProvider, config);
-        config.writeTimeoutMillis = 1;
+        config.writeTimeoutMillis = 2;
+        client.latency = 1;
         client.syncOps.ping();
         long st = System.currentTimeMillis();
         final int threads = 16;

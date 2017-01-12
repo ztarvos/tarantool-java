@@ -103,7 +103,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
     protected void reconnect(int retry, Throwable lastError) {
         SocketChannel channel;
         while (!Thread.interrupted()) {
-            channel = socketProvider.get(retry--, lastError == NOT_INIT_EXCEPTION ? null : lastError);
+            channel = socketProvider.get(retry++, lastError == NOT_INIT_EXCEPTION ? null : lastError);
             try {
                 connect(channel);
                 return;
@@ -249,6 +249,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
     protected void write(Code code, Long syncId, Long schemaId, Object... args)
             throws Exception {
         ByteBuffer buffer = createPacket(code, syncId, schemaId, args);
+
         if (directWrite(buffer)) {
             return;
         }
@@ -260,10 +261,17 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
         long start = System.currentTimeMillis();
         if (bufferLock.tryLock(config.writeTimeoutMillis, TimeUnit.MILLISECONDS)) {
             try {
+                int rem = buffer.remaining();
+                stats.sharedMaxPacketSize = Math.max(stats.sharedMaxPacketSize, rem);
+                if (rem > initialRequestSize) {
+                    stats.sharedPacketSizeGrowth++;
+                }
                 while (sharedBuffer.remaining() < buffer.limit()) {
+                    stats.sharedEmptyAwait++;
                     long remaining = config.writeTimeoutMillis - (System.currentTimeMillis() - start);
                     try {
                         if (remaining < 1 || !bufferEmpty.await(remaining, TimeUnit.MILLISECONDS)) {
+                            stats.sharedEmptyAwaitTimeouts++;
                             throw new TimeoutException(config.writeTimeoutMillis + "ms is exceeded while waiting for empty buffer you could configure write timeout it in TarantoolConfig");
                         }
                     } catch (InterruptedException e) {
@@ -278,6 +286,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
                 bufferLock.unlock();
             }
         } else {
+            stats.sharedWriteLockTimeouts++;
             throw new TimeoutException(config.writeTimeoutMillis + "ms is exceeded while waiting for shared buffer lock you could configure write timeout in TarantoolConfig");
         }
     }
@@ -286,6 +295,11 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
         if (sharedBuffer.capacity() * config.directWriteFactor <= buffer.limit()) {
             if (writeLock.tryLock(config.writeTimeoutMillis, TimeUnit.MILLISECONDS)) {
                 try {
+                    int rem = buffer.remaining();
+                    stats.directMaxPacketSize = Math.max(stats.directMaxPacketSize, rem);
+                    if (rem > initialRequestSize) {
+                        stats.directPacketSizeGrowth++;
+                    }
                     writeFully(channel, buffer);
                     stats.directWrite++;
                     wait.incrementAndGet();
@@ -294,6 +308,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
                 }
                 return true;
             } else {
+                stats.directWriteLockTimeouts++;
                 throw new TimeoutException(config.writeTimeoutMillis + "ms is exceeded while waiting for channel lock you could configure write timeout in TarantoolConfig");
             }
         }
@@ -348,7 +363,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
                     writeLock.unlock();
                 }
                 writerBuffer.clear();
-                stats.bufferedWrites++;
+                stats.sharedWrites++;
             } catch (Exception e) {
                 die("Cant write bytes", e);
                 return;

@@ -1,12 +1,19 @@
 package org.tarantool;
 
-
 public class TarantoolClientStats {
     final long start = System.currentTimeMillis();
-    public volatile long buffered;
-    public volatile long received;
-    public volatile long bufferedWrites;
-    public volatile long directWrite;
+    public long buffered;
+    public long received;
+    public long sharedWrites;
+    public long directWrite;
+    public long directMaxPacketSize;
+    public long sharedMaxPacketSize;
+    public long directPacketSizeGrowth;
+    public long sharedPacketSizeGrowth;
+    public long sharedEmptyAwait;
+    public long sharedWriteLockTimeouts;
+    public long directWriteLockTimeouts;
+    public long sharedEmptyAwaitTimeouts;
 
     @Override
     public String toString() {
@@ -14,7 +21,15 @@ public class TarantoolClientStats {
                 "\nrunning = " + (System.currentTimeMillis() - start) + "ms" +
                 "\nbuffered = " + buffered +
                 "\nreceived = " + received +
+                "\ndirectMaxPacketSize = " + directMaxPacketSize +
+                "\nsharedMaxPacketSize = " + sharedMaxPacketSize +
+                "\nsharedEmptyAwait = " + sharedEmptyAwait +
+                "\nsharedEmptyAwaitTimeouts = " + sharedEmptyAwaitTimeouts +
+                "\ndirectMaxPacketSizeGrowth = " + directPacketSizeGrowth +
+                "\nsharedMaxPacketSizeGrowth = " + sharedPacketSizeGrowth +
+                "\ndirectWriteLockTimeouts = " + directWriteLockTimeouts +
+                "\nsharedWriteLockTimeouts = " + sharedWriteLockTimeouts +
                 "\ndirectWrite = " + directWrite +
-                "\nbufferedWrites = " + bufferedWrites + "\n";
+                "\nsharedWrites = " + sharedWrites + "\n";
     }
 }
