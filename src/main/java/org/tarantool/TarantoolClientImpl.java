@@ -127,7 +127,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
             is.readFully(bytes);
             this.salt = new String(bytes);
             if (config.username != null && config.password != null) {
-                writeFully(channel, createAuthPacket(config.username, config.username));
+                writeFully(channel, createAuthPacket(config.username, config.password));
                 readPacket(is);
                 Long code = (Long) headers.get(Key.CODE.getId());
                 if (code != 0) {
