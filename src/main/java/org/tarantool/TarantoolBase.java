@@ -64,6 +64,11 @@ public abstract class TarantoolBase<Result> extends AbstractTarantoolOps<Integer
             } catch (IOException ignored) {
 
             }
+            try {
+                cis.close();
+            } catch (IOException ignored) {
+
+            }
             throw new CommunicationException("Couldn't connect to tarantool", e);
         }
     }

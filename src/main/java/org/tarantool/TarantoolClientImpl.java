@@ -141,6 +141,11 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
             } catch (IOException ignored) {
 
             }
+            try {
+                cis.close();
+            } catch (IOException ignored) {
+
+            }
             throw new CommunicationException("Couldn't connect to tarantool", e);
         }
         channel.configureBlocking(false);
