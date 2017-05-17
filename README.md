@@ -1,6 +1,6 @@
 You could get [1.6.9](https://github.com/tarantool/tarantool-java/tree/connector-1.6.9)
 
-# Java Connector for Tarantool 1.7.2
+# Java Connector for Tarantool 1.7.3
 
 [![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
