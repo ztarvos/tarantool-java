@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class LessLockTemplateRegistry extends TemplateRegistry {
-    protected static final Map<Type, Template> cache = new ConcurrentHashMap<>();
+    protected static final Map<Type, Template> cache = new ConcurrentHashMap<Type,Template>();
     protected CustomAnyTemplate anyTemplate;
 
     /**

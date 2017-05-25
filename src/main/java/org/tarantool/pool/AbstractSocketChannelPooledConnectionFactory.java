@@ -39,7 +39,7 @@ public abstract class AbstractSocketChannelPooledConnectionFactory<T extends Con
         this.port = port;
         this.minPoolSize = minPoolSize;
         this.maxPoolSize = maxPoolSize;
-        pool = new ArrayBlockingQueue<>(minPoolSize);
+        pool = new ArrayBlockingQueue<T>(minPoolSize);
         connections = new Semaphore(maxPoolSize);
     }
 

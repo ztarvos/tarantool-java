@@ -24,7 +24,7 @@ public class ConnetionState {
         }
     };
 
-    protected static final EnumTemplate<Key> keyTemplate = new EnumTemplate<>(Key.CODE);
+    protected static final EnumTemplate<Key> keyTemplate = new EnumTemplate<Key>(Key.CODE);
     protected static final AnyTemplate<Object> valueTemplate = new CustomAnyTemplate(pack.getRegistry());
 
 
