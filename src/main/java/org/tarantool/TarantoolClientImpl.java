@@ -156,7 +156,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
         } finally {
             bufferLock.unlock();
         }
-        startThreads(channel.getRemoteAddress().toString());
+        startThreads(channel.socket().getRemoteSocketAddress().toString());
         this.thumbstone = null;
         alive.countDown();
     }

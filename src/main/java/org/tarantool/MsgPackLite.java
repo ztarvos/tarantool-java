@@ -141,7 +141,7 @@ public class MsgPackLite {
                 out.writeInt(data.length);
             }
             out.write(data);
-        } else if (item instanceof byte[]) {
+        } else if (item instanceof byte[] || item instanceof ByteBuffer) {
             byte[] data;
             if (item instanceof byte[]) {
                 data = (byte[]) item;
