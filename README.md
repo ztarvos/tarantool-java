@@ -1,6 +1,6 @@
 You could get [1.6.9](https://github.com/tarantool/tarantool-java/tree/connector-1.6.9)
 
-# Java Connector for Tarantool 1.7.3
+# Java Connector for Tarantool 1.7.4
 
 [![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -19,7 +19,7 @@ First you should add dependency to your pom file
 <dependency>
   <groupId>org.tarantool</groupId>
   <artifactId>connector</artifactId>
-  <version>1.7.2</version>
+  <version>1.7.4</version>
 </dependency>
 ```
 Second configure TarantoolClientConfig.
