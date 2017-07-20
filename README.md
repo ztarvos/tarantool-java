@@ -121,10 +121,10 @@ protected void complete(long code, FutureImpl<?> q);
 ## Spring NamedParameterJdbcTemplate usage example
 
 To configure sockets you should implements SQLSocketProvider and add socketProvider=abc.xyz.MySocketProvider to connect url.
-For example tarantool://localhost:3301?username=test&password=test&socketProvider=abc.xyz.MySocketProvider
+For example tarantool://localhost:3301?user=test&password=test&socketProvider=abc.xyz.MySocketProvider
 
 ```java
-NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(new DriverManagerDataSource("tarantool://localhost:3301?username=test&password=test"));
+NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(new DriverManagerDataSource("tarantool://localhost:3301?user=test&password=test"));
 RowMapper<Object> rowMapper = new RowMapper<Object>() {
     @Override
     public Object mapRow(ResultSet resultSet, int i) throws SQLException {
