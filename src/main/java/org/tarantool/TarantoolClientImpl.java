@@ -54,6 +54,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
      * Inner
      */
     protected TarantoolClientStats stats;
+    protected CountDownLatch stopIO;
     protected Thread reader;
     protected Thread writer;
 
@@ -163,11 +164,13 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
 
     protected void startThreads(String threadName) throws IOException, InterruptedException {
         final CountDownLatch init = new CountDownLatch(2);
+        stopIO = new CountDownLatch(2);
         reader = new Thread(new Runnable() {
             @Override
             public void run() {
                 init.countDown();
                 readThread();
+                stopIO.countDown();
             }
         });
         writer = new Thread(new Runnable() {
@@ -175,6 +178,7 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
             public void run() {
                 init.countDown();
                 writeThread();
+                stopIO.countDown();
             }
         });
 
@@ -450,6 +454,11 @@ public class TarantoolClientImpl extends TarantoolBase<Future<List<?>>> implemen
             }
         }
         closeChannel(channel);
+        try {
+            stopIO.await();
+        } catch (InterruptedException ignored) {
+
+        }
     }
 
     @Override
