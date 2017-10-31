@@ -87,6 +87,8 @@ all the results, you could override this:
 protected void complete(long code, FutureImpl<List> q);
 ```
 
+For more implementation details, see [API documentation](http://tarantool.github.io/tarantool-java/apidocs/index.html).
+
 ## Where to get help
 
 Got problems or questions? Post them on
