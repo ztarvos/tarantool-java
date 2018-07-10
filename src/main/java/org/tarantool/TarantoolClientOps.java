@@ -4,6 +4,8 @@ package org.tarantool;
 public interface TarantoolClientOps<T,O,P,R> {
     R select(T space, T index, O key, int offset, int limit, int iterator);
 
+    R select(T space, T index, O key, int offset, int limit, Iterator iterator);
+
     R insert(T space, O tuple);
 
     R replace(T space, O tuple);

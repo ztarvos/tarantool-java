@@ -6,6 +6,10 @@ public abstract class AbstractTarantoolOps<Space, Tuple, Operation, Result> impl
 
     public abstract Result exec(Code code, Object... args);
 
+    public Result select(Space space, Space index, Tuple key, int offset, int limit, Iterator iterator) {
+        return select(space, index, key, offset, limit, iterator.getValue());
+    }
+
     public Result select(Space space, Space index, Tuple key, int offset, int limit, int iterator) {
         return exec(Code.SELECT, Key.SPACE, space, Key.INDEX, index, Key.KEY, key, Key.ITERATOR, iterator, Key.LIMIT, limit, Key.OFFSET, offset);
     }
