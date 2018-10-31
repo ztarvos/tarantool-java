@@ -5,6 +5,11 @@ align="right">
 
 # Java connector for Tarantool 1.7.4+
 
+[![Coverage Status][coveralls-badge]][coveralls-page]
+
+[coveralls-badge]: https://coveralls.io/repos/github/tarantool/tarantool-java/badge.svg?branch=master
+[coveralls-page]: https://coveralls.io/github/tarantool/tarantool-java?branch=master
+
 [![Join the chat at https://gitter.im/tarantool/tarantool-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tarantool/tarantool-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 To get the Java connector for Tarantool 1.6.9, visit
