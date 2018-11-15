@@ -2,6 +2,7 @@ package org.tarantool.jdbc;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -12,7 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class JdbcDatabaseMetaDataIT extends AbstractJdbcIT {
     private DatabaseMetaData meta;
@@ -182,5 +185,32 @@ public class JdbcDatabaseMetaDataIT extends AbstractJdbcIT {
         assertEquals(colName, rs.getString(4));
         assertEquals(seq, rs.getInt(5));
         assertEquals(pkName, rs.getString(6));
+    }
+
+    @Test
+    public void testClosedConnection() throws SQLException {
+        conn.close();
+
+        int i = 0;
+        for (; i < 3; i++) {
+            final int step = i;
+            SQLException e = assertThrows(SQLException.class, new Executable() {
+                @Override
+                public void execute() throws Throwable {
+                    switch (step) {
+                        case 0: meta.getTables(null, null, null, new String[]{"TABLE"});
+                            break;
+                        case 1: meta.getColumns(null, null, "TEST", null);
+                            break;
+                        case 2: meta.getPrimaryKeys(null, null, "TEST");
+                            break;
+                        default:
+                            fail();
+                    }
+                }
+            });
+            assertEquals("Connection is closed.", e.getCause().getMessage());
+        }
+        assertEquals(3, i);
     }
 }

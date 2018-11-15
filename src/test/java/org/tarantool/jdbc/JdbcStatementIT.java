@@ -3,6 +3,7 @@ package org.tarantool.jdbc;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,8 +11,10 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class JdbcStatementIT extends AbstractJdbcIT {
     private Statement stmt;
@@ -62,5 +65,32 @@ public class JdbcStatementIT extends AbstractJdbcIT {
 
         assertEquals("hundred", getRow("test", 100).get(1));
         assertEquals("thousand", getRow("test", 1000).get(1));
+    }
+
+    @Test
+    public void testClosedConnection() throws Exception {
+        conn.close();
+
+        int i = 0;
+        for (; i < 3; i++) {
+            final int step = i;
+            SQLException e = assertThrows(SQLException.class, new Executable() {
+                @Override
+                public void execute() throws Throwable {
+                    switch (step) {
+                        case 0: stmt.executeQuery("TEST");
+                            break;
+                        case 1: stmt.executeUpdate("TEST");
+                            break;
+                        case 2: stmt.execute("TEST");
+                            break;
+                        default:
+                            fail();
+                    }
+                }
+            });
+            assertEquals("Connection is closed.", e.getMessage());
+        }
+        assertEquals(3, i);
     }
 }

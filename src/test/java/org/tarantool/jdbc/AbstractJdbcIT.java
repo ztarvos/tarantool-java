@@ -145,45 +145,40 @@ public abstract class AbstractJdbcIT {
             conn.close();
     }
 
-    private static void sqlExec(String[] text) throws IOException {
-        Socket socket = new Socket();
+    private static void sqlExec(String[] text) {
+        TarantoolConnection con = makeConnection();
         try {
-            socket.connect(new InetSocketAddress(host, port));
-            TarantoolConnection con = new TarantoolConnection(user, pass, socket);
-            try {
-                for (String cmd : text)
-                    con.eval("box.sql.execute(\"" + cmd + "\")");
-            }
-            finally {
-                con.close();
-                socket = null;
-            }
-        }
-        finally {
-            if (socket != null)
-                socket.close();
+            for (String cmd : text)
+                con.eval("box.sql.execute(\"" + cmd + "\")");
+        } finally {
+            con.close();
         }
     }
 
-    static List<?> getRow(String space, Object key) throws IOException {
+    static List<?> getRow(String space, Object key) {
+        TarantoolConnection con = makeConnection();
+        try {
+            List<?> l = con.select(281, 2, Arrays.asList(space.toUpperCase()), 0, 1, 0);
+            Integer spaceId = (Integer) ((List) l.get(0)).get(0);
+            l = con.select(spaceId, 0, Arrays.asList(key), 0, 1, 0);
+            return (l == null || l.size() == 0) ? Collections.emptyList() : (List<?>) l.get(0);
+        } finally {
+            con.close();
+        }
+    }
+
+    static TarantoolConnection makeConnection() {
         Socket socket = new Socket();
         try {
             socket.connect(new InetSocketAddress(host, port));
-            TarantoolConnection con = new TarantoolConnection(user, pass, socket);
+            return new TarantoolConnection(user, pass, socket);
+        } catch (IOException e) {
             try {
-                List<?> l = con.select(281, 2, Arrays.asList(space.toUpperCase()), 0, 1, 0);
-                Integer spaceId = (Integer) ((List) l.get(0)).get(0);
-                l = con.select(spaceId, 0, Arrays.asList(key), 0, 1, 0);
-                return (l == null || l.size() == 0) ? Collections.emptyList() : (List<?>) l.get(0);
-            }
-            finally {
-                con.close();
-                socket = null;
-            }
-        }
-        finally {
-            if (socket != null)
                 socket.close();
+            } catch (IOException ignored) {
+                // No-op.
+            }
+            throw new RuntimeException(e);
         }
     }
 }

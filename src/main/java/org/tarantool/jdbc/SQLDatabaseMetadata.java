@@ -105,7 +105,7 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
 
     @Override
     public String getDatabaseProductVersion() throws SQLException {
-        return connection.connection.getServerVersion();
+        return connection.getServerVersion();
     }
 
     @Override
@@ -672,23 +672,29 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
-            throws SQLException {
-        if (types != null && !Arrays.asList(types).contains("TABLE")) {
-            return new SQLResultSet(JDBCBridge.EMPTY);
-        }
-        String[] parts = tableNamePattern == null ? new String[]{""} : tableNamePattern.split("%");
-        List<List<Object>> spaces = (List<List<Object>>) connection.connection.select(_VSPACE, 0, Arrays.asList(), 0, SPACES_MAX, 0);
-        List<List<Object>> rows = new ArrayList<List<Object>>();
-        for (List<Object> space : spaces) {
-            String name = (String) space.get(NAME_IDX);
-            Map flags = (Map) space.get(FLAGS_IDX);
-            if (flags != null && flags.containsKey("sql") && like(name, parts)) {
-                rows.add(Arrays.asList(name, "TABLE", flags.get("sql")));
+        throws SQLException {
+        try {
+            if (types != null && !Arrays.asList(types).contains("TABLE")) {
+                connection.checkNotClosed();
+                return new SQLResultSet(JDBCBridge.EMPTY);
             }
+            String[] parts = tableNamePattern == null ? new String[]{""} : tableNamePattern.split("%");
+            List<List<Object>> spaces = (List<List<Object>>) connection.nativeSelect(_VSPACE, 0, Arrays.asList(), 0, SPACES_MAX, 0);
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+            for (List<Object> space : spaces) {
+                String name = (String) space.get(NAME_IDX);
+                Map flags = (Map) space.get(FLAGS_IDX);
+                if (flags != null && flags.containsKey("sql") && like(name, parts)) {
+                    rows.add(Arrays.asList(name, "TABLE", flags.get("sql")));
+                }
+            }
+            return new SQLNullResultSet(JDBCBridge.mock(Arrays.asList("TABLE_NAME", "TABLE_TYPE", "REMARKS",
+                    //nulls
+                    "TABLE_CAT", "TABLE_SCHEM", "TABLE_TYPE", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF_GENERATION"), rows));
+        } catch (Exception e) {
+            throw new SQLException("Failed to retrieve table(s) description: " +
+                "tableNamePattern=\"" + tableNamePattern + "\".", e);
         }
-        return new SQLNullResultSet(JDBCBridge.mock(Arrays.asList("TABLE_NAME", "TABLE_TYPE", "REMARKS",
-                //nulls
-                "TABLE_CAT", "TABLE_SCHEM", "TABLE_TYPE", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF_GENERATION"), rows));
     }
 
     @Override
@@ -713,32 +719,38 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
     @Override
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern)
             throws SQLException {
-        String[] tableParts = tableNamePattern == null ? new String[]{""} : tableNamePattern.split("%");
-        String[] colParts = columnNamePattern == null ? new String[]{""} : columnNamePattern.split("%");
-        List<List<Object>> spaces = (List<List<Object>>) connection.connection.select(_VSPACE, 0, Arrays.asList(), 0, SPACES_MAX, 0);
-        List<List<Object>> rows = new ArrayList<List<Object>>();
-        for (List<Object> space : spaces) {
-            String tableName = (String) space.get(NAME_IDX);
-            Map flags = (Map) space.get(FLAGS_IDX);
-            if (flags != null && flags.containsKey("sql") && like(tableName, tableParts)) {
-                List<Map<String, Object>> format = (List<Map<String, Object>>) space.get(FORMAT_IDX);
-                for (int columnIdx = 1; columnIdx <= format.size(); columnIdx++) {
-                    Map<String, Object> f = format.get(columnIdx - 1);
-                    String columnName = (String) f.get("name");
-                    String dbType = (String) f.get("type");
-                    if (like(columnName, colParts)) {
-                        rows.add(Arrays.<Object>asList(tableName, columnName, columnIdx, Types.OTHER, dbType, 10, 1, "YES", Types.OTHER, "NO", "NO"));
+        try {
+            String[] tableParts = tableNamePattern == null ? new String[]{""} : tableNamePattern.split("%");
+            String[] colParts = columnNamePattern == null ? new String[]{""} : columnNamePattern.split("%");
+            List<List<Object>> spaces = (List<List<Object>>) connection.nativeSelect(_VSPACE, 0, Arrays.asList(), 0, SPACES_MAX, 0);
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+            for (List<Object> space : spaces) {
+                String tableName = (String) space.get(NAME_IDX);
+                Map flags = (Map) space.get(FLAGS_IDX);
+                if (flags != null && flags.containsKey("sql") && like(tableName, tableParts)) {
+                    List<Map<String, Object>> format = (List<Map<String, Object>>) space.get(FORMAT_IDX);
+                    for (int columnIdx = 1; columnIdx <= format.size(); columnIdx++) {
+                        Map<String, Object> f = format.get(columnIdx - 1);
+                        String columnName = (String) f.get("name");
+                        String dbType = (String) f.get("type");
+                        if (like(columnName, colParts)) {
+                            rows.add(Arrays.<Object>asList(tableName, columnName, columnIdx, Types.OTHER, dbType, 10, 1, "YES", Types.OTHER, "NO", "NO"));
+                        }
                     }
                 }
             }
-        }
 
-        return new SQLNullResultSet((JDBCBridge.mock(
-                Arrays.asList("TABLE_NAME", "COLUMN_NAME", "ORDINAL_POSITION", "DATA_TYPE", "TYPE_NAME", "NUM_PREC_RADIX", "NULLABLE", "IS_NULLABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN",
-                        //nulls
-                        "TABLE_CAT", "TABLE_SCHEM", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE"
-                ),
-                rows)));
+            return new SQLNullResultSet((JDBCBridge.mock(
+                    Arrays.asList("TABLE_NAME", "COLUMN_NAME", "ORDINAL_POSITION", "DATA_TYPE", "TYPE_NAME", "NUM_PREC_RADIX", "NULLABLE", "IS_NULLABLE", "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN",
+                            //nulls
+                            "TABLE_CAT", "TABLE_SCHEM", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE"
+                    ),
+                    rows)));
+        } catch (Exception e) {
+            throw new SQLException("Error processing table column metadata: " +
+                "tableNamePattern=\"" + tableNamePattern + "\"; " +
+                "columnNamePattern=\"" + columnNamePattern + "\".", e);
+        }
     }
 
     @Override
@@ -769,11 +781,13 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
         final List<String> colNames = Arrays.asList(
                 "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME", "KEY_SEQ", "PK_NAME");
 
-        if (table == null || table.isEmpty())
+        if (table == null || table.isEmpty()) {
+            connection.checkNotClosed();
             return emptyResultSet(colNames);
+        }
 
         try {
-            List spaces = connection.connection.select(_VSPACE, 2, Collections.singletonList(table), 0, 1, 0);
+            List spaces = connection.nativeSelect(_VSPACE, 2, Collections.singletonList(table), 0, 1, 0);
 
             if (spaces == null || spaces.size() == 0)
                 return emptyResultSet(colNames);
@@ -781,7 +795,7 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
             List space = ensureType(List.class, spaces.get(0));
             List fields = ensureType(List.class, space.get(FORMAT_IDX));
             int spaceId = ensureType(Number.class, space.get(SPACE_ID_IDX)).intValue();
-            List indexes = connection.connection.select(_VINDEX, 0, Arrays.asList(spaceId, 0), 0, 1, 0);
+            List indexes = connection.nativeSelect(_VINDEX, 0, Arrays.asList(spaceId, 0), 0, 1, 0);
             List primaryKey = ensureType(List.class, indexes.get(0));
             List parts = ensureType(List.class, primaryKey.get(INDEX_FORMAT_IDX));
 
@@ -809,9 +823,8 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
                 }
             });
             return new SQLNullResultSet((JDBCBridge.mock(colNames, rows)));
-        }
-        catch (Throwable t) {
-            throw new SQLException("Error processing metadata for table \"" + table + "\".", t);
+        } catch (Exception e) {
+            throw new SQLException("Error processing metadata for table \"" + table + "\".", e);
         }
     }
 

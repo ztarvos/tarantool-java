@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -79,5 +80,25 @@ public class TarantoolConnection extends TarantoolBase<List<?>> implements Taran
 
     public boolean isClosed() {
         return socket.isClosed();
+    }
+
+    /**
+     * Sets given timeout value on underlying socket.
+     *
+     * @param timeout Timeout in milliseconds.
+     * @throws SocketException If failed.
+     */
+    public void setSocketTimeout(int timeout) throws SocketException {
+        socket.setSoTimeout(timeout);
+    }
+
+    /**
+     * Retrieves timeout value from underlying socket.
+     *
+     * @return Timeout in milliseconds.
+     * @throws SocketException If failed.
+     */
+    public int getSocketTimeout() throws SocketException {
+        return socket.getSoTimeout();
     }
 }

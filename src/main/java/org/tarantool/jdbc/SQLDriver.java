@@ -1,7 +1,5 @@
 package org.tarantool.jdbc;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.sql.Connection;
@@ -13,8 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
-import org.tarantool.TarantoolConnection;
 
 @SuppressWarnings("Since15")
 public class SQLDriver implements Driver {
@@ -32,35 +28,53 @@ public class SQLDriver implements Driver {
     public static final String PROP_SOCKET_PROVIDER = "socketProvider";
     public static final String PROP_USER = "user";
     public static final String PROP_PASSWORD = "password";
+    public static final String PROP_SOCKET_TIMEOUT = "socketTimeout";
 
+    // Define default values once here.
+    final static Properties defaults = new Properties() {{
+        setProperty(PROP_HOST, "localhost");
+        setProperty(PROP_PORT, "3301");
+        setProperty(PROP_SOCKET_TIMEOUT, "0");
+    }};
 
-    protected Map<String, SQLSocketProvider> providerCache = new ConcurrentHashMap<String, SQLSocketProvider>();
+    private final Map<String, SQLSocketProvider> providerCache = new ConcurrentHashMap<String, SQLSocketProvider>();
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        URI uri = URI.create(url);
-        Properties urlProperties = parseQueryString(uri, info);
+        final URI uri = URI.create(url);
+        final Properties urlProperties = parseQueryString(uri, info);
         String providerClassName = urlProperties.getProperty(PROP_SOCKET_PROVIDER);
-        Socket socket;
-        if (providerClassName != null) {
-            socket = getSocketFromProvider(uri, urlProperties, providerClassName);
-        } else {
-            socket = createAndConnectDefaultSocket(urlProperties);
-        }
-        try {
-            TarantoolConnection connection = new TarantoolConnection(urlProperties.getProperty(PROP_USER), urlProperties.getProperty(PROP_PASSWORD), socket) {{
-                msgPackLite = SQLMsgPackLite.INSTANCE;
-            }};
 
-            return new SQLConnection(connection, url, info);
-        } catch (IOException e) {
-            throw new SQLException("Couldn't initiate connection. Provider class name is " + providerClassName, e);
-        }
+        if (providerClassName == null)
+            return new SQLConnection(url, urlProperties);
 
+        final SQLSocketProvider provider = getSocketProviderInstance(providerClassName);
+
+        return new SQLConnection(url, urlProperties) {
+            @Override
+            protected Socket getConnectedSocket() throws SQLException {
+                Socket socket = provider.getConnectedSocket(uri, urlProperties);
+                if (socket == null)
+                    throw new SQLException("The socket provider returned null socket");
+                return socket;
+            }
+        };
     }
 
-    protected Properties parseQueryString(URI uri, Properties info) {
-        Properties urlProperties = new Properties(info);
+    protected Properties parseQueryString(URI uri, Properties info) throws SQLException {
+        Properties urlProperties = new Properties(defaults);
+
+        String userInfo = uri.getUserInfo();
+        if (userInfo != null) {
+            // Get user and password from the corresponding part of the URI, i.e. before @ sign.
+            int i = userInfo.indexOf(':');
+            if (i < 0) {
+                urlProperties.setProperty(PROP_USER, userInfo);
+            } else {
+                urlProperties.setProperty(PROP_USER, userInfo.substring(0, i));
+                urlProperties.setProperty(PROP_PASSWORD, userInfo.substring(i + 1));
+            }
+        }
         if (uri.getQuery() != null) {
             String[] parts = uri.getQuery().split("&");
             for (String part : parts) {
@@ -72,44 +86,62 @@ public class SQLDriver implements Driver {
                 }
             }
         }
-        urlProperties.put(PROP_HOST, uri.getHost() == null ? "localhost" : uri.getHost());
-        urlProperties.put(PROP_PORT, uri.getPort() < 1 ? "3301" : uri.getPort());
+        if (uri.getHost() != null) {
+            // Default values are pre-put above.
+            urlProperties.setProperty(PROP_HOST, uri.getHost());
+        }
+        if (uri.getPort() >= 0) {
+            // We need to convert port to string otherwise getProperty() will not see it.
+            urlProperties.setProperty(PROP_PORT, String.valueOf(uri.getPort()));
+        }
+        if (info != null)
+            urlProperties.putAll(info);
+
+        // Validate properties.
+        int port;
+        try {
+            port = Integer.parseInt(urlProperties.getProperty(PROP_PORT));
+        } catch (Exception e) {
+            throw new SQLException("Port must be a valid number.");
+        }
+        if (port <= 0 || port > 65535) {
+            throw new SQLException("Port is out of range: " + port);
+        }
+        int timeout;
+        try {
+            timeout = Integer.parseInt(urlProperties.getProperty(PROP_SOCKET_TIMEOUT));
+        } catch (Exception e) {
+            throw new SQLException("Timeout must be a valid number.");
+        }
+        if (timeout < 0) {
+            throw new SQLException("Timeout must not be negative.");
+        }
         return urlProperties;
     }
 
-    protected Socket createAndConnectDefaultSocket(Properties properties) throws SQLException {
-        Socket socket;
-        socket = new Socket();
-        try {
-            socket.connect(new InetSocketAddress(properties.getProperty(PROP_HOST, "localhost"), Integer.parseInt(properties.getProperty(PROP_PORT, "3301"))));
-        } catch (Exception e) {
-            throw new SQLException("Couldn't connect to tarantool using" + properties, e);
-        }
-        return socket;
-    }
-
-    protected Socket getSocketFromProvider(URI uri, Properties urlProperties, String providerClassName)
-            throws SQLException {
-        Socket socket;
-        SQLSocketProvider sqlSocketProvider = providerCache.get(providerClassName);
-        if (sqlSocketProvider == null) {
+    protected SQLSocketProvider getSocketProviderInstance(String className) throws SQLException {
+        SQLSocketProvider provider = providerCache.get(className);
+        if (provider == null) {
             synchronized (this) {
-                sqlSocketProvider = providerCache.get(providerClassName);
-                if (sqlSocketProvider == null) {
+                provider = providerCache.get(className);
+                if (provider == null) {
                     try {
-                        Class<?> cls = Class.forName(providerClassName);
+                        Class<?> cls = Class.forName(className);
                         if (SQLSocketProvider.class.isAssignableFrom(cls)) {
-                            sqlSocketProvider = (SQLSocketProvider) cls.newInstance();
-                            providerCache.put(providerClassName, sqlSocketProvider);
+                            provider = (SQLSocketProvider)cls.newInstance();
+                            providerCache.put(className, provider);
                         }
                     } catch (Exception e) {
-                        throw new SQLException("Couldn't initiate socket provider " + providerClassName, e);
+                        throw new SQLException("Couldn't instantiate socket provider: " + className, e);
                     }
                 }
             }
         }
-        socket = sqlSocketProvider.getConnectedSocket(uri, urlProperties);
-        return socket;
+        if (provider == null) {
+            throw new SQLException(String.format("The socket provider %s does not implement %s",
+                className, SQLSocketProvider.class.getCanonicalName()));
+        }
+        return provider;
     }
 
     @Override
@@ -121,16 +153,15 @@ public class SQLDriver implements Driver {
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
         try {
             URI uri = new URI(url);
-            Properties properties = parseQueryString(uri, new Properties(info == null ? new Properties() : info));
+            Properties properties = parseQueryString(uri, info);
 
             DriverPropertyInfo host = new DriverPropertyInfo(PROP_HOST, properties.getProperty(PROP_HOST));
             host.required = true;
-            host.description = "Tarantool sever host";
+            host.description = "Tarantool server host";
 
             DriverPropertyInfo port = new DriverPropertyInfo(PROP_PORT, properties.getProperty(PROP_PORT));
             port.required = true;
-            port.description = "Tarantool sever port";
-
+            port.description = "Tarantool server port";
 
             DriverPropertyInfo user = new DriverPropertyInfo(PROP_USER, properties.getProperty(PROP_USER));
             user.required = false;
@@ -140,12 +171,20 @@ public class SQLDriver implements Driver {
             password.required = false;
             password.description = "password";
 
-            DriverPropertyInfo socketProvider = new DriverPropertyInfo(PROP_SOCKET_PROVIDER, properties.getProperty(PROP_SOCKET_PROVIDER));
+            DriverPropertyInfo socketProvider = new DriverPropertyInfo(
+                    PROP_SOCKET_PROVIDER, properties.getProperty(PROP_SOCKET_PROVIDER));
+
             socketProvider.required = false;
             socketProvider.description = "SocketProvider class implements org.tarantool.jdbc.SQLSocketProvider";
 
+            DriverPropertyInfo socketTimeout = new DriverPropertyInfo(
+                    PROP_SOCKET_TIMEOUT, properties.getProperty(PROP_SOCKET_TIMEOUT));
 
-            return new DriverPropertyInfo[]{host, port, user, password, socketProvider};
+            socketTimeout.required = false;
+            socketTimeout.description = "The number of milliseconds to wait before a timeout is occurred on a socket" +
+                    " connect or read. The default value is 0, which means infinite timeout.";
+
+            return new DriverPropertyInfo[]{host, port, user, password, socketProvider, socketTimeout};
         } catch (Exception e) {
             throw new SQLException(e);
         }
@@ -171,5 +210,23 @@ public class SQLDriver implements Driver {
         throw new SQLFeatureNotSupportedException();
     }
 
-
+    /**
+     * Builds a string representation of given connection properties
+     * along with their sanitized values.
+     *
+     * @param props Connection properties.
+     * @return Comma-separated pairs of property names and values.
+     */
+    protected static String diagProperties(Properties props) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Object, Object> e : props.entrySet()) {
+            if (sb.length() > 0)
+                sb.append(", ");
+            sb.append(e.getKey());
+            sb.append('=');
+            sb.append(PROP_USER.equals(e.getKey()) || PROP_PASSWORD.equals(e.getKey()) ?
+                    "*****" : e.getValue().toString());
+        }
+        return sb.toString();
+    }
 }

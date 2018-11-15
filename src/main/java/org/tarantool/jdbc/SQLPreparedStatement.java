@@ -24,23 +24,22 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.tarantool.JDBCBridge;
-import org.tarantool.TarantoolConnection;
-
 public class SQLPreparedStatement extends SQLStatement implements PreparedStatement {
+    final static String INVALID_CALL_MSG = "The method cannot be called on a PreparedStatement.";
     final String sql;
     final Map<Integer, Object> params;
 
 
-    public SQLPreparedStatement(TarantoolConnection connection, SQLConnection sqlConnection, String sql) {
-        super(connection, sqlConnection);
+    public SQLPreparedStatement(SQLConnection connection, String sql) {
+        super(connection);
         this.sql = sql;
         this.params = new HashMap<Integer, Object>();
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        return new SQLResultSet(JDBCBridge.query(connection, sql, getParams()));
+        discardLastResults();
+        return connection.executeQuery(sql, getParams());
     }
 
     protected Object[] getParams() throws SQLException {
@@ -49,7 +48,7 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
             if (params.containsKey(i)) {
                 objects[i - 1] = params.get(i);
             } else {
-                throw new SQLException("Parameter " + i + "is not");
+                throw new SQLException("Parameter " + i + " is missing");
             }
         }
         return objects;
@@ -57,8 +56,8 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
 
     @Override
     public int executeUpdate() throws SQLException {
-        return JDBCBridge.update(connection, sql, getParams());
-
+        discardLastResults();
+        return connection.executeUpdate(sql, getParams());
     }
 
     @Override
@@ -163,7 +162,8 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
 
     @Override
     public boolean execute() throws SQLException {
-        return false;
+        discardLastResults();
+        return handleResult(connection.execute(sql, getParams()));
     }
 
     @Override
@@ -336,10 +336,23 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
         throw new SQLFeatureNotSupportedException();
     }
 
-
     @Override
     public void addBatch() throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
+    @Override
+    public ResultSet executeQuery(String sql) throws SQLException {
+        throw new SQLException(INVALID_CALL_MSG);
+    }
+
+    @Override
+    public int executeUpdate(String sql) throws SQLException {
+        throw new SQLException(INVALID_CALL_MSG);
+    }
+
+    @Override
+    public boolean execute(String sql) throws SQLException {
+        throw new SQLException(INVALID_CALL_MSG);
+    }
 }

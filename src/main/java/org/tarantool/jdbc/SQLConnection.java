@@ -1,5 +1,9 @@
 package org.tarantool.jdbc;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -8,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -16,32 +21,133 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.tarantool.CommunicationException;
+import org.tarantool.JDBCBridge;
 import org.tarantool.TarantoolConnection;
+
+import static org.tarantool.jdbc.SQLDriver.PROP_HOST;
+import static org.tarantool.jdbc.SQLDriver.PROP_PASSWORD;
+import static org.tarantool.jdbc.SQLDriver.PROP_PORT;
+import static org.tarantool.jdbc.SQLDriver.PROP_SOCKET_TIMEOUT;
+import static org.tarantool.jdbc.SQLDriver.PROP_USER;
 
 @SuppressWarnings("Since15")
 public class SQLConnection implements Connection {
-    final TarantoolConnection connection;
+    private final TarantoolConnection connection;
     final String url;
     final Properties properties;
 
-    public SQLConnection(TarantoolConnection connection, String url, Properties properties) {
-        this.connection = connection;
+    SQLConnection(String url, Properties properties) throws SQLException {
         this.url = url;
         this.properties = properties;
+
+        String user = properties.getProperty(PROP_USER);
+        String pass = properties.getProperty(PROP_PASSWORD);
+        Socket socket = null;
+        try {
+            socket = getConnectedSocket();
+            this.connection = makeConnection(user, pass, socket);
+        } catch (Exception e) {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                    // No-op.
+                }
+            }
+            if (e instanceof SQLException)
+                throw (SQLException)e;
+            throw new SQLException("Couldn't initiate connection using " + SQLDriver.diagProperties(properties), e);
+        }
+    }
+
+    /**
+     * Provides a connected socket to be used to initialize a native tarantool
+     * connection.
+     *
+     * The implementation assumes that {@link #properties} contains all the
+     * necessary info extracted from both the URI and connection properties
+     * provided by the user. However, the overrides are free to also use the
+     * {@link #url} if required.
+     *
+     * A connect is guarded with user provided timeout. Socket is configured
+     * to honor this timeout for the following read/write operations as well.
+     *
+     * @return Connected socket.
+     * @throws SQLException if failed.
+     */
+    protected Socket getConnectedSocket() throws SQLException {
+        Socket socket = makeSocket();
+        int timeout = Integer.parseInt(properties.getProperty(PROP_SOCKET_TIMEOUT));
+        String host = properties.getProperty(PROP_HOST);
+        int port = Integer.parseInt(properties.getProperty(PROP_PORT));
+        try {
+            socket.connect(new InetSocketAddress(host, port), timeout);
+        } catch (IOException e) {
+            throw new SQLException("Couldn't connect to " + host + ":" + port, e);
+        }
+        // Setup socket further.
+        if (timeout > 0) {
+            try {
+                socket.setSoTimeout(timeout);
+            } catch (SocketException e) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                    // No-op.
+                }
+                throw new SQLException("Couldn't set socket timeout. timeout=" + timeout, e);
+            }
+        }
+        return socket;
+    }
+
+    /**
+     * Provides a newly connected socket instance. The method is intended to be
+     * overridden to enable unit testing of the class.
+     *
+     * Not supposed to contain any logic other than a call to constructor.
+     *
+     * @return socket.
+     */
+    protected Socket makeSocket() {
+        return new Socket();
+    }
+
+    /**
+     * Provides a native tarantool connection instance. The method is intended
+     * to be overridden to enable unit testing of the class.
+     *
+     * Not supposed to contain any logic other than a call to constructor.
+     *
+     * @param user User name.
+     * @param pass Password.
+     * @param socket Connected socket.
+     * @return Native tarantool connection.
+     * @throws IOException if failed.
+     */
+    protected TarantoolConnection makeConnection(String user, String pass, Socket socket) throws IOException {
+        return new TarantoolConnection(user, pass, socket) {{
+            msgPackLite = SQLMsgPackLite.INSTANCE;
+        }};
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-        return new SQLStatement(connection, this);
+        checkNotClosed();
+        return new SQLStatement(this);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return new SQLPreparedStatement(connection, this, sql);
+        checkNotClosed();
+        return new SQLPreparedStatement(this, sql);
     }
 
     @Override
@@ -89,6 +195,7 @@ public class SQLConnection implements Connection {
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
+        checkNotClosed();
         return new SQLDatabaseMetadata(this);
     }
 
@@ -293,14 +400,27 @@ public class SQLConnection implements Connection {
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        checkNotClosed();
+
+        if (milliseconds < 0)
+            throw new SQLException("Network timeout cannot be negative.");
+
+        try {
+            connection.setSocketTimeout(milliseconds);
+        } catch (SocketException e) {
+            throw new SQLException("Failed to set socket timeout: timeout=" + milliseconds, e);
+        }
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        checkNotClosed();
+        try {
+            return connection.getSocketTimeout();
+        } catch (SocketException e) {
+            throw new SQLException("Failed to retrieve socket timeout", e);
+        }
     }
-
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -310,5 +430,85 @@ public class SQLConnection implements Connection {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new SQLFeatureNotSupportedException();
+    }
+
+    protected Object execute(String sql, Object ... args) throws SQLException {
+        checkNotClosed();
+        try {
+            return JDBCBridge.execute(connection, sql, args);
+        } catch (Exception e) {
+            handleException(e);
+            throw new SQLException(formatError(sql, args), e);
+        }
+    }
+
+    protected ResultSet executeQuery(String sql, Object ... args) throws SQLException {
+        checkNotClosed();
+        try {
+            return new SQLResultSet(JDBCBridge.query(connection, sql, args));
+        } catch (Exception e) {
+            handleException(e);
+            throw new SQLException(formatError(sql, args), e);
+        }
+    }
+
+    protected int executeUpdate(String sql, Object ... args) throws SQLException {
+        checkNotClosed();
+        try {
+            return JDBCBridge.update(connection, sql, args);
+        } catch (Exception e) {
+            handleException(e);
+            throw new SQLException(formatError(sql, args), e);
+        }
+    }
+
+    protected List<?> nativeSelect(Integer space, Integer index, List<?> key, int offset, int limit, int iterator)
+        throws SQLException {
+        checkNotClosed();
+        try {
+            return connection.select(space, index, key, offset, limit, iterator);
+        } catch (Exception e) {
+            handleException(e);
+            throw new SQLException(e);
+        }
+    }
+
+    protected String getServerVersion() {
+        return connection.getServerVersion();
+    }
+
+    /**
+     * @throws SQLException If connection is closed.
+     */
+    protected void checkNotClosed() throws SQLException {
+        if (isClosed())
+            throw new SQLException("Connection is closed.");
+    }
+
+    /**
+     * Inspects passed exception and closes the connection if appropriate.
+     *
+     * @param e Exception to process.
+     */
+    private void handleException(Exception e) {
+        if (CommunicationException.class.isAssignableFrom(e.getClass()) ||
+            IOException.class.isAssignableFrom(e.getClass())) {
+            try {
+                close();
+            } catch (SQLException ignored) {
+                // No-op.
+            }
+        }
+    }
+
+    /**
+     * Provides error message that contains parameters of failed SQL statement.
+     *
+     * @param sql SQL Text.
+     * @param params Parameters of the SQL statement.
+     * @return Formatted error message.
+     */
+    private static String formatError(String sql, Object ... params) {
+        return "Failed to execute SQL: " + sql + ", params: " + Arrays.deepToString(params);
     }
 }

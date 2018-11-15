@@ -7,34 +7,27 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
-import org.tarantool.JDBCBridge;
-import org.tarantool.TarantoolConnection;
-
 @SuppressWarnings("Since15")
 public class SQLStatement implements Statement {
-    protected final TarantoolConnection connection;
-    protected final SQLConnection sqlConnection;
+    protected final SQLConnection connection;
     private SQLResultSet resultSet;
     private int updateCount;
     private int maxRows;
 
-    protected SQLStatement(TarantoolConnection connection, SQLConnection sqlConnection) {
-        this.connection = connection;
-        this.sqlConnection = sqlConnection;
+    protected SQLStatement(SQLConnection sqlConnection) {
+        this.connection = sqlConnection;
     }
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        resultSet = new SQLResultSet(JDBCBridge.query(connection, sql));
-        updateCount = -1;
-        return resultSet;
+        discardLastResults();
+        return connection.executeQuery(sql);
     }
 
     @Override
     public int executeUpdate(String sql) throws SQLException {
-        int update = JDBCBridge.update(connection, sql);
-        resultSet = null;
-        return update;
+        discardLastResults();
+        return connection.executeUpdate(sql);
     }
 
     @Override
@@ -102,17 +95,8 @@ public class SQLStatement implements Statement {
 
     @Override
     public boolean execute(String sql) throws SQLException {
-        Object result = JDBCBridge.execute(connection, sql);
-        if (result instanceof SQLResultSet) {
-            resultSet = (SQLResultSet) result;
-            resultSet.maxRows = maxRows;
-            updateCount = -1;
-            return true;
-        } else {
-            resultSet = null;
-            updateCount = (Integer) result;
-            return false;
-        }
+        discardLastResults();
+        return handleResult(connection.execute(sql));
     }
 
     @Override
@@ -186,7 +170,7 @@ public class SQLStatement implements Statement {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return sqlConnection;
+        return connection;
     }
 
     @Override
@@ -267,5 +251,39 @@ public class SQLStatement implements Statement {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new SQLFeatureNotSupportedException();
+    }
+
+    /**
+     * Clears the results of the most recent execution.
+     */
+    protected void discardLastResults() {
+        updateCount = -1;
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (Exception ignored) {
+                // No-op.
+            }
+            resultSet = null;
+        }
+    }
+
+    /**
+     * Sets the internals according to the result of last execution.
+     *
+     * @param result The result of SQL statement execution.
+     * @return {@code true}, if the result is a ResultSet object.
+     */
+    protected boolean handleResult(Object result) {
+        if (result instanceof SQLResultSet) {
+            resultSet = (SQLResultSet) result;
+            resultSet.maxRows = maxRows;
+            updateCount = -1;
+            return true;
+        } else {
+            resultSet = null;
+            updateCount = (Integer) result;
+            return false;
+        }
     }
 }
