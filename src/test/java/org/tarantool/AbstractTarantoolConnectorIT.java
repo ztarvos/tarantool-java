@@ -82,7 +82,7 @@ public abstract class AbstractTarantoolConnectorIT {
     @BeforeAll
     public static void setupEnv() {
         control = new TarantoolControl();
-        control.start("jdk-testing");
+        startTarantool("jdk-testing");
 
         console = openConsole();
 
@@ -104,7 +104,7 @@ public abstract class AbstractTarantoolConnectorIT {
 
             console.close();
         } finally {
-            control.stop("jdk-testing");
+            stopTarantool("jdk-testing");
         }
     }
 
@@ -189,12 +189,14 @@ public abstract class AbstractTarantoolConnectorIT {
         return console.eval(sb.toString());
     }
 
-    protected void stopTarantool(String instance) {
+    protected static void stopTarantool(String instance) {
         control.stop(instance);
+        control.waitStopped("jdk-testing");
     }
 
-    protected void startTarantool(String instance) {
+    protected static void startTarantool(String instance) {
         control.start(instance);
+        control.waitStarted("jdk-testing");
     }
 
     /**
