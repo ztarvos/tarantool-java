@@ -22,8 +22,30 @@ public class TarantoolControl {
     protected static final String tarantoolCtlConfig = new File("src/test/.tarantoolctl").getAbsolutePath();
     protected static final int RESTART_TIMEOUT = 2000;
 
+    static {
+        try {
+            setupWorkDirectory();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't setup test root directory!", e);
+        }
+    }
+
+    protected static void setupWorkDirectory() throws IOException {
+        try {
+            rmdir(tntCtlWorkDir);
+        } catch (IOException ignored) {
+            /* No-op. */
+        }
+
+        mkdir(tntCtlWorkDir);
+        for (File c : new File(instanceDir).listFiles())
+            if (c.getName().endsWith(".lua"))
+                copyFile(c, tntCtlWorkDir);
+        copyFile(tarantoolCtlConfig, tntCtlWorkDir);
+    }
+
     // Based on https://stackoverflow.com/a/779529
-    private void rmdir(File f) throws IOException {
+    private static void rmdir(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : f.listFiles())
                 rmdir(c);
@@ -31,15 +53,15 @@ public class TarantoolControl {
         f.delete();
     }
 
-    private void rmdir(String f) throws IOException {
+    private static void rmdir(String f) throws IOException {
         rmdir(new File(f));
     }
 
-    private void mkdir(File f) throws IOException {
+    private static void mkdir(File f) throws IOException {
         f.mkdirs();
     }
 
-    private void mkdir(String f) throws IOException {
+    private static void mkdir(String f) throws IOException {
         mkdir(new File(f));
     }
 
@@ -77,23 +99,6 @@ public class TarantoolControl {
         while ((line = br.readLine()) != null)
             sb.append(line).append("\n");
         return sb.toString();
-    }
-
-    protected void setupWorkDirectory() throws IOException {
-        rmdir(tntCtlWorkDir);
-        mkdir(tntCtlWorkDir);
-        for (File c : new File(instanceDir).listFiles())
-            if (c.getName().endsWith(".lua"))
-                copyFile(c, tntCtlWorkDir);
-        copyFile(tarantoolCtlConfig, tntCtlWorkDir);
-    }
-
-    TarantoolControl() {
-        try {
-            setupWorkDirectory();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
