@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
-public class TarantoolConnection extends TarantoolBase<List<?>> {
+public class TarantoolConnection extends TarantoolBase<List<?>> implements TarantoolSQLOps<Object,Long,List<Map<String,Object>>> {
     protected InputStream in;
     protected OutputStream out;
     protected Socket socket;
@@ -21,7 +23,7 @@ public class TarantoolConnection extends TarantoolBase<List<?>> {
     }
 
     @Override
-    public List<?> exec(Code code, Object... args) {
+    protected List<?> exec(Code code, Object... args) {
         try {
             ByteBuffer packet = createPacket(code, syncId.incrementAndGet(), null, args);
             out.write(packet.array(), 0, packet.remaining());
@@ -60,4 +62,43 @@ public class TarantoolConnection extends TarantoolBase<List<?>> {
     }
 
 
+    @Override
+    public Long update(String sql, Object... bind) {
+        sql(sql, bind);
+        return getSqlRowCount();
+    }
+
+    @Override
+    public List<Map<String, Object>> query(String sql, Object... bind) {
+        sql(sql, bind);
+        return readSqlResult((List<List<?>>) body.get(Key.DATA));
+    }
+
+    protected void sql(String sql, Object[] bind) {
+        exec(Code.EXECUTE, Key.SQL_TEXT, sql, Key.SQL_BIND, bind);
+    }
+
+    public boolean isClosed() {
+        return socket.isClosed();
+    }
+
+    /**
+     * Sets given timeout value on underlying socket.
+     *
+     * @param timeout Timeout in milliseconds.
+     * @throws SocketException If failed.
+     */
+    public void setSocketTimeout(int timeout) throws SocketException {
+        socket.setSoTimeout(timeout);
+    }
+
+    /**
+     * Retrieves timeout value from underlying socket.
+     *
+     * @return Timeout in milliseconds.
+     * @throws SocketException If failed.
+     */
+    public int getSocketTimeout() throws SocketException {
+        return socket.getSoTimeout();
+    }
 }

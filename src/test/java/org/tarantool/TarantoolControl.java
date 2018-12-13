@@ -16,14 +16,50 @@ import java.io.InputStreamReader;
  * Wrapper around tarantoolctl utility.
  */
 public class TarantoolControl {
+    public class TarantoolControlException extends RuntimeException {
+        int code;
+        String stdout;
+        String stderr;
+
+        TarantoolControlException(int code, String stdout, String stderr) {
+            super("returned exitcode " + code + "\n" +
+                "[stdout]\n" + stdout + "\n[stderr]\n" + stderr);
+            this.code = code;
+            this.stdout = stdout;
+            this.stderr = stderr;
+        }
+    }
+
     protected static final String tntCtlWorkDir = System.getProperty("tntCtlWorkDir",
         new File("testroot").getAbsolutePath());
     protected static final String instanceDir = new File("src/test").getAbsolutePath();
     protected static final String tarantoolCtlConfig = new File("src/test/.tarantoolctl").getAbsolutePath();
     protected static final int RESTART_TIMEOUT = 2000;
 
+    static {
+        try {
+            setupWorkDirectory();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't setup test root directory!", e);
+        }
+    }
+
+    protected static void setupWorkDirectory() throws IOException {
+        try {
+            rmdir(tntCtlWorkDir);
+        } catch (IOException ignored) {
+            /* No-op. */
+        }
+
+        mkdir(tntCtlWorkDir);
+        for (File c : new File(instanceDir).listFiles())
+            if (c.getName().endsWith(".lua"))
+                copyFile(c, tntCtlWorkDir);
+        copyFile(tarantoolCtlConfig, tntCtlWorkDir);
+    }
+
     // Based on https://stackoverflow.com/a/779529
-    private void rmdir(File f) throws IOException {
+    private static void rmdir(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : f.listFiles())
                 rmdir(c);
@@ -31,15 +67,15 @@ public class TarantoolControl {
         f.delete();
     }
 
-    private void rmdir(String f) throws IOException {
+    private static void rmdir(String f) throws IOException {
         rmdir(new File(f));
     }
 
-    private void mkdir(File f) throws IOException {
+    private static void mkdir(File f) throws IOException {
         f.mkdirs();
     }
 
-    private void mkdir(String f) throws IOException {
+    private static void mkdir(String f) throws IOException {
         mkdir(new File(f));
     }
 
@@ -77,23 +113,6 @@ public class TarantoolControl {
         while ((line = br.readLine()) != null)
             sb.append(line).append("\n");
         return sb.toString();
-    }
-
-    protected void setupWorkDirectory() throws IOException {
-        rmdir(tntCtlWorkDir);
-        mkdir(tntCtlWorkDir);
-        for (File c : new File(instanceDir).listFiles())
-            if (c.getName().endsWith(".lua"))
-                copyFile(c, tntCtlWorkDir);
-        copyFile(tarantoolCtlConfig, tntCtlWorkDir);
-    }
-
-    TarantoolControl() {
-        try {
-            setupWorkDirectory();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -158,9 +177,44 @@ public class TarantoolControl {
             } catch (IOException e) {
                 /* No-op. */
             }
-            throw new RuntimeException("returned exitcode " + code + "\n" +
-                "[stdout]\n" + stdout + "\n[stderr]\n" + stderr);
+            throw new TarantoolControlException(code, stdout, stderr);
         }
+    }
+
+    /**
+     * Wait until the instance will be started.
+     *
+     * Use tarantoolctl status instanceName.
+     *
+     * Then test the instance with TarantoolTcpConsole (ADMIN environment
+     * variable is set) or TarantoolLocalConsole.
+     *
+     * XXX: Now TarantoolLocalConsole is used unconditionally, see
+     * openConsole().
+     */
+    public void waitStarted(String instanceName) {
+        while (status(instanceName) != 0)
+            sleep();
+
+        while (true) {
+            try {
+                openConsole(instanceName).close();
+                break;
+            } catch (Exception ignored) {
+                /* No-op. */
+            }
+            sleep();
+        }
+    }
+
+    /**
+     * Wait until the instance will be stopped.
+     *
+     * Use tarantoolctl status instanceName.
+     */
+    public void waitStopped(String instanceName) {
+        while (status(instanceName) != 1)
+            sleep();
     }
 
     public void start(String instanceName) {
@@ -169,5 +223,41 @@ public class TarantoolControl {
 
     public void stop(String instanceName) {
         executeCommand("stop", instanceName);
+    }
+
+    /**
+     * Wrapper for `tarantoolctl status instanceName`.
+     *
+     * Return exit code of the command:
+     *
+     * * 0 -- started;
+     * * 1 -- stopped;
+     * * 2 -- pid file exists, control socket inaccessible.
+     */
+    public int status(String instanceName) {
+        try {
+            executeCommand("status", instanceName);
+        } catch (TarantoolControlException e) {
+            return e.code;
+        }
+
+        return 0;
+    }
+
+    /*
+     * XXX: This function is planned to use text console (from ADMIN
+     * environment variable) when it is available for the instance and
+     * fallback to TarantoolLocalConsole.
+     */
+    public TarantoolConsole openConsole(String instanceName) {
+        return TarantoolConsole.open(tntCtlWorkDir, instanceName);
+    }
+
+    public static void sleep() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
