@@ -3,17 +3,23 @@ language: java
 sudo: required
 dist: trusty
 
-jdk:
-  - oraclejdk11
-  - openjdk10
-  - openjdk11
+matrix:
+  include:
+    - jdk: oraclejdk11
+      env: TNT_REPO="2.0"
+    - jdk: openjdk10
+      env: TNT_REPO="2.0"
+    - jdk: openjdk11
+      env: TNT_REPO="2.0"
+    - jdk: openjdk11
+      env: TNT_REPO="2x" COVER_REPORT="yes"
 
 before_script:
   - src/test/travis.pre.sh
 
 script:
   - |
-    if [ "${TRAVIS_JDK_VERSION}" = openjdk11 ]; then
+    if [ "${COVER_REPORT}" = "yes" ]; then
         mvn verify jacoco:report
     else
         mvn verify
@@ -22,6 +28,6 @@ script:
 
 after_success:
   - |
-    if [ "${TRAVIS_JDK_VERSION}" = openjdk11 ]; then
+    if [ "${COVER_REPORT}" = "yes" ]; then
         mvn coveralls:report -DrepoToken=${COVERALLS_TOKEN}
     fi
