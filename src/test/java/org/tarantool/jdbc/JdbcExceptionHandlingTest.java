@@ -1,7 +1,5 @@
 package org.tarantool.jdbc;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.function.ThrowingConsumer;
@@ -40,28 +38,7 @@ import static org.tarantool.jdbc.SQLDatabaseMetadata._VINDEX;
 import static org.tarantool.jdbc.SQLDatabaseMetadata._VSPACE;
 import static org.tarantool.jdbc.SQLDriver.PROP_SOCKET_TIMEOUT;
 
-import org.tarantool.TarantoolControl;
-
 public class JdbcExceptionHandlingTest {
-    protected static TarantoolControl control;
-
-    /**
-     * We cannot mock TarantoolConnection constructor, so need listening
-     * tarantool instance to prevent a test failure.
-     */
-    @BeforeAll
-    public static void setupEnv() throws Exception {
-        control = new TarantoolControl();
-        control.start("jdk-testing");
-        control.waitStarted("jdk-testing");
-    }
-
-    @AfterAll
-    public static void teardownEnv() throws Exception {
-        control.stop("jdk-testing");
-        control.waitStopped("jdk-testing");
-    }
-
     /**
      * Simulates meta parsing error: missing "name" field in a space format for the primary key.
      *
@@ -303,6 +280,11 @@ public class JdbcExceptionHandlingTest {
     private SQLConnection buildTestSQLConnection(final TarantoolConnection tntCon, String url, Properties properties)
         throws SQLException {
         return new SQLConnection(url, properties) {
+            @Override
+            protected Socket makeSocket() {
+                return mock(Socket.class);
+            }
+
             @Override
             protected TarantoolConnection makeConnection (String user, String pass, Socket socket) {
                 return tntCon;
