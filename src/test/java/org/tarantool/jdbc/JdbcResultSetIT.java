@@ -3,6 +3,8 @@ package org.tarantool.jdbc;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
+import org.tarantool.TarantoolConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +14,8 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JdbcResultSetIT extends AbstractJdbcIT {
@@ -110,5 +114,29 @@ public class JdbcResultSetIT extends AbstractJdbcIT {
         assertEquals(testRow[18], rs.getTimestamp("F19")); //TIMESTAMP
 
         rs.close();
+    }
+
+    @Test
+    public void testWrapper() throws SQLException {
+        ResultSet rs = stmt.executeQuery("SELECT 1");
+        try {
+            assertFalse(rs.isWrapperFor(null));
+            assertFalse(rs.isWrapperFor(TarantoolConnection.class));
+            assertTrue(rs.isWrapperFor(SQLResultSet.class));
+
+            assertSame(rs, rs.unwrap(SQLResultSet.class));
+
+            SQLException e = assertThrows(SQLException.class, new Executable() {
+                @Override
+                public void execute() throws Throwable {
+                    stmt.unwrap(TarantoolConnection.class);
+                }
+            });
+
+            assertTrue(e.getMessage().startsWith("Cannot unwrap to"));
+
+        } finally {
+            rs.close();
+        }
     }
 }

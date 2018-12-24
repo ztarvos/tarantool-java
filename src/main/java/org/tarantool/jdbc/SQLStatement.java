@@ -245,12 +245,16 @@ public class SQLStatement implements Statement {
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        try {
+            return iface.cast(this);
+        } catch (ClassCastException e) {
+            throw new SQLException("Cannot unwrap to " + iface.getName(), e);
+        }
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        return iface != null && iface.isAssignableFrom(getClass());
     }
 
     /**

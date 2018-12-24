@@ -5,7 +5,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1057,12 +1056,16 @@ public class SQLDatabaseMetadata implements DatabaseMetaData {
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        try {
+            return iface.cast(this);
+        } catch (ClassCastException e) {
+            throw new SQLException("Cannot unwrap to " + iface.getName(), e);
+        }
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        return iface != null && iface.isAssignableFrom(getClass());
     }
 
     private static <T> T ensureType(Class<T> cls, Object v) throws Exception {

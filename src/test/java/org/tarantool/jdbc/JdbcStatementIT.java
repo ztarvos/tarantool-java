@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.tarantool.TarantoolConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +12,7 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,5 +94,23 @@ public class JdbcStatementIT extends AbstractJdbcIT {
             assertEquals("Connection is closed.", e.getMessage());
         }
         assertEquals(3, i);
+    }
+
+    @Test
+    public void testWrapper() throws SQLException {
+        assertFalse(stmt.isWrapperFor(null));
+        assertFalse(stmt.isWrapperFor(TarantoolConnection.class));
+        assertTrue(stmt.isWrapperFor(SQLStatement.class));
+
+        assertSame(stmt, stmt.unwrap(SQLStatement.class));
+
+        SQLException e = assertThrows(SQLException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                stmt.unwrap(TarantoolConnection.class);
+            }
+        });
+
+        assertTrue(e.getMessage().startsWith("Cannot unwrap to"));
     }
 }

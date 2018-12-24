@@ -3,6 +3,7 @@ package org.tarantool.jdbc;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.function.Executable;
+import org.tarantool.TarantoolConnection;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -212,5 +214,23 @@ public class JdbcDatabaseMetaDataIT extends AbstractJdbcIT {
             assertEquals("Connection is closed.", e.getCause().getMessage());
         }
         assertEquals(3, i);
+    }
+
+    @Test
+    public void testWrapper() throws SQLException {
+        assertFalse(meta.isWrapperFor(null));
+        assertFalse(meta.isWrapperFor(TarantoolConnection.class));
+        assertTrue(meta.isWrapperFor(SQLDatabaseMetadata.class));
+
+        assertSame(meta, meta.unwrap(SQLDatabaseMetadata.class));
+
+        SQLException e = assertThrows(SQLException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                meta.unwrap(TarantoolConnection.class);
+            }
+        });
+
+        assertTrue(e.getMessage().startsWith("Cannot unwrap to"));
     }
 }
