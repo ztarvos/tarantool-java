@@ -235,7 +235,7 @@ public class JdbcExceptionHandlingTest {
         TestTarantoolConnection mockCon = mock(TestTarantoolConnection.class);
 
         final PreparedStatement prep = new SQLPreparedStatement(
-                buildTestSQLConnection(mockCon, "tarantool://0:0", SQLDriver.defaults), "TEST");
+                buildTestSQLConnection(mockCon, "tarantool://0:0", SQLDriver.defaults), "TEST", false);
 
         Exception ex = new CommunicationException("TEST");
         doThrow(ex).when(mockCon).sql("TEST", new Object[0]);

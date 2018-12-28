@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,9 @@ public class TarantoolConnection extends TarantoolBase<List<?>> implements Taran
     @Override
     public Long update(String sql, Object... bind) {
         sql(sql, bind);
-        return getSqlRowCount();
+
+        List<Integer> genIds = new ArrayList<Integer>();
+        return getSqlInfo(genIds);
     }
 
     @Override

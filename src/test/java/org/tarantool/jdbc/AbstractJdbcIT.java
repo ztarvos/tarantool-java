@@ -38,12 +38,14 @@ public abstract class AbstractJdbcIT {
             "CREATE TABLE test(id INT PRIMARY KEY, val VARCHAR(100))",
             "INSERT INTO test VALUES (1, 'one'), (2, 'two'), (3, 'three')",
             "CREATE TABLE test_compound(id1 INT, id2 INT, val VARCHAR(100), PRIMARY KEY (id2, id1))",
+            "CREATE TABLE test_autoid(id INT PRIMARY KEY AUTOINCREMENT, val INT)",
             getCreateTableSQL("test_types", TntSqlType.values())
     };
 
     private static String[] cleanSql = new String[] {
             "DROP TABLE IF EXISTS test",
             "DROP TABLE IF EXISTS test_types",
+            "DROP TABLE IF EXISTS test_autoid",
             "DROP TABLE IF EXISTS test_compound"
     };
 

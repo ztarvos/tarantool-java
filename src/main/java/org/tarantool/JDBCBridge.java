@@ -15,14 +15,26 @@ public class JDBCBridge {
     final List<TarantoolBase.SQLMetaData> sqlMetadata;
     final Map<String,Integer> columnsByName;
     final List<List<Object>> rows;
+    final int rowCount;
+    final List<Integer> generatedKeys;
 
     protected JDBCBridge(TarantoolConnection connection) {
         this(connection.getSQLMetadata(),connection.getSQLData());
     }
 
+    protected JDBCBridge(int rowCount, List<Integer> generatedKeys) {
+        sqlMetadata = null;
+        columnsByName = null;
+        rows = null;
+        this.rowCount = rowCount;
+        this.generatedKeys = generatedKeys;
+    }
+
     protected JDBCBridge(List<TarantoolBase.SQLMetaData> sqlMetadata, List<List<Object>> rows) {
         this.sqlMetadata = sqlMetadata;
         this.rows = rows;
+        this.rowCount = -1;
+        this.generatedKeys = null;
         columnsByName = new LinkedHashMap<String, Integer>((int) Math.ceil(sqlMetadata.size() / 0.75), 0.75f);
         for (int i = 0; i < sqlMetadata.size(); i++) {
             columnsByName.put(sqlMetadata.get(i).getName(), i + 1);
@@ -34,8 +46,11 @@ public class JDBCBridge {
         return new JDBCBridge(connection);
     }
 
-    public static int update(TarantoolConnection connection, String sql, Object ... params) {
-        return connection.update(sql, params).intValue();
+    public static JDBCBridge update(TarantoolConnection connection, String sql, Object ... params) {
+        connection.sql(sql, params);
+        List<Integer> genIds = new ArrayList<Integer>();
+        int rowCount = connection.getSqlInfo(genIds).intValue();
+        return new JDBCBridge(rowCount, genIds);
     }
 
     public static JDBCBridge mock(List<String> fields, List<List<Object>> values)  {
@@ -48,11 +63,12 @@ public class JDBCBridge {
 
     public static Object execute(TarantoolConnection connection, String sql, Object ... params) {
         connection.sql(sql, params);
-        Long rowCount = connection.getSqlRowCount();
+        List<Integer> list = new ArrayList<Integer>();
+        Long rowCount = connection.getSqlInfo(list);
         if(rowCount == null) {
             return new SQLResultSet(new JDBCBridge(connection));
         }
-        return rowCount.intValue();
+        return new JDBCBridge(rowCount.intValue(), list);
     }
 
 
@@ -74,6 +90,18 @@ public class JDBCBridge {
 
     public int size() {
         return rows.size();
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    public List<List<Object>> getGeneratedKeys() {
+        List<List<Object>> res = new ArrayList<List<Object>>();
+        for (Integer key : generatedKeys) {
+            res.add(Collections.singletonList((Object)key));
+        }
+        return res;
     }
 
     @Override

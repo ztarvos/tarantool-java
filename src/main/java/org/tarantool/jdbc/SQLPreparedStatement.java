@@ -1,5 +1,7 @@
 package org.tarantool.jdbc;
 
+import org.tarantool.JDBCBridge;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -21,6 +23,7 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,12 +31,13 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
     final static String INVALID_CALL_MSG = "The method cannot be called on a PreparedStatement.";
     final String sql;
     final Map<Integer, Object> params;
+    final boolean returnGeneratedKeys;
 
-
-    public SQLPreparedStatement(SQLConnection connection, String sql) {
+    public SQLPreparedStatement(SQLConnection connection, String sql, boolean returnGeneratedKeys) {
         super(connection);
         this.sql = sql;
         this.params = new HashMap<Integer, Object>();
+        this.returnGeneratedKeys = returnGeneratedKeys;
     }
 
     @Override
@@ -57,7 +61,12 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
     @Override
     public int executeUpdate() throws SQLException {
         discardLastResults();
-        return connection.executeUpdate(sql, getParams());
+        JDBCBridge bridge = connection.executeUpdate(sql, getParams());
+        if (returnGeneratedKeys) {
+            generatedKeys = new SQLResultSet(JDBCBridge.mock(Collections.singletonList((String)null),
+                bridge.getGeneratedKeys()));
+        }
+        return bridge.getRowCount();
     }
 
     @Override
@@ -163,7 +172,7 @@ public class SQLPreparedStatement extends SQLStatement implements PreparedStatem
     @Override
     public boolean execute() throws SQLException {
         discardLastResults();
-        return handleResult(connection.execute(sql, getParams()));
+        return handleResult(connection.execute(sql, getParams()), returnGeneratedKeys);
     }
 
     @Override

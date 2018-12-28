@@ -195,6 +195,19 @@ public abstract class TarantoolBase<Result> extends AbstractTarantoolOps<Integer
         return null;
     }
 
+    protected Long getSqlInfo(List<Integer> generatedIds) {
+        Map<Integer, Object> info = (Map<Integer, Object>)body.get(Key.SQL_INFO.getId());
+        Number rowCount;
+        if (info != null && (rowCount = ((Number) info.get(Key.SQL_ROW_COUNT.getId()))) != null) {
+            List<Integer> genIds = (List<Integer>)info.get(Key.SQL_INFO_AUTOINCREMENT_IDS.getId());
+            if (genIds != null) {
+                generatedIds.addAll(genIds);
+            }
+            return rowCount.longValue();
+        }
+        return null;
+    }
+
 
     protected TarantoolException serverError(long code, Object error) {
         return new TarantoolException(code, error instanceof String ? (String) error : new String((byte[]) error));
